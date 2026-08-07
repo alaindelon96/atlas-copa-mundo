@@ -1,0 +1,769 @@
+<title>Atlas da Copa do Mundo — Roadmap</title>
+<style>
+  /* ============================================================
+     Palette: cartographic. Chart-blue ink, cool paper, contour
+     teal, marker orange. Status IS the palette:
+       teal   = done      orange = in progress      grey = ahead
+     ============================================================ */
+  :root {
+    --paper:       #E9EDF0;
+    --surface:     #FFFFFF;
+    --surface-2:   #F3F6F8;
+    --ink:         #16202B;
+    --ink-2:       #46586B;
+    --ink-3:       #7A8CA0;
+    --rule:        #CFD9E1;
+    --rule-strong: #AFBECB;
+    --done:        #0F7A6B;
+    --done-soft:   #DBEDE8;
+    --now:         #BE4A22;
+    --now-soft:    #F7E1D8;
+    --ahead:       #8A9CAD;
+    --ahead-soft:  #E3E9EE;
+    --shadow:      0 1px 2px rgba(22, 32, 43, .06), 0 8px 24px -12px rgba(22, 32, 43, .18);
+
+    --step: clamp(.85rem, .4rem + 1.1vw, 1rem);
+    --measure: 66ch;
+
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:       #0D161F;
+      --surface:     #15212C;
+      --surface-2:   #1B2836;
+      --ink:         #E4ECF2;
+      --ink-2:       #A5B8C8;
+      --ink-3:       #77899C;
+      --rule:        #2A3A4A;
+      --rule-strong: #3D5165;
+      --done:        #3FB6A0;
+      --done-soft:   #103831;
+      --now:         #E8794D;
+      --now-soft:    #3A1F14;
+      --ahead:       #64798D;
+      --ahead-soft:  #1F2B37;
+      --shadow:      0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .6);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper: #E9EDF0; --surface: #FFFFFF; --surface-2: #F3F6F8;
+    --ink: #16202B; --ink-2: #46586B; --ink-3: #7A8CA0;
+    --rule: #CFD9E1; --rule-strong: #AFBECB;
+    --done: #0F7A6B; --done-soft: #DBEDE8;
+    --now: #BE4A22; --now-soft: #F7E1D8;
+    --ahead: #8A9CAD; --ahead-soft: #E3E9EE;
+    --shadow: 0 1px 2px rgba(22, 32, 43, .06), 0 8px 24px -12px rgba(22, 32, 43, .18);
+  }
+  :root[data-theme="dark"] {
+    --paper: #0D161F; --surface: #15212C; --surface-2: #1B2836;
+    --ink: #E4ECF2; --ink-2: #A5B8C8; --ink-3: #77899C;
+    --rule: #2A3A4A; --rule-strong: #3D5165;
+    --done: #3FB6A0; --done-soft: #103831;
+    --now: #E8794D; --now-soft: #3A1F14;
+    --ahead: #64798D; --ahead-soft: #1F2B37;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .6);
+  }
+
+  /* --- bilingual: EN default, PT behind the toggle ------------- */
+  .pt { display: none; }
+  :root[data-lang="pt"] .pt { display: inline; }
+  :root[data-lang="pt"] .en { display: none; }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 78rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 1rem + 2vw, 3.5rem) clamp(1rem, .6rem + 2vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 2rem + 2vw, 4rem);
+  }
+
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.2; }
+  p { margin: 0; max-width: var(--measure); }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; flex-direction: column; gap: 1.25rem; }
+  .masthead-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  h1 { font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3.1rem); letter-spacing: -.015em; }
+  .standfirst { font-size: 1.06em; color: var(--ink-2); max-width: 58ch; }
+
+  .controls { display: flex; gap: .4rem; flex-shrink: 0; }
+  .controls button {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: .45rem .7rem;
+    cursor: pointer;
+  }
+  .controls button:hover { border-color: var(--rule-strong); color: var(--ink); }
+  .controls button:focus-visible { outline: 2px solid var(--done); outline-offset: 2px; }
+
+  /* ---------- scoreboard strip ---------- */
+  .scoreboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .stat { padding: .95rem 1.1rem; border-right: 1px solid var(--rule); display: flex; flex-direction: column; gap: .1rem; }
+  .stat:last-child { border-right: 0; }
+  .stat b {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    line-height: 1.1;
+  }
+  .stat span { font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+  .stat.is-done b { color: var(--done); }
+  .stat.is-now  b { color: var(--now); }
+
+  /* ---------- section frame ---------- */
+  section { display: flex; flex-direction: column; gap: 1.5rem; }
+  .sec-head { display: flex; flex-direction: column; gap: .45rem; border-top: 2px solid var(--ink); padding-top: .8rem; }
+  .sec-head h2 { font-size: clamp(1.25rem, 1rem + 1vw, 1.65rem); }
+  .sec-head p { color: var(--ink-2); }
+
+  /* ---------- flow diagram ---------- */
+  .diagram { overflow-x: auto; padding-bottom: .5rem; }
+  .diagram svg { display: block; min-width: 46rem; height: auto; }
+
+  /* SVG styling lives here, not in presentation attributes: var() is not
+     reliably supported inside SVG attributes and fails silently when it isn't. */
+  .diagram .lbl    { font-family: var(--mono); font-size: 10.5px; letter-spacing: 1.6px; fill: var(--ink-3); }
+  .diagram .name   { font-family: var(--sans); font-size: 13px; font-weight: 600; fill: var(--ink); }
+  .diagram .name-m { font-family: var(--sans); font-size: 13px; font-weight: 600; fill: var(--ink-2); }
+  .diagram .path   { font-family: var(--mono); font-size: 12px; font-weight: 600; fill: var(--ink); }
+  .diagram .meta   { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-2); }
+  .diagram .meta-m { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-3); }
+  .diagram .note   { font-family: var(--sans); font-size: 11px; fill: var(--ink-2); }
+  .diagram .edge   { font-family: var(--mono); font-size: 10px; fill: var(--ink-3); }
+  .diagram .prov   { font-family: var(--mono); font-size: 11px; font-weight: 600; fill: var(--done); }
+  .diagram .prov-s { font-family: var(--sans); font-size: 10.5px; fill: var(--ink-2); }
+
+  .diagram .box        { fill: var(--surface); stroke: var(--rule-strong); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .diagram .box-active { fill: var(--surface); stroke: var(--done); stroke-width: 1.6; stroke-dasharray: none; }
+  .diagram .box-hollow { fill: none; stroke: var(--rule-strong); stroke-width: 1.2; stroke-dasharray: 4 3; }
+  .diagram .box-src    { fill: var(--done-soft); stroke: var(--done); stroke-width: 1; }
+  .diagram .box-next   { fill: none; stroke: var(--now); stroke-width: 1; stroke-dasharray: 4 3; }
+  .diagram .box-prov   { fill: var(--done-soft); stroke: var(--done); stroke-width: 1; }
+  .diagram .flow       { stroke: var(--rule-strong); stroke-width: 1.2; fill: none; }
+  .diagram .flow-done  { stroke: var(--done); stroke-width: 1.2; fill: none; }
+  .diagram .head       { fill: var(--rule-strong); }
+  .legend { display: flex; flex-wrap: wrap; gap: 1.1rem; font-size: .78rem; color: var(--ink-2); }
+  .legend i { display: inline-flex; align-items: center; gap: .4rem; font-style: normal; }
+  .dot { width: .6rem; height: .6rem; border-radius: 50%; flex-shrink: 0; }
+
+  /* ---------- stages ---------- */
+  .stages { display: flex; flex-direction: column; gap: 1rem; }
+  .stage {
+    display: grid;
+    grid-template-columns: 3.4rem 1fr;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ahead);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .stage.done { border-left-color: var(--done); }
+  .stage.now  { border-left-color: var(--now); }
+
+  .stage-num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ahead);
+    background: var(--surface-2);
+    border-right: 1px solid var(--rule);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 1.15rem;
+  }
+  .stage.done .stage-num { color: var(--done); }
+  .stage.now  .stage-num { color: var(--now); }
+
+  .stage-body { padding: 1.15rem 1.35rem 1.35rem; display: flex; flex-direction: column; gap: .85rem; min-width: 0; }
+  .stage-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .6rem 1rem; }
+  .stage-head h3 { font-size: 1.18rem; }
+
+  .pill {
+    font-family: var(--mono);
+    font-size: .66rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .2rem .5rem;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .pill.done  { background: var(--done-soft);  color: var(--done); }
+  .pill.now   { background: var(--now-soft);   color: var(--now); }
+  .pill.ahead { background: var(--ahead-soft); color: var(--ink-2); }
+
+  .tools { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .tool {
+    font-family: var(--mono);
+    font-size: .72rem;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: .12rem .42rem;
+  }
+
+  /* the point of the page: a line you can say out loud */
+  .say {
+    border-left: 2px solid var(--rule-strong);
+    padding: .1rem 0 .1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+  }
+  .say .label { font-family: var(--mono); font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .say q {
+    font-family: var(--serif);
+    font-size: 1.02em;
+    line-height: 1.55;
+    color: var(--ink);
+    quotes: "\201C" "\201D";
+    max-width: var(--measure);
+  }
+
+  ul.ticks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .35rem; }
+  ul.ticks li { position: relative; padding-left: 1.4rem; color: var(--ink-2); max-width: var(--measure); }
+  ul.ticks li::before {
+    content: "";
+    position: absolute;
+    left: .25rem; top: .62em;
+    width: .38rem; height: .38rem;
+    border-radius: 50%;
+    background: var(--rule-strong);
+  }
+  ul.ticks li.ok::before   { background: var(--done); }
+  ul.ticks li.todo::before { background: transparent; border: 1px solid var(--rule-strong); }
+
+  /* ---------- findings ---------- */
+  .findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1rem; }
+  .finding {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--now);
+    border-radius: 3px;
+    padding: 1.1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+  }
+  .finding h3 { font-size: 1.02rem; }
+  .finding p { font-size: .93em; color: var(--ink-2); }
+  .finding .tag { font-family: var(--mono); font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--now); }
+
+  /* ---------- tables ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .9em; }
+  th, td { text-align: left; padding: .6rem .9rem; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  thead th {
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 500;
+    background: var(--surface-2);
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  td.was { color: var(--ink-2); }
+  td.arrow { color: var(--ink-3); font-family: var(--mono); }
+
+  /* ---------- decisions ---------- */
+  .decisions { display: grid; grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr)); gap: 1rem; }
+  .decision {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1.1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  .decision.open { border-style: dashed; border-color: var(--rule-strong); background: transparent; }
+  .decision h3 { font-size: 1rem; }
+  .decision p { font-size: .92em; color: var(--ink-2); }
+
+  /* ---------- glossary ---------- */
+  .glossary { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: .1rem 2rem; }
+  .term { padding: .7rem 0; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: .2rem; }
+  .term dt { font-family: var(--mono); font-size: .82rem; color: var(--ink); }
+  .term dd { margin: 0; font-size: .89em; color: var(--ink-2); }
+
+  footer { color: var(--ink-3); font-size: .82em; border-top: 1px solid var(--rule); padding-top: 1.2rem; display: flex; flex-direction: column; gap: .3rem; }
+  code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 2px; padding: .05rem .3rem; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  @media (max-width: 34rem) {
+    .stage { grid-template-columns: 1fr; }
+    .stage-num { border-right: 0; border-bottom: 1px solid var(--rule); padding: .5rem 0; justify-content: flex-start; padding-left: 1.35rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead-top">
+      <div style="display:flex; flex-direction:column; gap:.6rem;">
+        <div class="eyebrow">1930 &ndash; 2026 &middot; <span class="en">ETL pipeline roadmap</span><span class="pt">roadmap do pipeline de ETL</span></div>
+        <h1><span class="en">World Cup Atlas</span><span class="pt">Atlas da Copa do Mundo</span></h1>
+      </div>
+      <div class="controls">
+        <button type="button" id="lang" aria-label="Switch language">PT / EN</button>
+        <button type="button" id="theme" aria-label="Switch theme">&#9681;</button>
+      </div>
+    </div>
+    <p class="standfirst">
+      <span class="en">Turning a century of tournament records into a map anyone can read &mdash; and a pipeline you can explain, defend and re-run from scratch with one command.</span>
+      <span class="pt">Transformar um s&eacute;culo de registros de torneios em um mapa que qualquer pessoa entende &mdash; e um pipeline que voc&ecirc; sabe explicar, defender e rodar do zero com um comando.</span>
+    </p>
+
+    <div class="scoreboard">
+      <div class="stat is-done"><b>1&nbsp;/&nbsp;5</b><span class="en">stages complete</span><span class="pt">etapas conclu&iacute;das</span></div>
+      <div class="stat is-done"><b>16</b><span class="en">tables extracted</span><span class="pt">tabelas extra&iacute;das</span></div>
+      <div class="stat"><b>1,248</b><span class="en">matches on hand</span><span class="pt">partidas em m&atilde;os</span></div>
+      <div class="stat"><b>202</b><span class="en">cities to geocode</span><span class="pt">cidades a geocodificar</span></div>
+      <div class="stat is-now"><b>1</b><span class="en">tournament missing</span><span class="pt">torneio faltando</span></div>
+    </div>
+  </header>
+
+  <!-- ============ FLOW ============ -->
+  <section>
+    <div class="sec-head">
+      <h2><span class="en">How the data moves</span><span class="pt">Como o dado se move</span></h2>
+      <p>
+        <span class="en">One direction only. Nothing ever writes backwards into a folder to its left &mdash; that single rule is what makes the whole thing reproducible.</span>
+        <span class="pt">Uma dire&ccedil;&atilde;o s&oacute;. Nada nunca escreve de volta numa pasta &agrave; esquerda &mdash; essa &uacute;nica regra &eacute; o que torna tudo reprodut&iacute;vel.</span>
+      </p>
+    </div>
+
+    <div class="diagram">
+      <svg viewBox="0 0 940 250" role="img" aria-label="Data flow from sources through raw, interim and processed folders to the published map">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="head" d="M 0 0 L 10 5 L 0 10 z"/>
+          </marker>
+        </defs>
+
+        <!-- sources -->
+        <text class="lbl" x="14" y="26">SOURCES</text>
+        <rect class="box-src" x="14" y="40" width="150" height="46" rx="3"/>
+        <text class="name" x="28" y="60">Fjelstul DB</text>
+        <text class="meta" x="28" y="76">16 CSV &middot; 1930&ndash;2022</text>
+
+        <rect class="box-next" x="14" y="98" width="150" height="46" rx="3"/>
+        <text class="name" x="28" y="118">Wikipedia</text>
+        <text class="meta" x="28" y="134">scraping &middot; 2026</text>
+
+        <rect class="box-hollow" x="14" y="156" width="150" height="46" rx="3"/>
+        <text class="name-m" x="28" y="176">Kaggle</text>
+        <text class="meta-m" x="28" y="192">attendance? &middot; TBD</text>
+
+        <path class="flow" d="M 168 63 L 214 105" marker-end="url(#ar)"/>
+        <path class="flow" d="M 168 121 L 214 121" marker-end="url(#ar)"/>
+        <path class="flow" d="M 168 179 L 214 137" marker-end="url(#ar)"/>
+
+        <!-- raw -->
+        <text class="lbl" x="222" y="26">EXTRACT</text>
+        <rect class="box-active" x="222" y="88" width="152" height="68" rx="3"/>
+        <text class="path" x="236" y="110">data/raw/</text>
+        <text class="note" x="236" y="127">immutable &middot; hashed</text>
+        <text class="note" x="236" y="143">never hand-edited</text>
+
+        <path class="flow" d="M 378 122 L 424 122" marker-end="url(#ar)"/>
+        <text class="edge" x="384" y="112">clean</text>
+
+        <!-- interim -->
+        <text class="lbl" x="432" y="26">TRANSFORM</text>
+        <rect class="box" x="432" y="88" width="152" height="68" rx="3"/>
+        <text class="path" x="446" y="110">data/interim/</text>
+        <text class="note" x="446" y="127">names reconciled</text>
+        <text class="note" x="446" y="143">throwaway</text>
+
+        <path class="flow" d="M 588 122 L 634 122" marker-end="url(#ar)"/>
+        <text class="edge" x="592" y="112">model</text>
+
+        <!-- processed -->
+        <text class="lbl" x="642" y="26">MODEL &amp; VALIDATE</text>
+        <rect class="box" x="642" y="88" width="152" height="68" rx="3"/>
+        <text class="path" x="656" y="110">data/processed/</text>
+        <text class="note" x="656" y="127">pandera-checked</text>
+        <text class="note" x="656" y="143">GeoJSON + JSON</text>
+
+        <path class="flow" d="M 798 122 L 844 122" marker-end="url(#ar)"/>
+
+        <!-- web -->
+        <text class="lbl" x="828" y="26">PUBLISH</text>
+        <rect class="box-hollow" x="852" y="88" width="74" height="68" rx="3"/>
+        <text class="path" x="864" y="112">web/</text>
+        <text class="note" x="864" y="129">Leaflet</text>
+        <text class="note" x="864" y="145">Pages</text>
+
+        <!-- provenance callout -->
+        <path class="flow-done" d="M 298 156 L 298 190" marker-end="url(#ar)"/>
+        <rect class="box-prov" x="222" y="192" width="152" height="40" rx="3"/>
+        <text class="prov" x="236" y="210">metadata.json</text>
+        <text class="prov-s" x="236" y="225">SHA-256 + when + licence</text>
+      </svg>
+    </div>
+
+    <div class="legend">
+      <i><span class="dot" style="background: var(--done)"></span><span class="en">Built and run</span><span class="pt">Constru&iacute;do e rodado</span></i>
+      <i><span class="dot" style="background: var(--now)"></span><span class="en">In progress</span><span class="pt">Em andamento</span></i>
+      <i><span class="dot" style="background: var(--rule-strong)"></span><span class="en">Ahead</span><span class="pt">Pela frente</span></i>
+    </div>
+  </section>
+
+  <!-- ============ STAGES ============ -->
+  <section>
+    <div class="sec-head">
+      <h2><span class="en">The five stages</span><span class="pt">As cinco etapas</span></h2>
+      <p>
+        <span class="en">Each one has a job, a reason it exists, and a sentence you can say out loud in an interview.</span>
+        <span class="pt">Cada uma tem uma fun&ccedil;&atilde;o, um motivo para existir e uma frase que voc&ecirc; pode dizer em voz alta numa entrevista.</span>
+      </p>
+    </div>
+
+    <div class="stages">
+
+      <!-- 1 -->
+      <article class="stage done">
+        <div class="stage-num">01</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Extract</span><span class="pt">Extra&ccedil;&atilde;o</span></h3>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
+          </div>
+          <p>
+            <span class="en">Download the original CSVs once, store them untouched, and write down exactly where each one came from.</span>
+            <span class="pt">Baixar os CSVs originais uma vez, guardar sem tocar, e anotar exatamente de onde cada um veio.</span>
+          </p>
+          <ul class="ticks">
+            <li class="ok"><span class="en">16 Fjelstul tables in <code>data/raw/fjelstul/</code> &mdash; 1.9&nbsp;MB</span><span class="pt">16 tabelas do Fjelstul em <code>data/raw/fjelstul/</code> &mdash; 1,9&nbsp;MB</span></li>
+            <li class="ok"><span class="en">SHA-256, timestamp, URL and licence for every file</span><span class="pt">SHA-256, timestamp, URL e licen&ccedil;a de cada arquivo</span></li>
+            <li class="ok"><span class="en">Atomic writes &mdash; a dropped download can't leave a half-file behind</span><span class="pt">Escrita at&ocirc;mica &mdash; um download interrompido n&atilde;o deixa arquivo pela metade</span></li>
+            <li class="todo"><span class="en">Scrape the 2026 tournament from Wikipedia</span><span class="pt">Raspar o torneio de 2026 da Wikip&eacute;dia</span></li>
+          </ul>
+          <div class="tools"><span class="tool">requests</span><span class="tool">hashlib</span><span class="tool">etl/extract.py</span><span class="tool">etl/provenance.py</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">I download the raw data once and never edit it. Every file gets a fingerprint and a timestamp, so I can prove which version I used &mdash; and detect it if the source changes underneath me.</span><span class="pt">Eu baixo o dado bruto uma vez e nunca edito. Cada arquivo ganha uma impress&atilde;o digital e um timestamp, ent&atilde;o eu consigo provar qual vers&atilde;o usei &mdash; e detectar se a fonte mudou por baixo.</span></q>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="stage now">
+        <div class="stage-num">02</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Clean &amp; reconcile</span><span class="pt">Limpeza e reconcilia&ccedil;&atilde;o</span></h3>
+            <span class="pill now"><span class="en">Next</span><span class="pt">Pr&oacute;ximo</span></span>
+          </div>
+          <p>
+            <span class="en">The data arrived clean &mdash; no missing dates, no missing scores. The hard part is not dirt. It is that countries changed while the tournament kept going.</span>
+            <span class="pt">O dado chegou limpo &mdash; sem datas faltando, sem placares faltando. A parte dif&iacute;cil n&atilde;o &eacute; sujeira. &Eacute; que os pa&iacute;ses mudaram enquanto o torneio continuava.</span>
+          </p>
+          <ul class="ticks">
+            <li class="todo"><span class="en">Add an explicit <code>competition</code> column &mdash; do this first</span><span class="pt">Criar a coluna expl&iacute;cita <code>competition</code> &mdash; fazer isso primeiro</span></li>
+            <li class="todo"><span class="en">Curated succession map for renamed and dissolved states</span><span class="pt">Mapa de sucess&atilde;o curado para estados renomeados e dissolvidos</span></li>
+            <li class="todo"><span class="en"><code>rapidfuzz</code> for spelling variants only</span><span class="pt"><code>rapidfuzz</code> apenas para varia&ccedil;&otilde;es ortogr&aacute;ficas</span></li>
+            <li class="todo"><span class="en">Write out <code>data/processed/matches_clean.csv</code></span><span class="pt">Gravar <code>data/processed/matches_clean.csv</code></span></li>
+          </ul>
+          <div class="tools"><span class="tool">pandas</span><span class="tool">rapidfuzz</span><span class="tool">etl/transform.py</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">The data is clean, but the world wasn't. West Germany, the USSR, Yugoslavia, Zaire &mdash; I have to decide what each becomes today. Fuzzy matching can't do it, because &ldquo;Zaire&rdquo; and &ldquo;DR Congo&rdquo; look nothing alike. That part is a curated decision, and I document it.</span><span class="pt">O dado est&aacute; limpo, mas o mundo n&atilde;o estava. Alemanha Ocidental, URSS, Iugosl&aacute;via, Zaire &mdash; eu preciso decidir no que cada um vira hoje. Fuzzy matching n&atilde;o resolve, porque &ldquo;Zaire&rdquo; e &ldquo;RD Congo&rdquo; n&atilde;o se parecem em nada. Essa parte &eacute; decis&atilde;o curada, e eu documento.</span></q>
+          </div>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="stage">
+        <div class="stage-num">03</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Model, validate, geocode</span><span class="pt">Modelar, validar, geocodificar</span></h3>
+            <span class="pill ahead"><span class="en">Ahead</span><span class="pt">Pela frente</span></span>
+          </div>
+          <p>
+            <span class="en">Split the flat file into four related tables, state the rules the data must obey as code, and give every venue a latitude and longitude so it can land on a map.</span>
+            <span class="pt">Quebrar o arquivo plano em quatro tabelas relacionadas, escrever como c&oacute;digo as regras que o dado deve obedecer, e dar latitude e longitude a cada sede para ela cair no mapa.</span>
+          </p>
+          <ul class="ticks">
+            <li class="todo"><span class="en"><code>tournaments</code> &middot; <code>matches</code> &middot; <code>teams</code> &middot; <code>venues</code></span><span class="pt"><code>tournaments</code> &middot; <code>matches</code> &middot; <code>teams</code> &middot; <code>venues</code></span></li>
+            <li class="todo"><span class="en">Geocode 202 cities via Nominatim, cached on disk, 1 request/second</span><span class="pt">Geocodificar 202 cidades via Nominatim, com cache em disco, 1 requisi&ccedil;&atilde;o/segundo</span></li>
+            <li class="todo"><span class="en">Export GeoJSON for the map, JSON for the tables</span><span class="pt">Exportar GeoJSON para o mapa, JSON para as tabelas</span></li>
+          </ul>
+          <div class="tools"><span class="tool">pandera</span><span class="tool">geopy</span><span class="tool">Mermaid ERD</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">I define the shape the data must have once, as code. Every run checks itself against those rules &mdash; so a bad join fails loudly instead of quietly producing a map that's wrong in a way nobody notices.</span><span class="pt">Eu defino uma vez, como c&oacute;digo, o formato que o dado precisa ter. Cada execu&ccedil;&atilde;o se verifica contra essas regras &mdash; ent&atilde;o um join errado falha alto, em vez de silenciosamente produzir um mapa errado que ningu&eacute;m percebe.</span></q>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4 -->
+      <article class="stage">
+        <div class="stage-num">04</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Visualise</span><span class="pt">Visualiza&ccedil;&atilde;o</span></h3>
+            <span class="pill ahead"><span class="en">Ahead</span><span class="pt">Pela frente</span></span>
+          </div>
+          <p>
+            <span class="en">A Leaflet map with a marker at every host city. Click one, get the tournament: champion, top scorer, the matches played there.</span>
+            <span class="pt">Um mapa Leaflet com um marcador em cada cidade-sede. Clicou, aparece o torneio: campe&atilde;o, artilheiro, as partidas jogadas ali.</span>
+          </p>
+          <ul class="ticks">
+            <li class="todo"><span class="en">Filter by decade, and toggle men's / women's</span><span class="pt">Filtro por d&eacute;cada, e alternar masculino / feminino</span></li>
+            <li class="todo"><span class="en">Side panel with the champions ranking</span><span class="pt">Painel lateral com o ranking de campe&otilde;es</span></li>
+          </ul>
+          <div class="tools"><span class="tool">Leaflet.js</span><span class="tool">GeoJSON</span><span class="tool">web/map.js</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">The front-end does no cleaning at all &mdash; it just reads the file the pipeline produced. So if the map shows something wrong, I know the bug is upstream, and I know which stage to open.</span><span class="pt">O front-end n&atilde;o faz limpeza nenhuma &mdash; ele s&oacute; l&ecirc; o arquivo que o pipeline produziu. Ent&atilde;o se o mapa mostra algo errado, eu sei que o bug est&aacute; antes, e sei qual etapa abrir.</span></q>
+          </div>
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="stage">
+        <div class="stage-num">05</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Publish</span><span class="pt">Publica&ccedil;&atilde;o</span></h3>
+            <span class="pill ahead"><span class="en">Ahead</span><span class="pt">Pela frente</span></span>
+          </div>
+          <p>
+            <span class="en">A static site on GitHub Pages, plus the README that turns the repository into the portfolio piece.</span>
+            <span class="pt">Um site est&aacute;tico no GitHub Pages, mais o README que transforma o reposit&oacute;rio na pe&ccedil;a de portf&oacute;lio.</span>
+          </p>
+          <ul class="ticks">
+            <li class="todo"><span class="en">CC-BY-SA attribution to Fjelstul and Wikipedia &mdash; a licence obligation, not a courtesy</span><span class="pt">Atribui&ccedil;&atilde;o CC-BY-SA ao Fjelstul e &agrave; Wikip&eacute;dia &mdash; obriga&ccedil;&atilde;o de licen&ccedil;a, n&atilde;o cortesia</span></li>
+            <li class="todo"><span class="en">GitHub Actions to re-run the pipeline &mdash; deferred to v2</span><span class="pt">GitHub Actions para re-rodar o pipeline &mdash; adiado para a v2</span></li>
+          </ul>
+          <div class="tools"><span class="tool">GitHub Pages</span><span class="tool">GitHub Actions</span><span class="tool">README.md</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">It's a static site, so there's no server to break and hosting is free. Anyone can clone the repo and rebuild every number on that map from the original sources with one command.</span><span class="pt">&Eacute; um site est&aacute;tico, ent&atilde;o n&atilde;o tem servidor pra quebrar e a hospedagem &eacute; gr&aacute;tis. Qualquer pessoa clona o reposit&oacute;rio e reconstr&oacute;i cada n&uacute;mero daquele mapa a partir das fontes originais com um comando.</span></q>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ============ FINDINGS ============ -->
+  <section>
+    <div class="sec-head">
+      <h2><span class="en">What the data told us on day one</span><span class="pt">O que o dado nos contou no primeiro dia</span></h2>
+      <p>
+        <span class="en">Four things that changed the plan the moment we actually opened the files. This is the part worth talking about &mdash; it shows you looked.</span>
+        <span class="pt">Quatro coisas que mudaram o plano no momento em que abrimos os arquivos de verdade. Essa &eacute; a parte que vale contar &mdash; mostra que voc&ecirc; olhou.</span>
+      </p>
+    </div>
+
+    <div class="findings">
+      <div class="finding">
+        <div class="tag"><span class="en">Silent trap</span><span class="pt">Armadilha silenciosa</span></div>
+        <h3><span class="en">One ID, two tournaments</span><span class="pt">Um ID, dois torneios</span></h3>
+        <p>
+          <span class="en">All 30 editions use the same <code>WC-&lt;year&gt;</code> pattern. <code>WC-1991</code> is the women's tournament; <code>WC-1994</code> is the men's. Only the tournament <em>name</em> tells them apart, the years never overlap, and the ID is unique &mdash; so grouping by ID blends both competitions and nothing errors.</span>
+          <span class="pt">As 30 edi&ccedil;&otilde;es usam o mesmo padr&atilde;o <code>WC-&lt;ano&gt;</code>. <code>WC-1991</code> &eacute; a Copa feminina; <code>WC-1994</code>, a masculina. S&oacute; o <em>nome</em> distingue, os anos nunca se sobrep&otilde;em e o ID &eacute; &uacute;nico &mdash; ent&atilde;o agrupar por ID mistura as duas competi&ccedil;&otilde;es e nada d&aacute; erro.</span>
+        </p>
+      </div>
+      <div class="finding">
+        <div class="tag"><span class="en">Missing field</span><span class="pt">Campo ausente</span></div>
+        <h3><span class="en">No attendance anywhere</span><span class="pt">P&uacute;blico n&atilde;o existe</span></h3>
+        <p>
+          <span class="en">The plan promised attendance in the map popups. The source has 36 columns and none of them is attendance. Either pull it from Kaggle &mdash; which only reaches 2018 &mdash; or use stadium capacity, which is complete across all 240 stadiums.</span>
+          <span class="pt">O plano prometia p&uacute;blico nos popups do mapa. A fonte tem 36 colunas e nenhuma &eacute; p&uacute;blico. Ou buscar no Kaggle &mdash; que s&oacute; vai at&eacute; 2018 &mdash; ou usar a capacidade do est&aacute;dio, que est&aacute; completa nos 240 est&aacute;dios.</span>
+        </p>
+      </div>
+      <div class="finding">
+        <div class="tag"><span class="en">Bad estimate</span><span class="pt">Estimativa errada</span></div>
+        <h3><span class="en">202 cities, not &ldquo;a few&rdquo;</span><span class="pt">202 cidades, n&atilde;o &ldquo;poucas&rdquo;</span></h3>
+        <p>
+          <span class="en">The plan assumed venues could be geocoded by hand. It's 240 stadiums across 202 cities. At one Nominatim request per second that's about three minutes of automation &mdash; or several evenings of copying coordinates.</span>
+          <span class="pt">O plano assumia que dava pra geocodificar as sedes &agrave; m&atilde;o. S&atilde;o 240 est&aacute;dios em 202 cidades. A uma requisi&ccedil;&atilde;o Nominatim por segundo, s&atilde;o uns tr&ecirc;s minutos de automa&ccedil;&atilde;o &mdash; ou v&aacute;rias noites copiando coordenadas.</span>
+        </p>
+      </div>
+      <div class="finding">
+        <div class="tag"><span class="en">Better story</span><span class="pt">Hist&oacute;ria melhor</span></div>
+        <h3><span class="en">Clean data, harder question</span><span class="pt">Dado limpo, pergunta mais dif&iacute;cil</span></h3>
+        <p>
+          <span class="en">Zero nulls in dates, venues, scores and capacities. So the cleaning stage isn't about fixing breakage &mdash; it's about historical judgement. That's a more interesting thing to defend in an interview than a null count.</span>
+          <span class="pt">Zero nulos em datas, sedes, placares e capacidades. Ent&atilde;o a etapa de limpeza n&atilde;o &eacute; consertar quebra &mdash; &eacute; julgamento hist&oacute;rico. Isso &eacute; mais interessante de defender numa entrevista do que contagem de nulos.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SUCCESSION ============ -->
+  <section>
+    <div class="sec-head">
+      <h2><span class="en">The reconciliation problem, concretely</span><span class="pt">O problema de reconcilia&ccedil;&atilde;o, concretamente</span></h2>
+      <p>
+        <span class="en">Every one of these appears in the match records. None of them can be resolved by string similarity alone.</span>
+        <span class="pt">Todos estes aparecem nos registros de partidas. Nenhum deles se resolve por similaridade de texto sozinha.</span>
+      </p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th><span class="en">Appears in the data as</span><span class="pt">Aparece no dado como</span></th>
+            <th></th>
+            <th><span class="en">Today</span><span class="pt">Hoje</span></th>
+            <th><span class="en">What happened</span><span class="pt">O que aconteceu</span></th>
+            <th><span class="en">Fuzzy match?</span><span class="pt">Fuzzy resolve?</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="was">West Germany / East Germany</td><td class="arrow">&rarr;</td><td>Germany</td><td><span class="en">Reunification, 1990</span><span class="pt">Reunifica&ccedil;&atilde;o, 1990</span></td><td><span class="en">Partly</span><span class="pt">Em parte</span></td></tr>
+          <tr><td class="was">Soviet Union</td><td class="arrow">&rarr;</td><td>Russia</td><td><span class="en">Dissolution, 1991</span><span class="pt">Dissolu&ccedil;&atilde;o, 1991</span></td><td><span class="en">No</span><span class="pt">N&atilde;o</span></td></tr>
+          <tr><td class="was">Yugoslavia &middot; Serbia and Montenegro</td><td class="arrow">&rarr;</td><td>Serbia</td><td><span class="en">Staged dissolution</span><span class="pt">Dissolu&ccedil;&atilde;o em etapas</span></td><td><span class="en">Partly</span><span class="pt">Em parte</span></td></tr>
+          <tr><td class="was">Czechoslovakia</td><td class="arrow">&rarr;</td><td>Czech Republic</td><td><span class="en">Split, 1993</span><span class="pt">Separa&ccedil;&atilde;o, 1993</span></td><td><span class="en">Partly</span><span class="pt">Em parte</span></td></tr>
+          <tr><td class="was">Dutch East Indies</td><td class="arrow">&rarr;</td><td>Indonesia</td><td><span class="en">Independence, 1949</span><span class="pt">Independ&ecirc;ncia, 1949</span></td><td><span class="en">No</span><span class="pt">N&atilde;o</span></td></tr>
+          <tr><td class="was">Zaire</td><td class="arrow">&rarr;</td><td>DR Congo</td><td><span class="en">Renaming, 1997</span><span class="pt">Renomea&ccedil;&atilde;o, 1997</span></td><td><span class="en">No</span><span class="pt">N&atilde;o</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ DECISIONS ============ -->
+  <section>
+    <div class="sec-head">
+      <h2><span class="en">Decisions</span><span class="pt">Decis&otilde;es</span></h2>
+      <p>
+        <span class="en">Solid ones on the left of your reasoning, open ones still waiting on you. The dashed cards are yours to call.</span>
+        <span class="pt">As firmes de um lado, as abertas ainda esperando por voc&ecirc;. Os cart&otilde;es tracejados s&atilde;o seus para decidir.</span>
+      </p>
+    </div>
+    <div class="decisions">
+      <div class="decision">
+        <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>
+        <h3>Leaflet <span class="en">over</span><span class="pt">em vez de</span> Mapbox</h3>
+        <p><span class="en">No API key. Anyone who clones the repo gets a working map with no sign-up. For markers and popups, Mapbox's extras don't pay for themselves.</span><span class="pt">Sem chave de API. Quem clonar o reposit&oacute;rio tem um mapa funcionando sem cadastro. Para marcadores e popups, os extras do Mapbox n&atilde;o se pagam.</span></p>
+      </div>
+      <div class="decision">
+        <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>
+        <h3><span class="en">Keep the women's data</span><span class="pt">Manter o dado feminino</span></h3>
+        <p><span class="en">It ships in the same files at zero extra cost. Tag it with a <code>competition</code> column and let the front-end filter &mdash; cheaper than dropping it now and reprocessing later.</span><span class="pt">Vem nos mesmos arquivos, custo zero. Marcar com a coluna <code>competition</code> e deixar o front-end filtrar &mdash; mais barato que descartar agora e reprocessar depois.</span></p>
+      </div>
+      <div class="decision open">
+        <span class="pill now" style="align-self:flex-start"><span class="en">Open &mdash; blocks stage 4</span><span class="pt">Aberta &mdash; trava a etapa 4</span></span>
+        <h3><span class="en">Attendance or capacity?</span><span class="pt">P&uacute;blico ou capacidade?</span></h3>
+        <p><span class="en">Real attendance means adding a Kaggle source that stops at 2018 and leaves 2022 and 2026 blank. Capacity is complete and consistent, but it's a different number and you'd have to label it honestly.</span><span class="pt">P&uacute;blico real significa somar uma fonte do Kaggle que para em 2018 e deixa 2022 e 2026 vazios. Capacidade est&aacute; completa e consistente, mas &eacute; outro n&uacute;mero e voc&ecirc; teria que rotular com honestidade.</span></p>
+      </div>
+      <div class="decision open">
+        <span class="pill now" style="align-self:flex-start"><span class="en">Open &mdash; blocks stage 2</span><span class="pt">Aberta &mdash; trava a etapa 2</span></span>
+        <h3><span class="en">Does Germany have 4 titles or 1?</span><span class="pt">A Alemanha tem 4 t&iacute;tulos ou 1?</span></h3>
+        <p><span class="en">If West Germany folds into Germany, it's four. If it stays separate, Germany has one and West Germany has three. Both are defensible. Not documenting which you picked is not.</span><span class="pt">Se a Alemanha Ocidental vira Alemanha, s&atilde;o quatro. Se fica separada, a Alemanha tem um e a Ocidental tr&ecirc;s. As duas s&atilde;o defens&aacute;veis. N&atilde;o documentar qual voc&ecirc; escolheu, n&atilde;o &eacute;.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GLOSSARY ============ -->
+  <section>
+    <div class="sec-head">
+      <h2><span class="en">Words you'll need</span><span class="pt">Palavras que voc&ecirc; vai precisar</span></h2>
+      <p>
+        <span class="en">If you can use these five naturally in a sentence, you can carry the whole conversation.</span>
+        <span class="pt">Se voc&ecirc; usar estas cinco naturalmente numa frase, voc&ecirc; sustenta a conversa inteira.</span>
+      </p>
+    </div>
+    <dl class="glossary">
+      <div class="term">
+        <dt>ETL</dt>
+        <dd><span class="en">Extract, Transform, Load. Get the data, fix it, hand it to whatever consumes it. The three folders under <code>data/</code> are those three steps made visible.</span><span class="pt">Extract, Transform, Load. Pegar o dado, ajustar, entregar a quem consome. As tr&ecirc;s pastas dentro de <code>data/</code> s&atilde;o esses tr&ecirc;s passos vis&iacute;veis.</span></dd>
+      </div>
+      <div class="term">
+        <dt><span class="en">Provenance</span><span class="pt">Proveni&ecirc;ncia</span></dt>
+        <dd><span class="en">The paper trail: which file came from where, when, and under what licence. Our <code>metadata.json</code>.</span><span class="pt">O rastro em papel: qual arquivo veio de onde, quando e sob qual licen&ccedil;a. Nosso <code>metadata.json</code>.</span></dd>
+      </div>
+      <div class="term">
+        <dt><span class="en">Idempotent</span><span class="pt">Idempotente</span></dt>
+        <dd><span class="en">Running it twice does the same thing as running it once. Our extractor skips what it already has, so re-running is safe and cheap.</span><span class="pt">Rodar duas vezes faz o mesmo que rodar uma. Nosso extrator pula o que j&aacute; tem, ent&atilde;o re-rodar &eacute; seguro e barato.</span></dd>
+      </div>
+      <div class="term">
+        <dt><span class="en">Schema validation</span><span class="pt">Valida&ccedil;&atilde;o de schema</span></dt>
+        <dd><span class="en">Writing the rules the data must satisfy as code, so the pipeline tests itself every run instead of you eyeballing it.</span><span class="pt">Escrever como c&oacute;digo as regras que o dado deve satisfazer, para o pipeline se testar a cada execu&ccedil;&atilde;o em vez de voc&ecirc; conferir no olho.</span></dd>
+      </div>
+      <div class="term">
+        <dt>GeoJSON</dt>
+        <dd><span class="en">A plain JSON format for map features. The pipeline's final output; the map's only input.</span><span class="pt">Um formato JSON simples para fei&ccedil;&otilde;es de mapa. A sa&iacute;da final do pipeline; a &uacute;nica entrada do mapa.</span></dd>
+      </div>
+      <div class="term">
+        <dt>SHA-256</dt>
+        <dd><span class="en">A fingerprint of a file's contents. Same bytes, same fingerprint &mdash; so any change to the source is detectable without storing a second copy.</span><span class="pt">Uma impress&atilde;o digital do conte&uacute;do do arquivo. Mesmos bytes, mesma impress&atilde;o &mdash; ent&atilde;o qualquer mudan&ccedil;a na fonte &eacute; detect&aacute;vel sem guardar uma segunda c&oacute;pia.</span></dd>
+      </div>
+    </dl>
+  </section>
+
+  <footer>
+    <div><span class="en">Companion to</span><span class="pt">Complemento de</span> <code>plano-atlas-copa-mundo.md</code> / <code>plan-atlas-world-cup.md</code> &middot; <span class="en">last updated</span><span class="pt">atualizado em</span> 2026-08-07.</div>
+    <div><span class="en">Data: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) &mdash; 2026 tournament figures not yet verified from any source inside the project.</span><span class="pt">Dados: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) &mdash; n&uacute;meros do torneio de 2026 ainda n&atilde;o verificados por nenhuma fonte dentro do projeto.</span></div>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+
+    if (!root.hasAttribute("data-lang")) root.setAttribute("data-lang", "en");
+
+    document.getElementById("lang").addEventListener("click", function () {
+      var next = root.getAttribute("data-lang") === "en" ? "pt" : "en";
+      root.setAttribute("data-lang", next);
+      this.textContent = next === "en" ? "PT / EN" : "EN / PT";
+    });
+
+    document.getElementById("theme").addEventListener("click", function () {
+      var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var current = root.getAttribute("data-theme") || (dark ? "dark" : "light");
+      root.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+    });
+  })();
+</script>

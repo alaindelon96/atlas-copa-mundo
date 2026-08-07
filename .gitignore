@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Dados brutos: não versionar (são reproduzíveis via `python -m etl.extract`).
+# O metadata.json É versionado — ele é o registro de proveniência.
+data/raw/**
+!data/raw/**/
+!data/raw/metadata.json
+
+# HTML raspado: volumoso e reproduzível
+data/raw/scraped/**
+
+# Dados intermediários: descartáveis
+data/interim/**
+!data/interim/**/
+
+# data/processed/ e web/data/ SÃO versionados — são o produto final
+# consumido pelo GitHub Pages.
+
+# Credenciais
+.env
+kaggle.json
+
+# Configuração local de ferramentas (específica desta máquina)
+.claude/
+
+# SO
+Thumbs.db
+.DS_Store

@@ -1,0 +1,19 @@
+# Normaliza finais de linha: LF no repositório, nativo no working copy.
+# Importante porque o pipeline vai rodar no Windows (local) e no Linux
+# (GitHub Actions) — sem isso, o mesmo arquivo gera diffs falsos entre os dois.
+* text=auto
+
+# Arquivos que devem SEMPRE ter LF, mesmo no Windows
+*.py    text eol=lf
+*.md    text eol=lf
+*.html  text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.txt   text eol=lf
+
+# Dados: nunca alterar o conteúdo byte a byte — o SHA-256 registrado em
+# data/raw/metadata.json depende disso.
+*.csv     -text
+*.geojson -text

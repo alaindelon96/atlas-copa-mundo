@@ -1,0 +1,26 @@
+# Atlas da Copa do Mundo — dependências
+# Instalar com: pip install -r requirements.txt
+#
+# Versões fixadas nas que foram efetivamente testadas neste ambiente
+# (Python 3.11). Atualize com `pip freeze` depois de subir alguma delas.
+
+# --- Extração ---
+requests==2.31.0
+
+# --- Scraping (Copa 2026, via Wikipédia) ---
+beautifulsoup4==4.12.3
+lxml==6.1.1
+
+# --- Limpeza e transformação ---
+pandas==2.1.1
+numpy==1.26.0
+rapidfuzz==3.14.5
+
+# --- Validação de schema ---
+pandera==0.32.1
+
+# --- Geocodificação das sedes ---
+geopy==2.5.0
+
+# --- Testes ---
+pytest==9.1.1
