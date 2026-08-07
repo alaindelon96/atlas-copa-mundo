@@ -253,7 +253,7 @@ atlas-copa-mundo/
 - [ ] **Sucessão de seleções:** Alemanha Ocidental conta como Alemanha na contagem de títulos? URSS conta como Rússia? — *bloqueia a Etapa 2; é decisão editorial, não técnica*
 - [ ] Confirmar licença do "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *só importa se ele for realmente usado*
 - [ ] Decidir entre `pandas.read_html`, `BeautifulSoup4` ou `Scrapy` para o scraping de 2026 (recomendação: começar pelo `read_html`)
-- [ ] Inicializar o repositório git (`git init`) — ainda não foi feito
+- [ ] Criar o repositório remoto no GitHub e dar `git push` — o repositório local já existe
 
 ## 8. Notas de progresso
 

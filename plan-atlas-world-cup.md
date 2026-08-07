@@ -253,7 +253,7 @@ atlas-copa-mundo/
 - [ ] **Team succession:** does West Germany count as Germany in the title count? Does the USSR count as Russia? — *blocks Stage 2; this is an editorial call, not a technical one*
 - [ ] Confirm the licence of the "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *only matters if it is actually used*
 - [ ] Decide between `pandas.read_html`, `BeautifulSoup4` and `Scrapy` for the 2026 scraping (recommendation: start with `read_html`)
-- [ ] Initialise the git repository (`git init`) — not done yet
+- [ ] Create the remote repository on GitHub and `git push` — the local repository already exists
 
 ## 8. Progress notes
 
