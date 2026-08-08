@@ -146,24 +146,48 @@ Proposed schema (relational tabular form):
 - `teams`: current name, historic names (to reconcile changes)
 - `venues`: city, country, latitude, longitude (for the map), capacity
 
+> ⚠️ **The 2026-08-08 decision on the map design (see Stage 4) changed this stage's priority.** The map is a **choropleth** — it shades whole countries — not a marker map. A choropleth needs **country polygons**, not point coordinates. Geocoding cities is no longer the central job; it dropped to secondary.
+
+- [ ] **Build `reference/team_country.csv`: the 83 men's teams → a shape on the world map** — this stage's new central problem
+- [ ] Fetch a country GeoJSON (Natural Earth), including the **UK subunits**
+- [ ] Fill `country_name` for the 104 matches of 2026 — currently null, and it **blocks the "matches received" metric**
 - [ ] Draw the final schema (Mermaid ERD diagram)
 - [ ] Validate the schema with `pandera` (type rules, allowed values, acceptable nulls)
-- [ ] Geocode the 202 host cities via `geopy`/Nominatim **with an on-disk cache** (see 2.1)
-- [ ] Generate derived metrics: total goals per tournament, average capacity, titles per team
-- [ ] Export in a front-end-consumable format (GeoJSON for the map + JSON for tables/charts)
+- [ ] Build the long `(match, team)` table — one row per team per match, the basis of every metric
+- [ ] Build the head-to-head matrix (team × opponent) for the selected-country mode
+- [ ] Export GeoJSON for the map + JSON for the panels
+- [ ] *(secondary)* Geocode the host cities via `geopy`/Nominatim with a cache — only if the venue layer ships
 
-**Tools:** `pandas` for aggregations; `geopy` for geocoding; `pandera` for declarative schema validation.
+**Tools:** `pandas` for aggregations; `pandera` for declarative validation; `geopy` only for the secondary venue layer.
+
+**Watch-out:** geocoding solves 2026's `country_name` for free — Nominatim returns the country alongside the coordinate. Worth running even if the venue layer doesn't make v1.
 
 ### Stage 4 — Visualise
 
+**Design settled 2026-08-08: a choropleth world map with two selectors.**
+
+Not a map of venue markers — a map that **shades countries** by a chosen metric. Two controls:
+
+| Control | Options |
+|---|---|
+| **Metric** | Goals · Wins/Losses · Matches received · Matches played · Titles · Participations |
+| **Country** | None (global view) or one specific team |
+
+**The selected-country mode is the project's strongest idea.** Choosing *Brazil + Goals* **recolours the map by head-to-head**: every country is shaded by how many goals Brazil scored against it. Sweden burns brightest (21 goals in 7 matches), and the panel summarises Brazil's 247 goals in 119 matches, 23 participations, 82W–15D–22L.
+
 - [x] ~~Choose a map library~~ → **Leaflet.js decided** (lightweight, free, no API key)
-- [ ] Markers at each World Cup's venues, with popups (champion, top scorer, capacity)
-- [ ] Optional layer: historic trajectory of championship-winning teams
+- [x] ~~Map design~~ → **choropleth with a metric selector and a country selector**
+- [x] ~~United Kingdom~~ → **separate subunits.** England, Scotland, Wales and Northern Ireland are four distinct teams and stay four distinct regions. Merging them would invent a "UK national team" that has never existed, credited with 168 goals nobody scored.
+- [x] ~~Raw counts or per-match~~ → **both, behind a toggle.** Raw counts alone just reproduce "who qualified most often": Germany has 248 goals and Brazil 247 because both played ~120 matches. Per match, **Hungary leads at 2.72** and vanishes from the raw top 10. Switching between the two readings *is* the insight.
+- [ ] Single-hue sequential scale for the metric (never a rainbow)
+- [ ] A 10-match floor in per-match mode, so a 3-match team can't outrank Brazil
 - [ ] Filter by decade/era
 - [ ] Men's/women's toggle (enabled by the `competition` column)
-- [ ] Side panel or section with overall statistics (e.g. champions ranking)
+- [ ] Side panel with the selected team's summary and its head-to-head table
 
-**Tools:** Leaflet.js (vanilla JS) for the map; optionally `folium` in Python for rapid prototyping.
+**Tools:** Leaflet.js with a GeoJSON country layer; `pandas` to pre-compute the metrics.
+
+**Why this design suits our data:** it lives entirely at **match level** — scoreline, teams, venue. That is precisely the dimension both sources have complete. Player, confederation or squad features would break in 2026 (see 2.1); this one does not.
 
 ### Stage 5 — Publish
 
@@ -292,4 +316,7 @@ atlas-copa-mundo/
 - **2026-08-07** — data exploration surfaced four points that change the plan: (1) `tournament_id` does not separate men's from women's; (2) there is no attendance data; (3) there are 202 cities to geocode, not "a few"; (4) the data is clean — the real challenge is historical name reconciliation, not dirtiness. Details in section 2.1.
 - **2026-08-08** — repository published at https://github.com/alaindelon96/atlas-copa-mundo; README, `LICENSE` (MIT, code) and `LICENSE-DATA.md` (CC-BY-SA 4.0, data) written.
 - **2026-08-08** — **Stage 1b complete: 2026 World Cup scraped.** Wikipedia's `robots.txt` verified (articles under `/wiki/` are permitted; `/w/` and `/api/` are not). `etl/scrape_2026.py` fetched 14 pages recording each one's `revision_id`; `etl/parse_2026.py` extracted 104 matches, 16 venues and the tournament record, checking everything against the article's own totals.
+- **2026-08-08** — **Stage 2 complete** and the succession decision taken (West Germany = Germany, 4 titles). `data/processed/matches_clean.csv` holds 1,352 matches; 14 tests passing.
+- **2026-08-08** — data panorama generated (`docs/panorama.html`) to pick features from the data rather than the plan. It surfaced the central asymmetry: 2026 exists only at match level.
+- **2026-08-08** — **map design settled: a choropleth with a metric selector and a country selector**, plus a head-to-head mode. Ruled: the UK stays as separate subunits; totals and per-match both ship behind a toggle. This **changes Stage 3's priority**: the central job becomes mapping the 83 teams to country polygons, not geocoding cities.
 - **2026-08-08** — two new findings: (1) Wikipedia **does carry per-match attendance** (6,810,966 total in 2026) where Fjelstul carries none — which reshapes the open attendance decision; (2) in the 2026 data, `city_name` is **not a usable join key** (matches 8 of 16), because match records give the municipality and the venues table gives the metro area — `stadium_name` matches 16 of 16.

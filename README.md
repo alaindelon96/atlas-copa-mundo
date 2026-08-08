@@ -283,9 +283,35 @@ tests/                   pytest suite for transformation logic
 ## Open decisions
 
 - **Attendance or capacity?** 2026 now has real per-match attendance from Wikipedia,
-  but 1930–2022 still has none. A Kaggle source would cover through 2018 and leave 2022
-  blank. So the options are: attendance everywhere except 2022, capacity everywhere, or
-  both columns with the gap shown honestly. *Gates the map popups.*
+  but 1930–2022 still has none. Capacity is complete in both sources. Largely moot under
+  the choropleth design below, since neither is a headline metric — but still open for
+  popups.
+
+## The map
+
+**Settled 2026-08-08: a choropleth world map with two selectors.**
+
+| Control | Options |
+|---|---|
+| **Metric** | Goals · Wins/Losses · Matches received · Matches played · Titles · Participations |
+| **Country** | None (global view) or one specific team |
+
+Selecting a country **recolours the map by head-to-head**. *Brazil + Goals* shades every
+country by how many goals Brazil scored against it — Sweden brightest at 21 in 7 matches,
+and Mexico conceding 13 across 5 matches without ever scoring.
+
+Two rulings behind it:
+
+- **The UK stays four regions.** England, Scotland, Wales and Northern Ireland are four
+  distinct teams. Merging them would invent a national side that has never existed and
+  credit it with 168 goals nobody scored.
+- **Totals and per-match both ship, behind a toggle.** Raw counts on a choropleth mostly
+  redraw qualification frequency — Germany 248 and Brazil 247 are near-tied because both
+  played ~120 matches. Per match, Hungary leads at 2.72 and disappears from the raw top
+  ten. The switch between those two readings is the point.
+
+This design lives entirely at **match level**, which is the one dimension both sources
+cover completely — so unlike player- or confederation-based features, it has no 2026 gap.
 
 **Settled — West Germany counts as Germany** (2026-08-08). Germany therefore has **4
 titles**, matching FIFA's official count. This was the only succession question that

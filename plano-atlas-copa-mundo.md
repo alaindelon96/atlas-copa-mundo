@@ -146,24 +146,48 @@ Schema proposto (formato tabular relacional):
 - `teams`: nome atual, nomes históricos (para reconciliar mudanças)
 - `venues`: cidade, país, latitude, longitude (para o mapa), capacidade
 
+> ⚠️ **A decisão de 08/08/2026 sobre o desenho do mapa (ver Etapa 4) mudou a prioridade desta etapa.** O mapa é **coroplético** — pinta países inteiros — e não um mapa de marcadores. Coroplético precisa de **polígonos de país**, não de coordenadas de ponto. Geocodificar cidades deixou de ser o trabalho central e virou secundário.
+
+- [ ] **Construir `reference/team_country.csv`: as 83 seleções masculinas → polígono no mapa-múndi** — o novo problema central desta etapa
+- [ ] Baixar um GeoJSON de países (Natural Earth), incluindo as **sub-regiões do Reino Unido**
+- [ ] Preencher `country_name` das 104 partidas de 2026 — hoje nulo, e **bloqueia a métrica "partidas recebidas"**
 - [ ] Desenhar o schema definitivo (diagrama ERD em Mermaid)
 - [ ] Validar o schema com `pandera` (regras de tipo, valores permitidos, nulos aceitáveis)
-- [ ] Geocodificar as 202 cidades-sede via `geopy`/Nominatim **com cache em disco** (ver 2.1)
-- [ ] Gerar métricas derivadas: total de gols por torneio, capacidade média, número de títulos por seleção
-- [ ] Exportar em formato consumível pelo front-end (GeoJSON para o mapa + JSON para tabelas/gráficos)
+- [ ] Gerar a tabela longa `(partida, seleção)` — uma linha por seleção por partida, base de todas as métricas
+- [ ] Gerar a matriz de confrontos diretos (seleção × adversário) para o modo de país selecionado
+- [ ] Exportar GeoJSON para o mapa + JSON para painéis
+- [ ] *(secundário)* Geocodificar as cidades-sede via `geopy`/Nominatim com cache — só se a camada de sedes entrar
 
-**Ferramentas:** `pandas` para agregações; `geopy` para geocodificação; `pandera` para validação declarativa do schema.
+**Ferramentas:** `pandas` para agregações; `pandera` para validação declarativa; `geopy` apenas para a camada secundária de sedes.
+
+**Ponto de atenção:** geocodificar resolve de graça o `country_name` de 2026 — o Nominatim devolve o país junto com a coordenada. Vale rodar mesmo que a camada de sedes não entre no v1.
 
 ### Etapa 4 — Visualização
 
+**Desenho definido em 08/08/2026: mapa-múndi coroplético com dois seletores.**
+
+Não é um mapa de marcadores em sedes — é um mapa que **pinta países** segundo uma métrica escolhida. Dois controles:
+
+| Controle | Opções |
+|---|---|
+| **Métrica** | Gols · Vitórias/Derrotas · Partidas recebidas · Partidas jogadas · Títulos · Participações |
+| **País** | Nenhum (visão global) ou uma seleção específica |
+
+**O modo de país selecionado é a ideia mais forte do projeto.** Ao escolher *Brasil + Gols*, o mapa **repinta segundo os confrontos diretos**: cada país fica colorido pelo número de gols que o Brasil fez contra ele. A Suécia acende mais forte (21 gols em 7 jogos), e o painel resume os 247 gols do Brasil em 119 partidas, 23 participações, 82V–15E–22D.
+
 - [x] ~~Escolher biblioteca de mapa~~ → **Leaflet.js decidido** (leve, gratuito, sem chave de API)
-- [ ] Marcadores nas sedes de cada Copa, com popup (campeão, artilheiro, capacidade)
-- [ ] Camada opcional: trajetória histórica das seleções campeãs
+- [x] ~~Desenho do mapa~~ → **coroplético com seletor de métrica e de país**
+- [x] ~~Reino Unido~~ → **sub-regiões separadas.** Inglaterra, Escócia, País de Gales e Irlanda do Norte são quatro seleções distintas e continuam quatro regiões distintas no mapa. Somar as quatro criaria uma "seleção do Reino Unido" que nunca existiu, com 168 gols que ninguém marcou.
+- [x] ~~Contagem bruta ou por jogo~~ → **as duas, com alternância.** Contagem bruta sozinha reproduz "quem se classificou mais vezes": a Alemanha tem 248 gols e o Brasil 247 porque os dois jogaram ~120 partidas. Por jogo, a **Hungria lidera com 2,72** e some do top 10 bruto. A alternância entre as duas leituras *é* o insight.
+- [ ] Escala sequencial de uma cor só para a métrica (nunca arco-íris)
+- [ ] Piso de 10 partidas no modo "por jogo", para uma seleção de 3 jogos não ultrapassar o Brasil
 - [ ] Filtro por década/era
 - [ ] Alternância masculino/feminino (viabilizada pela coluna `competition`)
-- [ ] Painel lateral ou seção com estatísticas gerais (ex: ranking de campeões)
+- [ ] Painel lateral com o resumo da seleção escolhida e a tabela de confrontos
 
-**Ferramentas:** Leaflet.js (JS puro) para o mapa; opcionalmente `folium` em Python para prototipar rápido.
+**Ferramentas:** Leaflet.js com camada GeoJSON de países; `pandas` para pré-computar as métricas.
+
+**Por que este desenho combina com o nosso dado:** ele vive inteiramente no **nível de partida** — placar, seleções, sede. É exatamente a dimensão que as duas fontes têm completa. Features de jogador, confederação ou escalação teriam buraco em 2026 (ver seção 2.1); esta não tem.
 
 ### Etapa 5 — Publicação
 
@@ -292,4 +316,7 @@ atlas-copa-mundo/
 - **07/08/2026** — exploração dos dados revelou quatro pontos que mudam o plano: (1) `tournament_id` não separa masculino de feminino; (2) não há dado de público; (3) são 202 cidades para geocodificar, não "poucas"; (4) os dados estão limpos — o desafio real é reconciliação histórica de nomes, não sujeira. Detalhes na seção 2.1.
 - **08/08/2026** — repositório publicado em https://github.com/alaindelon96/atlas-copa-mundo; README, `LICENSE` (MIT, código) e `LICENSE-DATA.md` (CC-BY-SA 4.0, dados) escritos.
 - **08/08/2026** — **Etapa 1b concluída: scraping da Copa de 2026.** `robots.txt` da Wikipédia verificado (artigos em `/wiki/` são permitidos; `/w/` e `/api/` não). `etl/scrape_2026.py` baixou 14 páginas com o `revision_id` de cada uma; `etl/parse_2026.py` extraiu 104 partidas, 16 sedes e o registro do torneio, conferindo tudo contra os totais do próprio artigo.
+- **08/08/2026** — **Etapa 2 concluída** e decisão de sucessão tomada (Alemanha Ocidental = Alemanha, 4 títulos). `data/processed/matches_clean.csv` com 1.352 partidas; 14 testes passando.
+- **08/08/2026** — panorama dos dados gerado (`docs/panorama.html`) para escolher features a partir do dado. Revelou a assimetria central: 2026 só existe no nível de partida.
+- **08/08/2026** — **desenho do mapa definido: coroplético com seletor de métrica e de país**, com modo de confronto direto. Decidido: Reino Unido em sub-regiões separadas; alternância entre contagem bruta e por jogo. Isso **muda a prioridade da Etapa 3**: o trabalho central passa a ser mapear as 83 seleções para polígonos de país, e não geocodificar cidades.
 - **08/08/2026** — dois achados novos: (1) a Wikipédia **tem público por partida** (6.810.966 no total em 2026), enquanto o Fjelstul não tem nenhum — o que muda a decisão em aberto sobre público; (2) no dado de 2026, `city_name` **não serve como chave de join** (casa 8 de 16), porque a partida registra o município e a tabela de sedes registra a região metropolitana — `stadium_name` casa 16 de 16.
