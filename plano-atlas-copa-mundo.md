@@ -84,7 +84,7 @@ Não há sobreposição de anos entre as duas, e `tournament_id` é único — p
 
 - [x] Criar `etl/extract.py`
 - [x] Baixar CSVs do Fjelstul (via GitHub raw) — 16 tabelas, ~1,9 MB
-- [ ] Baixar dataset complementar do Kaggle — **só se a decisão sobre público exigir** (ver 2.1)
+- [x] ~~Baixar dataset complementar do Kaggle~~ → **não será baixado.** Ele só existia para o dado de público, que saiu do escopo (ver seção 7).
 - [x] Salvar tudo em `data/raw/` sem alterações (preservar dado original)
 - [x] Registrar data/hora e fonte de cada download em um `metadata.json`
 - [x] Executar o scraping complementar da Copa de 2026 (ver seção 4) — 104 partidas, 16 sedes
@@ -282,7 +282,7 @@ atlas-copa-mundo/
 ├── data/
 │   ├── raw/              ✅ dados originais, nunca editados manualmente
 │   │   ├── fjelstul/     ✅ 16 CSVs baixados
-│   │   ├── kaggle/       ✅ (vazio — pendente da decisão sobre público)
+│   │   ├── kaggle/       ✅ (vazio — e vai continuar: público saiu do escopo)
 │   │   ├── scraped/      ✅ (vazio — HTML bruto da Wikipédia)
 │   │   └── metadata.json ✅ registro de proveniência (versionado no git)
 │   │   └── naturalearth/ ✅ GeoJSON de polígonos de país
@@ -342,7 +342,7 @@ atlas-copa-mundo/
 
 ### Em aberto
 
-- [ ] **Público (attendance):** buscar no `wcmatches` do Kaggle (só até 2018) ou trocar por capacidade do estádio no v1? — *bloqueia o conteúdo dos popups do mapa*
+- [x] ~~**Público (attendance)**~~ → **RESOLVIDO em 08/08/2026 por redução de escopo: público e capacidade ficam de fora.** As features do mapa são só estatísticas de jogo — gols, gols sofridos, saldo, V/E/D, aproveitamento, partidas jogadas, partidas recebidas, títulos, participações, e os mesmos números em confronto direto. Público existe em 104 de 1.068 partidas; capacidade é completa mas **varia no tempo** (o Azteca tinha 115.000 em 1970 e tem 80.824 em 2026 — 34.176 de diferença numa coluna que só cabe um valor). Estatística de jogo não tem nenhum dos dois problemas: é completa nas 1.068 partidas e significa a mesma coisa em 1930 e em 2026. A coluna `attendance` continua em `matches.csv` porque é um fato que a fonte dá; ela só não alimenta métrica nenhuma. Capacidade nunca foi juntada — omissão deliberada, não esquecimento.
 - [x] ~~**Sucessão de seleções**~~ → **RESOLVIDO em 08/08/2026: a Alemanha Ocidental conta como Alemanha (4 títulos).** As dissoluções (URSS, Iugoslávia, Tchecoslováquia) recebem rótulo moderno **e somam nos registros de partida do sucessor** — `merge_records` governa só a contagem de títulos, e como nenhuma delas venceu, nenhum título muda. Regras e ressalvas em `reference/team_succession.csv`; consequências em [`docs/schema.md`](docs/schema.md).
 - [ ] Confirmar licença do "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *só importa se ele for realmente usado*
 - [x] ~~Decidir entre `pandas.read_html`, `BeautifulSoup4` ou `Scrapy`~~ → **`requests` + `BeautifulSoup4`**, com scraping e parsing em módulos separados.
@@ -367,3 +367,4 @@ atlas-copa-mundo/
 - **08/08/2026** — **a validação também expôs uma afirmação errada do próprio plano.** A Etapa 2 dizia que as entidades com `merge_records=0` (URSS, Iugoslávia, Tchecoslováquia…) mantinham registros separados; na prática, só a contagem de títulos as respeita — os registros de partida sempre seguiram o rótulo. Nenhum número de manchete estava errado (nenhuma delas venceu uma Copa), mas a Rússia mostra 53 partidas das quais 22 são dela. Confrontado com a escolha, o projeto **manteve o comportamento — o rótulo manda** —, e a consequência (Alemanha × Alemanha em 1974) passou a ser impressa a cada validação e travada em teste, em vez de ficar escondida.
 - **08/08/2026** — dois achados menores da geocodificação: (1) nas 8 sedes inglesas de 1966 o Nominatim devolve `United Kingdom` onde o dataset diz `England` — a mesma fronteira que a escolha por `map_units` resolve do outro lado; (2) o Natural Earth divide a **Bélgica** em três unidades de mapa, exatamente como divide o Reino Unido em quatro — o que obrigou o mapa seleção→polígono a ser um-para-muitos.
 - **08/08/2026** — **escopo reduzido à Copa masculina.** O modelo passou de 1.352 para 1.068 partidas, 86 para 83 seleções e 252 para 208 sedes; a coluna `competition`, que agora teria um valor só, saiu das tabelas do modelo, e os JSONs do mapa perderam a dimensão de competição (`head2head` virou `{seleção: {adversário}}`). O dado feminino **não foi apagado**: as 284 partidas de 1991–2019 seguem em `data/raw/` e em `matches_clean.csv`, e as sedes que só receberam Copa feminina seguem geocodificadas em cache. O corte é a constante `COMPETITION` em `etl/model.py` — um lugar só —, e um teste falha se alguém apagar o feminino mais atrás no pipeline.
+- **08/08/2026** — **features definidas: só estatística de jogo.** Fecha a pergunta em aberto mais antiga do projeto — público ou capacidade — por **redução de escopo**, sem escolher um lado: os dois ficam de fora. O mapa expõe gols, gols sofridos, saldo, V/E/D, aproveitamento, partidas jogadas, partidas recebidas, títulos, participações e os mesmos números em confronto direto. O motivo é que os dois candidatos exigiriam uma ressalva colada em cada número: público existe em 104 de 1.068 partidas, e capacidade é completa mas varia no tempo (Azteca: 115.000 em 1970, 80.824 em 2026). Nenhuma linha de código mudou — as métricas já eram essas. O que mudou foi o registro: a coluna `attendance` fica em `matches.csv` como fato da fonte, sem alimentar métrica, e a capacidade **nunca** entra no modelo, por decisão e não por esquecimento. O dataset `wcmatches` do Kaggle deixa de ser necessário.

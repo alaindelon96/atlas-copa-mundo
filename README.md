@@ -20,7 +20,7 @@ inconsistent records, relational modelling, validation, and publication.
 | **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, and the geodata the map needs |
 | **Data on hand** | `data/processed/` — 1,068 men's matches, 23 tournaments, 83 teams, 208 geocoded venues, 1930–2026. Schema: [`docs/schema.md`](docs/schema.md) |
 | **Not built yet** | The map itself, and publication |
-| **Known gap** | Attendance exists only for 2026 (Fjelstul carries none) |
+| **Known gap** | Attendance exists only for 2026 (Fjelstul carries none) — and is deliberately not a feature |
 | **Scope** | The men's World Cup. The women's data is extracted and cleaned but excluded from the model and the map — see [Scope](#scope) |
 
 ---
@@ -90,11 +90,12 @@ left — that single constraint is what makes the whole thing reproducible.
 ```mermaid
 flowchart LR
     A[Fjelstul DB<br/>16 CSV · 1930–2022]:::done --> R
-    B[Wikipedia<br/>2026 · scraping]:::todo --> R
-    C[Kaggle<br/>attendance? · TBD]:::todo --> R
+    B[Wikipedia<br/>2026 · scraped]:::done --> R
+    C[Natural Earth<br/>country polygons]:::done --> R
     R[("data/raw/<br/>immutable · hashed")]:::done --> I
-    I[("data/interim/<br/>names reconciled")]:::todo --> P
-    P[("data/processed/<br/>validated · GeoJSON")]:::todo --> W
+    N[Nominatim<br/>venue coordinates]:::done --> I
+    I[("data/interim/<br/>names reconciled · geocode cache")]:::done --> P
+    P[("data/processed/<br/>6 tables · validated")]:::done --> W
     W[web/<br/>Leaflet · GitHub Pages]:::todo
     R -.provenance.-> M[metadata.json<br/>SHA-256 · when · licence]:::done
 
@@ -387,10 +388,33 @@ further upstream, so the option stays open by construction rather than by memory
 
 ## Open decisions
 
-- **Attendance or capacity?** 2026 now has real per-match attendance from Wikipedia,
-  but 1930–2022 still has none. Capacity is complete in both sources. Largely moot under
-  the choropleth design below, since neither is a headline metric — but still open for
-  popups.
+- **Which era's capacity, if capacity ever ships?** Parked, not pending — see below.
+  Only relevant if a venue layer is added later.
+
+### Settled: the features are match statistics only
+
+Decided 2026-08-08. Every metric the map exposes is derived from what happened *in the
+games*: goals, goals conceded, goal difference, wins/draws/losses, win rate, matches
+played, matches hosted, titles, participations, first and last year — plus the same
+figures head-to-head against any single opponent.
+
+**Attendance and stadium capacity are out.** Not blocked, not pending — out. That closes
+what had been the project's longest-running open question, and it closes it by narrowing
+scope rather than by picking a side.
+
+Both would have needed an apology attached to every number:
+
+| Field | Why it was awkward |
+|---|---|
+| Attendance | Exists for 104 of 1,068 matches. Wikipedia has 2026; Fjelstul has nothing. Kaggle would reach 2018 and leave 2022 blank. |
+| Stadium capacity | Complete, but **time-varying**. The Azteca held 115,000 in 1970 and holds 80,824 in 2026 — a 34,176 gap in one column that can only carry one value. |
+
+Match statistics have neither problem: they are complete for all 1,068 matches, they mean
+the same thing in 1930 and 2026, and they need no footnote.
+
+The `attendance` column stays in `matches.csv`, because it is a real fact the source
+gives and dropping it would throw away the only place it exists. It simply feeds no
+metric. Capacity was never joined in — that is a deliberate omission, not an oversight.
 
 ## The map
 

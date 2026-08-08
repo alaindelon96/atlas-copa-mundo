@@ -415,7 +415,7 @@
 
         <rect class="box-hollow" x="14" y="156" width="150" height="46" rx="3"/>
         <text class="name-m" x="28" y="176">Kaggle</text>
-        <text class="meta-m" x="28" y="192">attendance? &middot; TBD</text>
+        <text class="meta-m" x="28" y="192">not used</text>
 
         <path class="flow" d="M 168 63 L 214 105" marker-end="url(#ar)"/>
         <path class="flow" d="M 168 121 L 214 121" marker-end="url(#ar)"/>
@@ -686,8 +686,8 @@
         <div class="tag"><span class="en">Half a field</span><span class="pt">Meio campo</span></div>
         <h3><span class="en">Attendance exists &mdash; but only for 2026</span><span class="pt">P&uacute;blico existe &mdash; s&oacute; que s&oacute; em 2026</span></h3>
         <p>
-          <span class="en">The plan promised attendance in the map popups. Fjelstul has 36 columns and none is attendance. Wikipedia has it per match, so 2026 came with 6,810,966 &mdash; and 1930&ndash;2022 still has none. One column, two different worlds.</span>
-          <span class="pt">O plano prometia p&uacute;blico nos popups do mapa. O Fjelstul tem 36 colunas e nenhuma &eacute; p&uacute;blico. A Wikip&eacute;dia tem, por partida, ent&atilde;o 2026 veio com 6.810.966 &mdash; e 1930&ndash;2022 continua sem nada. Uma coluna, dois mundos diferentes.</span>
+          <span class="en">The plan promised attendance in the map popups. Fjelstul has 36 columns and none is attendance. Wikipedia has it per match, so 2026 came with 6,810,966 &mdash; and 1930&ndash;2022 still has none. One column, two different worlds. Resolved on 08/08 by dropping it from the features entirely.</span>
+          <span class="pt">O plano prometia p&uacute;blico nos popups do mapa. O Fjelstul tem 36 colunas e nenhuma &eacute; p&uacute;blico. A Wikip&eacute;dia tem, por partida, ent&atilde;o 2026 veio com 6.810.966 &mdash; e 1930&ndash;2022 continua sem nada. Uma coluna, dois mundos diferentes. Resolvido em 08/08 tirando o p&uacute;blico das features.</span>
         </p>
       </div>
       <div class="finding">
@@ -769,10 +769,10 @@
         <h3><span class="en">Men's Cup only &mdash; but keep the women's data</span><span class="pt">S&oacute; a Copa masculina &mdash; mas guardar o dado feminino</span></h3>
         <p><span class="en">The map covers the men's tournament: 23 editions, 1,068 matches. The women's data is still extracted and cleaned &mdash; it ships in the same files at zero cost &mdash; but it stops before the model. The cut is one constant in <code>etl/model.py</code>, so adding it back later is a small diff, not a reprocessing job.</span><span class="pt">O mapa cobre a Copa masculina: 23 edi&ccedil;&otilde;es, 1.068 partidas. O dado feminino continua sendo extra&iacute;do e limpo &mdash; vem nos mesmos arquivos, custo zero &mdash; mas para antes do modelo. O corte &eacute; uma constante em <code>etl/model.py</code>, ent&atilde;o reincluir depois &eacute; um diff pequeno, n&atilde;o um reprocessamento.</span></p>
       </div>
-      <div class="decision open">
-        <span class="pill now" style="align-self:flex-start"><span class="en">Open &mdash; blocks stage 4</span><span class="pt">Aberta &mdash; trava a etapa 4</span></span>
-        <h3><span class="en">Attendance or capacity?</span><span class="pt">P&uacute;blico ou capacidade?</span></h3>
-        <p><span class="en">2026 now has real per-match attendance; 1930&ndash;2022 has none. Kaggle would cover through 2018 and leave 2022 blank. So: attendance everywhere except 2022, capacity everywhere, or both columns with the gap shown honestly.</span><span class="pt">2026 agora tem p&uacute;blico real por partida; 1930&ndash;2022 n&atilde;o tem nenhum. O Kaggle cobriria at&eacute; 2018 e deixaria 2022 vazio. Ent&atilde;o: p&uacute;blico em tudo menos 2022, capacidade em tudo, ou as duas colunas com a lacuna &agrave; mostra.</span></p>
+      <div class="decision">
+        <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>
+        <h3><span class="en">Match statistics only</span><span class="pt">S&oacute; estat&iacute;stica de jogo</span></h3>
+        <p><span class="en">Attendance and capacity are both out. Attendance covers 104 of 1,068 matches; capacity is complete but drifts &mdash; the Azteca held 115,000 in 1970 and holds 80,824 in 2026. Goals, wins, titles and participations are complete across every match and mean the same thing in 1930 and 2026. Narrowing the scope closed the project's longest-running open question without having to pick a side.</span><span class="pt">P&uacute;blico e capacidade ficam de fora. P&uacute;blico cobre 104 de 1.068 partidas; capacidade &eacute; completa mas muda com o tempo &mdash; o Azteca tinha 115.000 em 1970 e tem 80.824 em 2026. Gols, vit&oacute;rias, t&iacute;tulos e participa&ccedil;&otilde;es s&atilde;o completos em todas as partidas e significam a mesma coisa em 1930 e em 2026. Reduzir o escopo fechou a pergunta mais antiga do projeto sem precisar escolher um lado.</span></p>
       </div>
       <div class="decision">
         <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>

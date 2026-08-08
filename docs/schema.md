@@ -225,11 +225,43 @@ Quem for desenhar um marcador precisa saber que 51 deles apontam para o centro
 da cidade, não para o gramado. Sem a coluna, as 252 linhas pareceriam
 igualmente precisas.
 
+## O que o mapa consome — só estatística de jogo
+
+Decisão de 08/08/2026. Toda métrica exposta vem do que aconteceu **em campo**. Nada
+depende de público nem de capacidade de estádio.
+
+`web/data/metrics.json` — uma entrada por seleção:
+
+| Campo | O quê |
+|---|---|
+| `goals` · `conceded` · `goal_difference` | gols feitos, sofridos e saldo |
+| `wins` · `draws` · `losses` · `win_pct` | resultado, com pênaltis já resolvidos |
+| `matches_played` | partidas disputadas |
+| `matches_received` | partidas recebidas como país-sede |
+| `titles` | títulos, vindos das classificações finais |
+| `participations` · `first_year` · `last_year` | presença ao longo do tempo |
+| `goals_per_match` · `conceded_per_match` · `wins_per_match` | as mesmas leituras por partida, nulas abaixo do piso de 10 |
+| `gu_a3` | a chave que casa com o polígono do GeoJSON |
+
+`web/data/head2head.json` — os mesmos números contra **um** adversário
+(`{seleção: {adversário: {goals, conceded, matches, wins, draws, losses}}}`), que é o
+que o modo de país selecionado pinta.
+
+**Por que público e capacidade ficaram de fora.** Os dois exigiriam uma ressalva colada
+em cada número: público existe em 104 das 1.068 partidas, e capacidade é completa mas
+**muda com o tempo** — o Azteca tinha 115.000 em 1970 e tem 80.824 em 2026, 34.176 de
+diferença numa coluna que só cabe um valor. Estatística de jogo não tem nenhum dos dois
+problemas: é completa nas 1.068 partidas e significa a mesma coisa em 1930 e em 2026.
+
+A coluna `attendance` continua em `matches.csv` — é um fato que a fonte dá, e descartá-la
+jogaria fora o único lugar onde ele existe. Ela apenas não alimenta métrica nenhuma.
+Capacidade nunca foi juntada ao modelo: omissão deliberada, não esquecimento.
+
 ## Colunas majoritariamente nulas — e por quê
 
 | Coluna | Nulos | Motivo |
 |---|---|---|
-| `matches.attendance` | 964 de 1.068 | O Fjelstul não tem público em nenhuma edição; a Wikipédia tem nas 104 partidas de 2026. É origem, não erro. |
+| `matches.attendance` | 964 de 1.068 | O Fjelstul não tem público em nenhuma edição; a Wikipédia tem nas 104 partidas de 2026. É origem, não erro — e a coluna **não alimenta nenhuma métrica** (ver abaixo). |
 | `matches.group_name` | 284 de 1.068 | Só a fase de grupos tem grupo. |
 | `matches.*_score_penalties` | 1.029 de 1.068 | Só as 39 partidas decididas nos pênaltis. |
 

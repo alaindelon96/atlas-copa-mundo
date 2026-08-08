@@ -84,7 +84,7 @@ This is precisely where `rapidfuzz` **cannot** solve it alone: "Zaire" and "DR C
 
 - [x] Create `etl/extract.py`
 - [x] Download Fjelstul CSVs (via GitHub raw) — 16 tables, ~1.9 MB
-- [ ] Download the complementary Kaggle dataset — **only if the attendance decision requires it** (see 2.1)
+- [x] ~~Download the complementary Kaggle dataset~~ → **it will not be downloaded.** It existed only for attendance, which is now out of scope (see section 7).
 - [x] Save everything to `data/raw/` unaltered (preserve the original data)
 - [x] Record timestamp and source of every download in a `metadata.json`
 - [x] Run the complementary 2026 World Cup scraping (see section 4) — 104 matches, 16 venues
@@ -282,7 +282,7 @@ atlas-copa-mundo/
 ├── data/
 │   ├── raw/              ✅ original data, never hand-edited
 │   │   ├── fjelstul/     ✅ 16 CSVs downloaded
-│   │   ├── kaggle/       ✅ (empty — pending the attendance decision)
+│   │   ├── kaggle/       ✅ (empty — and staying that way: attendance is out of scope)
 │   │   ├── scraped/      ✅ (empty — raw Wikipedia HTML)
 │   │   └── metadata.json ✅ provenance ledger (versioned in git)
 │   ├── interim/          ✅ intermediate data (partial cleaning)
@@ -334,7 +334,7 @@ atlas-copa-mundo/
 
 ### Open
 
-- [ ] **Attendance:** source it from Kaggle's `wcmatches` (only through 2018), or swap it for stadium capacity in v1? — *blocks the map popup content*
+- [x] ~~**Attendance**~~ → **SETTLED 2026-08-08 by narrowing scope: attendance and capacity are both out.** The map's features are match statistics only — goals, goals conceded, goal difference, W/D/L, win rate, matches played, matches hosted, titles, participations, and the same figures head-to-head. Attendance exists for 104 of 1,068 matches; capacity is complete but **time-varying** (the Azteca held 115,000 in 1970 and holds 80,824 in 2026 — a 34,176 gap in a column that fits one value). Match statistics have neither problem: complete across all 1,068 matches, and meaning the same thing in 1930 and 2026. The `attendance` column stays in `matches.csv` because it is a fact the source provides; it simply feeds no metric. Capacity was never joined in — a deliberate omission, not an oversight.
 - [x] ~~**Team succession**~~ → **SETTLED 2026-08-08: West Germany counts as Germany (4 titles).** The dissolutions (USSR, Yugoslavia, Czechoslovakia) get a modern label **and fold into the successor's match records** — `merge_records` governs only the title count, and since none of them ever won, no title changes. Rules and caveats in `reference/team_succession.csv`; consequences in [`docs/schema.md`](docs/schema.md).
 - [ ] Confirm the licence of the "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *only matters if it is actually used*
 - [x] ~~Decide between `pandas.read_html`, `BeautifulSoup4` and `Scrapy`~~ → **`requests` + `BeautifulSoup4`**, with scraping and parsing in separate modules.
@@ -359,3 +359,4 @@ atlas-copa-mundo/
 - **2026-08-08** — **validation also exposed a false claim in the plan itself.** Stage 2 said entities with `merge_records=0` (USSR, Yugoslavia, Czechoslovakia…) kept separate records; in practice only the title count respects it — match records always followed the label. No headline number was wrong (none of them ever won), but Russia shows 53 matches of which 22 are its own. Presented with the choice, the project **kept the behaviour — the label wins** — and the consequence (Germany × Germany in 1974) is now printed on every validation run and locked by a test, instead of staying hidden.
 - **2026-08-08** — two smaller geocoding findings: (1) for the 8 English venues of 1966, Nominatim returns `United Kingdom` where the dataset says `England` — the same border the `map_units` choice resolves from the other side; (2) Natural Earth splits **Belgium** into three map units, exactly as it splits the UK into four — which forced the team→polygon map to be one-to-many.
 - **2026-08-08** — **scope narrowed to the men's World Cup.** The model went from 1,352 to 1,068 matches, 86 to 83 teams and 252 to 208 venues; the `competition` column, now single-valued, left the model tables, and the map JSONs lost the competition dimension (`head2head` became `{team: {opponent}}`). The women's data was **not deleted**: the 284 matches of 1991–2019 remain in `data/raw/` and in `matches_clean.csv`, and the venues that only ever hosted women's matches remain geocoded in the cache. The cut is the `COMPETITION` constant in `etl/model.py` — one place — and a test fails if anyone strips the women's rows further upstream.
+- **2026-08-08** — **features settled: match statistics only.** Closes the project's longest-running open question — attendance or capacity — by **narrowing scope** rather than picking a side: both are out. The map exposes goals, goals conceded, goal difference, W/D/L, win rate, matches played, matches hosted, titles, participations, and the same figures head-to-head. The reason is that either candidate would need a caveat attached to every number: attendance covers 104 of 1,068 matches, and capacity is complete but time-varying (Azteca: 115,000 in 1970, 80,824 in 2026). No code changed — those were already the metrics. What changed is the record: the `attendance` column stays in `matches.csv` as a fact from the source, feeding no metric, and capacity **never** enters the model, by decision rather than by oversight. Kaggle's `wcmatches` dataset is no longer needed.
