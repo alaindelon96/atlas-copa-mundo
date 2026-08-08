@@ -33,7 +33,25 @@ def head2head() -> dict:
 
 @pytest.fixture(scope="module")
 def men(metrics) -> dict:
-    return {t["team"]: t for t in metrics["teams"] if t["competition"] == "mens"}
+    """As seleções, indexadas por nome.
+
+    O escopo do projeto é a Copa masculina e o recorte é feito uma vez só, em
+    `etl.model`; aqui não se filtra nada. O teste abaixo garante que o JSON diz
+    qual é o escopo, em vez de deixar o front-end deduzir.
+    """
+    return {t["team"]: t for t in metrics["teams"]}
+
+
+def test_o_json_declara_o_escopo(metrics):
+    """A Copa feminina saiu do produto, não do dado.
+
+    `matches_clean.csv` continua com as 284 partidas de 1991–2019 e com a coluna
+    `competition`. O que não existe mais é dimensão de competição nos arquivos
+    que o mapa carrega — por isso o escopo precisa vir declarado, e não ser
+    inferido de quantas seleções apareceram.
+    """
+    assert metrics["competition"] == "mens"
+    assert all("competition" not in team for team in metrics["teams"])
 
 
 # --- decisões de desenho -------------------------------------------------
@@ -86,10 +104,9 @@ def test_confrontos_sao_simetricos(head2head):
     É a invariante que pega erro na dobra mandante/visitante — o modo de país
     selecionado inteiro depende dela.
     """
-    mens = head2head["mens"]
-    for team, opponents in mens.items():
+    for team, opponents in head2head.items():
         for opponent, rec in opponents.items():
-            mirror = mens[opponent][team]
+            mirror = head2head[opponent][team]
             assert rec["goals"] == mirror["conceded"]
             assert rec["conceded"] == mirror["goals"]
             assert rec["matches"] == mirror["matches"]
@@ -100,15 +117,15 @@ def test_confrontos_sao_simetricos(head2head):
 def test_confrontos_somam_o_total_da_selecao(head2head, men):
     """Somar todos os adversários do Brasil tem que dar os gols do Brasil."""
     for team in ["Brazil", "Germany", "England"]:
-        total = sum(r["goals"] for r in head2head["mens"][team].values())
+        total = sum(r["goals"] for r in head2head[team].values())
         assert total == men[team]["goals"]
-        jogos = sum(r["matches"] for r in head2head["mens"][team].values())
+        jogos = sum(r["matches"] for r in head2head[team].values())
         assert jogos == men[team]["matches_played"]
 
 
 def test_exemplo_brasil_suecia(head2head):
     """O caso que motivou o desenho: onde o Brasil mais fez gols."""
-    brasil = head2head["mens"]["Brazil"]
+    brasil = head2head["Brazil"]
     topo = max(brasil.items(), key=lambda kv: kv[1]["goals"])
     assert topo[0] == "Sweden"
     assert topo[1]["goals"] == 21
@@ -131,15 +148,26 @@ def test_titulos_fecham_com_as_edicoes(men):
 
 
 def test_metrica_esparsa_continua_existindo(men):
-    """Títulos pinta 8 países e sedes 18 — decidido que recebem o mesmo
+    """Títulos pinta 8 países e sedes 19 — decidido que recebem o mesmo
     tratamento visual das métricas densas. O teste garante que a esparsidade é
-    do dado, não de um filtro que apagou linhas."""
+    do dado, não de um filtro que apagou linhas.
+
+    Foram 18 sedes até a geocodificação da Etapa 3. O 19º é o **Canadá**, que
+    nunca havia recebido uma partida de Copa masculina antes de 2026 — e que só
+    apareceu depois que o `country_name` das 16 sedes de 2026 foi preenchido.
+    """
     assert sum(1 for t in men.values() if t["titles"] > 0) == 8
-    assert sum(1 for t in men.values() if t["matches_received"] > 0) == 18
+    assert sum(1 for t in men.values() if t["matches_received"] > 0) == 19
+    assert men["Canada"]["matches_received"] > 0
     assert len(men) == 83
 
 
-def test_partidas_recebidas_esta_sinalizada_como_incompleta(metrics):
-    """2026 ainda está sem country_name; o JSON precisa admitir isso, para o
-    front-end não apresentar uma métrica furada como se fosse completa."""
-    assert metrics["matches_received_complete"] is False
+def test_partidas_recebidas_esta_completa(metrics):
+    """A métrica ficou completa na Etapa 3.
+
+    Era a última coluna nula do modelo: o scraping da Wikipédia não trazia o
+    país da sede, e sem ele 104 partidas não eram contadas em lugar nenhum do
+    mapa. A geocodificação fechou o buraco — e a flag existe para o front-end
+    nunca precisar adivinhar se pode confiar na métrica.
+    """
+    assert metrics["matches_received_complete"] is True

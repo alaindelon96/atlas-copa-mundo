@@ -1,8 +1,12 @@
 # Atlas da Copa do Mundo — plano de projeto
 
-> Documento vivo. Atualize conforme o projeto evoluir. Última revisão: 07/08/2026.
+> Documento vivo. Atualize conforme o projeto evoluir. Última revisão: 08/08/2026.
 >
-> **Status atual:** Etapa 1 (Extração) concluída para a fonte principal. Etapa 2 (Limpeza) é o próximo passo.
+> **Status atual:** Etapas 1 a 3 concluídas — extração, scraping, limpeza, modelagem, geocodificação e validação. Etapa 4 (Visualização) é o próximo passo: o mapa em si.
+>
+> **Escopo:** Copa masculina — 23 edições, 1.068 partidas, 1930–2026. A Copa feminina é extraída e limpa, mas fica fora do modelo e do mapa (ver Etapa 3).
+>
+> Esquema do modelo: [`docs/schema.md`](docs/schema.md)
 > Versão em inglês: [`plan-atlas-world-cup.md`](plan-atlas-world-cup.md) · Roadmap visual: [`docs/roadmap.html`](docs/roadmap.html)
 
 ## 1. Visão geral
@@ -16,15 +20,15 @@
 | Camada | Ferramenta principal | Alternativa | Por quê | Status |
 |---|---|---|---|---|
 | Extração — datasets prontos | `requests`, Kaggle API | — | Download direto de CSVs | ✅ implementado (`requests`) |
-| Extração — web scraping | `pandas.read_html` + `BeautifulSoup4` | `Scrapy` (se quiser mostrar arquitetura de spider) | Complementar dados da Copa 2026 | ⏳ não iniciado |
-| Limpeza | `pandas`, `rapidfuzz` | `numpy` | Reconciliar nomes de seleções, tratar nulos | ⏳ próximo passo |
-| Validação de dados | `pandera` | `great_expectations` | Garantir qualidade antes de modelar (bom diferencial de portfólio) | ⏳ instalado, não escrito |
-| Modelagem | `pandas`, schema documentado em Mermaid ERD | `dbdiagram.io` | Formalizar schema relacional | ⏳ não iniciado |
-| Geocodificação | `geopy` (Nominatim) | CSV manual de sedes | **Ver nota abaixo — não dá mais pra fazer manual** | ⏳ não iniciado |
+| Extração — web scraping | `requests` + `BeautifulSoup4` | `Scrapy` (se quiser mostrar arquitetura de spider) | Complementar dados da Copa 2026 | ✅ implementado (14 páginas) |
+| Limpeza | `pandas`, `rapidfuzz` | `numpy` | Reconciliar nomes de seleções, tratar nulos | ✅ implementado (`etl/transform.py`) |
+| Validação de dados | `pandera` | `great_expectations` | Garantir qualidade antes de modelar (bom diferencial de portfólio) | ✅ implementado (`etl/validate.py`) |
+| Modelagem | `pandas`, schema documentado em Mermaid ERD | `dbdiagram.io` | Formalizar schema relacional | ✅ implementado (6 tabelas, [`docs/schema.md`](docs/schema.md)) |
+| Geocodificação | `geopy` (Nominatim) | CSV manual de sedes | **Ver nota abaixo — não dá mais pra fazer manual** | ✅ implementado (252 sedes, cache versionado) |
 | Visualização | Leaflet.js | Mapbox GL JS | Leve, gratuito, sem chave de API | ✅ **decidido: Leaflet** |
 | Publicação | GitHub Pages | Netlify/Vercel | Grátis, integrado ao repositório | ⏳ não iniciado |
 | Automação/CI | GitHub Actions | — | Rodar pipeline de ETL automaticamente (opcional, mas valoriza o portfólio) | ⏳ adiado para v2 |
-| Testes | `pytest` | — | Testar funções de limpeza/transformação | ⏳ instalado, não escrito |
+| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 36 testes, todos offline |
 
 **Ambiente verificado:** Python 3.11.9, git 2.55.0, Windows 11. Todas as dependências instaladas e fixadas em `requirements.txt`.
 
@@ -127,7 +131,9 @@ Foi a **única** pergunta de sucessão que muda um número de manchete: URSS, Iu
 
 **Três ideias sustentam esta etapa:**
 
-1. **Rótulo e registro são perguntas diferentes.** O `reference/team_succession.csv` tem duas colunas separadas: `display_name` (como a seleção aparece hoje) e `merge_records` (se o histórico dela é creditado ao sucessor). A Alemanha Ocidental tem as duas. A URSS tem só a primeira — aparece como Rússia no mapa, mas mantém o registro próprio, porque atribuir a história de quinze países a um deles seria uma afirmação, não uma limpeza.
+1. **Rótulo e registro são perguntas diferentes.** O `reference/team_succession.csv` tem duas colunas separadas: `display_name` (como a seleção aparece hoje) e `merge_records` (se o histórico dela é creditado ao sucessor). A Alemanha Ocidental tem as duas; a URSS tem só a primeira.
+
+   > ⚠️ **Corrigido na Etapa 3.** Esta seção afirmava que a URSS "mantém o registro próprio". A validação com `pandera` mostrou que não: `apply_succession` aplica o `display_name` a todo mundo, então os registros de **partida** sempre seguiram o rótulo — só a contagem de **títulos** respeita o `merge_records`. Como nenhuma das entidades com `merge_records=0` jamais venceu uma Copa, nenhum número de manchete estava errado; o que estava errado era a descrição. Confrontado com a escolha em 08/08/2026, o projeto **reafirmou o comportamento**: o rótulo manda. Ver Etapa 3 e [`docs/schema.md`](docs/schema.md).
 
 2. **Fuzzy matching sugere, nunca decide.** O `rapidfuzz` só reporta nomes de 2026 sem correspondente histórico, para uma pessoa classificar. Resultado: quatro estreantes legítimos (Cabo Verde, Curaçao, Jordânia, Uzbequistão) — e **DR Congo não aparece na lista**, porque o mapa curado já resolveu para Zaire, de 1974. `fuzz.WRatio("Zaire", "DR Congo")` dá menos de 50.
 
@@ -137,30 +143,59 @@ Foi a **única** pergunta de sucessão que muda um número de manchete: URSS, Iu
 
 **Ponto de atenção revisado:** a etapa continua sendo a mais delicada, mas por um motivo diferente do previsto — não é sujeira de dados, é **decisão editorial**. Você vai ter que escolher e defender: a Alemanha tem 4 títulos ou a Alemanha Ocidental tem 3 e a Alemanha 1? As duas respostas são defensáveis; o que não é defensável é não documentar qual você escolheu.
 
-### Etapa 3 — Modelagem
-
-Schema proposto (formato tabular relacional):
-
-- `tournaments`: ano, sede (país/cidade), campeão, vice, número de seleções, **`competition`**
-- `matches`: torneio, fase, data, mandante, visitante, placar, sede, ~~público~~ (ver 2.1)
-- `teams`: nome atual, nomes históricos (para reconciliar mudanças)
-- `venues`: cidade, país, latitude, longitude (para o mapa), capacidade
+### Etapa 3 — Modelagem e geocodificação ✅ CONCLUÍDA
 
 > ⚠️ **A decisão de 08/08/2026 sobre o desenho do mapa (ver Etapa 4) mudou a prioridade desta etapa.** O mapa é **coroplético** — pinta países inteiros — e não um mapa de marcadores. Coroplético precisa de **polígonos de país**, não de coordenadas de ponto. Geocodificar cidades deixou de ser o trabalho central e virou secundário.
 
-- [ ] **Construir `reference/team_country.csv`: as 83 seleções masculinas → polígono no mapa-múndi** — o novo problema central desta etapa
-- [ ] Baixar um GeoJSON de países (Natural Earth), incluindo as **sub-regiões do Reino Unido**
-- [ ] Preencher `country_name` das 104 partidas de 2026 — hoje nulo, e **bloqueia a métrica "partidas recebidas"**
-- [ ] Desenhar o schema definitivo (diagrama ERD em Mermaid)
-- [ ] Validar o schema com `pandera` (regras de tipo, valores permitidos, nulos aceitáveis)
-- [ ] Gerar a tabela longa `(partida, seleção)` — uma linha por seleção por partida, base de todas as métricas
-- [ ] Gerar a matriz de confrontos diretos (seleção × adversário) para o modo de país selecionado
-- [ ] Exportar GeoJSON para o mapa + JSON para painéis
-- [ ] *(secundário)* Geocodificar as cidades-sede via `geopy`/Nominatim com cache — só se a camada de sedes entrar
+- [x] **Construir `reference/team_country.csv`: as seleções → polígono no mapa-múndi** — o novo problema central desta etapa
+- [x] Baixar um GeoJSON de países (Natural Earth), incluindo as **sub-regiões do Reino Unido**
+- [x] Preencher `country_name` das 104 partidas de 2026 — **destravou a métrica "partidas recebidas"**
+- [x] Desenhar o schema definitivo (diagrama ERD em Mermaid) — [`docs/schema.md`](docs/schema.md)
+- [x] Validar o schema com `pandera` (regras de tipo, valores permitidos, nulos aceitáveis)
+- [x] Gerar a tabela longa `(partida, seleção)` — uma linha por seleção por partida, base de todas as métricas
+- [x] Gerar a matriz de confrontos diretos (seleção × adversário) para o modo de país selecionado
+- [x] Exportar GeoJSON para o mapa + JSON para painéis
+- [x] Geocodificar as sedes via `geopy`/Nominatim com cache — **as 252 sedes, não só as 2026**
 
-**Ferramentas:** `pandas` para agregações; `pandera` para validação declarativa; `geopy` apenas para a camada secundária de sedes.
+**O que foi construído:**
 
-**Ponto de atenção:** geocodificar resolve de graça o `country_name` de 2026 — o Nominatim devolve o país junto com a coordenada. Vale rodar mesmo que a camada de sedes não entre no v1.
+| Arquivo | Papel |
+|---|---|
+| `etl/geocode.py` | 252 sedes → coordenada e país, via Nominatim, com cache versionado |
+| `etl/geo.py` | GeoJSON do Natural Earth → `reference/team_country.csv` + `web/data/countries.geojson` |
+| `etl/model.py` | As 6 tabelas do modelo em `data/processed/` |
+| `etl/validate.py` | O contrato de cada tabela, em `pandera`, verificado contra o que está em disco |
+| `docs/schema.md` | O ERD em Mermaid e o porquê de cada decisão do schema |
+
+**Modelo:** 6 tabelas — `tournaments` (23), `tournament_hosts` (26), `teams` (83), `venues` (208), `matches` (1.068), `team_matches` (2.136).
+
+**Escopo — decisão de 08/08/2026: só a Copa masculina.** O feminino é *extraído e limpo, mas não modelado*, e a distinção é o ponto: `data/raw/` e `data/processed/matches_clean.csv` seguem com as 284 partidas de 1991–2019 e com a coluna `competition` que as identifica; o que sai é o produto — modelo, métricas e mapa. O corte acontece em **um lugar só**, a constante `COMPETITION` em `etl/model.py`, e todo o resto herda. Por isso as tabelas do modelo não têm coluna `competition`: ela teria um único valor em 1.068 linhas, e uma coluna constante não informa nada — só sugere uma variação que não existe. Reincluir depois é mudar a constante e devolver a coluna; as sedes que só receberam Copa feminina já estão geocodificadas e em cache, então nada precisa ser refeito. Um teste em `tests/test_model.py` falha se alguém apagar o feminino mais atrás no pipeline, para a porta continuar aberta por construção e não por memória.
+
+**Quatro coisas que o dado impôs (detalhe em [`docs/schema.md`](docs/schema.md)):**
+
+1. **`map_units`, não `countries`.** O Natural Earth publica duas divisões do mundo. Só a `admin_0_map_units` separa Inglaterra, Escócia, País de Gales e Irlanda do Norte — o recorte que o futebol usa e que este projeto decidiu manter. O preço: a mesma divisão separa a **Bélgica** em Flandres, Valônia e Bruxelas, então o mapa seleção→polígono é **um-para-muitos** (88 polígonos para 86 seleções). As três regiões belgas recebem a mesma cor e a costura não aparece. Por isso a coluna se chama `gu_a3` e não `iso_a3`: `ENG` e `SCT` não são códigos ISO de país.
+
+2. **País-sede virou tabela.** A fonte guarda o país-sede em uma coluna só e improvisa quando há mais de um — 2002 vira `"Korea, Japan"` (com vírgula, e "Korea" é um nome que não existe em nenhum outro lugar do dataset) e 2026 vira `"Canada Mexico United States"` (sem separador nenhum). Duas codificações ad hoc do mesmo um-para-muitos. No modelo, os países-sede são **derivados das sedes onde as partidas de fato ocorreram**; a string declarada virou conferência.
+
+3. **O `pandera` pagou por si em duas linhas.** As conferências que cada script já fazia checam **totais** ("os gols somam?"), e por isso são cegas para erro de linha. A validação declarativa achou dois sentinels que nenhuma soma acusaria: o Fjelstul grava `0–0` no placar de pênaltis de **1.205 partidas sem disputa** (um 0 é um placar válido), e escreve a string `"not applicable"` em `group_name` nas **332 partidas de mata-mata** — um `groupby` por grupo devolveria um "grupo" chamado `not applicable`, sem erro. Ambos viraram nulo de verdade.
+
+4. **A geocodificação achou o que o dataset já dizia.** Nas 8 sedes inglesas de 1966, o Nominatim devolve `United Kingdom` onde o dataset diz `England` — a mesma fronteira que a escolha por `map_units` resolve do outro lado. Onde o dataset tem país, ele prevalece; o Nominatim entra como conferência. Onde não tinha (2026), ele preencheu.
+
+**A decisão editorial reafirmada em 08/08/2026: o rótulo manda.** Quem é rotulado como Alemanha soma como Alemanha. A consequência aparece uma vez em 1.352 partidas e o modelo a expõe em vez de escondê-la: **M-1974-20, Alemanha Oriental 1–0 Alemanha Ocidental**, vira `Germany × Germany`. A Alemanha soma uma vitória e uma derrota, um gol feito e um sofrido — todos os totais continuam fechando e nenhum título muda. `etl.validate` imprime o caso a cada execução e `tests/test_model.py` o trava, para que a escolha continue visível e ninguém a "conserte" sem saber que está mexendo numa decisão editorial.
+
+**Ferramentas:** `pandas` para agregações; `pandera` para validação declarativa; `geopy`/Nominatim para as sedes.
+
+**Como rodar:**
+
+```bash
+python -m etl.geocode --offline && python -m etl.geo
+```
+
+```bash
+python -m etl.model && python -m etl.validate && python -m etl.metrics
+```
+
+O `--offline` usa o cache versionado em `data/interim/geocode_cache.json` e não toca na rede. Sem ele, são ~5 minutos de requisições ao Nominatim, a 1 por segundo — o cache é versionado por educação com um serviço público e gratuito, mesmo raciocínio do `metadata.json`.
 
 ### Etapa 4 — Visualização
 
@@ -182,7 +217,6 @@ Não é um mapa de marcadores em sedes — é um mapa que **pinta países** segu
 - [ ] Escala sequencial de uma cor só para a métrica (nunca arco-íris)
 - [ ] Piso de 10 partidas no modo "por jogo", para uma seleção de 3 jogos não ultrapassar o Brasil
 - [ ] Filtro por década/era
-- [ ] Alternância masculino/feminino (viabilizada pela coluna `competition`)
 - [ ] Painel lateral com o resumo da seleção escolhida e a tabela de confrontos
 
 **Ferramentas:** Leaflet.js com camada GeoJSON de países; `pandas` para pré-computar as métricas.
@@ -251,23 +285,31 @@ atlas-copa-mundo/
 │   │   ├── kaggle/       ✅ (vazio — pendente da decisão sobre público)
 │   │   ├── scraped/      ✅ (vazio — HTML bruto da Wikipédia)
 │   │   └── metadata.json ✅ registro de proveniência (versionado no git)
-│   ├── interim/          ✅ dados intermediários (limpeza parcial)
-│   └── processed/        ✅ dados finais, prontos para o front-end
+│   │   └── naturalearth/ ✅ GeoJSON de polígonos de país
+│   ├── interim/          ✅ dados intermediários + o cache do Nominatim (versionado)
+│   └── processed/        ✅ as 6 tabelas do modelo, prontas para o front-end
 ├── etl/
 │   ├── paths.py          ✅ caminhos centralizados
 │   ├── provenance.py     ✅ hash + timestamp + licença
 │   ├── extract.py        ✅ download dos datasets prontos
-│   ├── scrape_2026.py    ⏳ próximo
-│   ├── transform.py      ⏳
-│   ├── validate.py       ⏳ regras do pandera
-│   └── load.py           ⏳
+│   ├── scrape_2026.py    ✅ baixa o HTML da Wikipédia
+│   ├── parse_2026.py     ✅ extrai partidas/sedes do HTML
+│   ├── transform.py      ✅ limpeza e reconciliação histórica
+│   ├── geocode.py        ✅ 252 sedes via Nominatim, com cache
+│   ├── geo.py            ✅ polígonos de país + mapa seleção→polígono
+│   ├── model.py          ✅ as 6 tabelas do modelo
+│   ├── validate.py       ✅ regras do pandera
+│   └── metrics.py        ✅ JSONs que o mapa consome
+├── reference/            ✅ tabelas curadas à mão (sucessão, seleção→polígono)
 ├── notebooks/            ✅
-├── tests/                ✅
+├── tests/                ✅ 36 testes, todos offline
 ├── web/                  ✅
-│   ├── index.html        ⏳
-│   ├── map.js            ⏳
-│   └── data/             ✅
+│   ├── index.html        ⏳ Etapa 4
+│   ├── map.js            ⏳ Etapa 4
+│   └── data/             ✅ metrics.json, head2head.json, countries.geojson
 ├── docs/
+│   ├── schema.md         ✅ ERD do modelo (Mermaid)
+│   ├── panorama.html     ✅ panorama dos dados
 │   └── roadmap.html      ✅ roadmap visual
 ├── .github/workflows/    ✅ (vazio — GitHub Actions adiado)
 ├── plano-atlas-copa-mundo.md    ✅ este documento
@@ -281,10 +323,10 @@ atlas-copa-mundo/
 
 | Semana | Foco | Status |
 |---|---|---|
-| 1 | Extração dos datasets prontos + scraping da Copa 2026 | 🔵 em andamento — extração feita, scraping pendente |
-| 2 | Limpeza e reconciliação de nomes | ⬜ |
-| 3 | Modelagem, validação e geocodificação | ⬜ |
-| 4 | Visualização (mapa funcional) | ⬜ |
+| 1 | Extração dos datasets prontos + scraping da Copa 2026 | ✅ concluída |
+| 2 | Limpeza e reconciliação de nomes | ✅ concluída |
+| 3 | Modelagem, validação e geocodificação | ✅ concluída |
+| 4 | Visualização (mapa funcional) | 🔵 próximo passo |
 | 5 | Refinamento visual + publicação + README | ⬜ |
 
 ## 7. Decisões
@@ -294,16 +336,16 @@ atlas-copa-mundo/
 | Decisão | Escolha | Por quê |
 |---|---|---|
 | Leaflet ou Mapbox | **Leaflet** | Não precisa de chave de API — o mapa continua funcionando pra quem clonar o repositório, sem cadastro. Para marcadores + popups, os recursos extras do Mapbox não se pagam. |
-| Dataset feminino no v1 | **Extrair sempre, exibir com filtro** | Vem nos mesmos arquivos, custo zero. Separar por uma coluna `competition` e deixar o front-end filtrar é mais barato do que descartar agora e reprocessar depois. |
+| Dataset feminino no v1 | **Extrair e limpar sempre; ficar fora do modelo** | Revisto em 08/08/2026. A extração e a limpeza continuam cobrindo as duas competições — custo zero, e o dado fica pronto. O que mudou é o produto: o modelo, o mapa e os JSONs cobrem só a Copa masculina. O recorte é uma constante em `etl/model.py`, então reincluir o feminino é um diff pequeno, não um reprocessamento. |
 | GitHub Actions | **Adiado para v2** | O `--check` do `extract.py` já deixa o gancho pronto. Automatizar antes de ter pipeline completo é otimização prematura. |
 | Quantas tabelas do Fjelstul baixar | **16 de 29** | As 13 restantes são dados de evento individual (~9 MB), fora do escopo de um mapa. Fácil de reverter. |
 
 ### Em aberto
 
 - [ ] **Público (attendance):** buscar no `wcmatches` do Kaggle (só até 2018) ou trocar por capacidade do estádio no v1? — *bloqueia o conteúdo dos popups do mapa*
-- [x] ~~**Sucessão de seleções**~~ → **RESOLVIDO em 08/08/2026: a Alemanha Ocidental conta como Alemanha (4 títulos).** As dissoluções (URSS, Iugoslávia, Tchecoslováquia) recebem rótulo moderno mas mantêm registros separados. Regras em `reference/team_succession.csv`.
+- [x] ~~**Sucessão de seleções**~~ → **RESOLVIDO em 08/08/2026: a Alemanha Ocidental conta como Alemanha (4 títulos).** As dissoluções (URSS, Iugoslávia, Tchecoslováquia) recebem rótulo moderno **e somam nos registros de partida do sucessor** — `merge_records` governa só a contagem de títulos, e como nenhuma delas venceu, nenhum título muda. Regras e ressalvas em `reference/team_succession.csv`; consequências em [`docs/schema.md`](docs/schema.md).
 - [ ] Confirmar licença do "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *só importa se ele for realmente usado*
-- [ ] Decidir entre `pandas.read_html`, `BeautifulSoup4` ou `Scrapy` para o scraping de 2026 (recomendação: começar pelo `read_html`)
+- [x] ~~Decidir entre `pandas.read_html`, `BeautifulSoup4` ou `Scrapy`~~ → **`requests` + `BeautifulSoup4`**, com scraping e parsing em módulos separados.
 - [x] ~~Criar o repositório remoto no GitHub e dar `git push`~~ → publicado em https://github.com/alaindelon96/atlas-copa-mundo
 
 ## 8. Notas de progresso
@@ -320,3 +362,8 @@ atlas-copa-mundo/
 - **08/08/2026** — panorama dos dados gerado (`docs/panorama.html`) para escolher features a partir do dado. Revelou a assimetria central: 2026 só existe no nível de partida.
 - **08/08/2026** — **desenho do mapa definido: coroplético com seletor de métrica e de país**, com modo de confronto direto. Decidido: Reino Unido em sub-regiões separadas; alternância entre contagem bruta e por jogo. Isso **muda a prioridade da Etapa 3**: o trabalho central passa a ser mapear as 83 seleções para polígonos de país, e não geocodificar cidades.
 - **08/08/2026** — dois achados novos: (1) a Wikipédia **tem público por partida** (6.810.966 no total em 2026), enquanto o Fjelstul não tem nenhum — o que muda a decisão em aberto sobre público; (2) no dado de 2026, `city_name` **não serve como chave de join** (casa 8 de 16), porque a partida registra o município e a tabela de sedes registra a região metropolitana — `stadium_name` casa 16 de 16.
+- **08/08/2026** — **Etapa 3 concluída: modelagem, geocodificação e validação.** `etl/geocode.py` resolveu as 252 sedes no Nominatim (cache versionado, ~5 min uma vez só) e preencheu o `country_name` que faltava em 2026 — a métrica "partidas recebidas" ficou completa e o Canadá entrou como 19º país a receber partida de Copa masculina. `etl/geo.py` baixou o Natural Earth e mapeou as 86 seleções em 88 polígonos. `etl/model.py` gerou as 6 tabelas de `data/processed/`, e `etl/validate.py` declarou o contrato de cada uma em `pandera`. 36 testes passando.
+- **08/08/2026** — **o `pandera` achou dois sentinels que nenhuma soma acusaria:** o Fjelstul grava `0–0` no placar de pênaltis de 1.205 partidas sem disputa, e a string `"not applicable"` em `group_name` nas 332 partidas de mata-mata. Os dois viraram nulo de verdade no modelo. É a diferença entre conferir totais e conferir linhas.
+- **08/08/2026** — **a validação também expôs uma afirmação errada do próprio plano.** A Etapa 2 dizia que as entidades com `merge_records=0` (URSS, Iugoslávia, Tchecoslováquia…) mantinham registros separados; na prática, só a contagem de títulos as respeita — os registros de partida sempre seguiram o rótulo. Nenhum número de manchete estava errado (nenhuma delas venceu uma Copa), mas a Rússia mostra 53 partidas das quais 22 são dela. Confrontado com a escolha, o projeto **manteve o comportamento — o rótulo manda** —, e a consequência (Alemanha × Alemanha em 1974) passou a ser impressa a cada validação e travada em teste, em vez de ficar escondida.
+- **08/08/2026** — dois achados menores da geocodificação: (1) nas 8 sedes inglesas de 1966 o Nominatim devolve `United Kingdom` onde o dataset diz `England` — a mesma fronteira que a escolha por `map_units` resolve do outro lado; (2) o Natural Earth divide a **Bélgica** em três unidades de mapa, exatamente como divide o Reino Unido em quatro — o que obrigou o mapa seleção→polígono a ser um-para-muitos.
+- **08/08/2026** — **escopo reduzido à Copa masculina.** O modelo passou de 1.352 para 1.068 partidas, 86 para 83 seleções e 252 para 208 sedes; a coluna `competition`, que agora teria um valor só, saiu das tabelas do modelo, e os JSONs do mapa perderam a dimensão de competição (`head2head` virou `{seleção: {adversário}}`). O dado feminino **não foi apagado**: as 284 partidas de 1991–2019 seguem em `data/raw/` e em `matches_clean.csv`, e as sedes que só receberam Copa feminina seguem geocodificadas em cache. O corte é a constante `COMPETITION` em `etl/model.py` — um lugar só —, e um teste falha se alguém apagar o feminino mais atrás no pipeline.

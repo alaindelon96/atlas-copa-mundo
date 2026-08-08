@@ -29,6 +29,14 @@ data/interim/**
 !data/interim/venues_2026.csv
 !data/interim/tournament_2026.csv
 
+# EXCEÇÃO — o cache do Nominatim TAMBÉM é versionado, por educação.
+# Reproduzir as 298 consultas custa ~5 minutos de requisições a um serviço
+# público, gratuito e mantido por doação. Versionar o cache faz `git clone` +
+# `python -m etl.geocode --offline` reproduzir o resultado exato sem tocar na
+# rede. É o mesmo raciocínio do `data/raw/metadata.json`: o registro do que foi
+# baixado vale mais versionado do que o download em si.
+!data/interim/geocode_cache.json
+
 # data/processed/ e web/data/ SÃO versionados — são o produto final
 # consumido pelo GitHub Pages.
 

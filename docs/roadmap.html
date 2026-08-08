@@ -536,22 +536,22 @@
       </article>
 
       <!-- 2 -->
-      <article class="stage now">
+      <article class="stage done">
         <div class="stage-num">02</div>
         <div class="stage-body">
           <div class="stage-head">
             <h3><span class="en">Clean &amp; reconcile</span><span class="pt">Limpeza e reconcilia&ccedil;&atilde;o</span></h3>
-            <span class="pill now"><span class="en">Next</span><span class="pt">Pr&oacute;ximo</span></span>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
           </div>
           <p>
             <span class="en">The data arrived clean &mdash; no missing dates, no missing scores. The hard part is not dirt. It is that countries changed while the tournament kept going.</span>
             <span class="pt">O dado chegou limpo &mdash; sem datas faltando, sem placares faltando. A parte dif&iacute;cil n&atilde;o &eacute; sujeira. &Eacute; que os pa&iacute;ses mudaram enquanto o torneio continuava.</span>
           </p>
           <ul class="ticks">
-            <li class="todo"><span class="en">Add an explicit <code>competition</code> column &mdash; do this first</span><span class="pt">Criar a coluna expl&iacute;cita <code>competition</code> &mdash; fazer isso primeiro</span></li>
-            <li class="todo"><span class="en">Curated succession map for renamed and dissolved states</span><span class="pt">Mapa de sucess&atilde;o curado para estados renomeados e dissolvidos</span></li>
-            <li class="todo"><span class="en"><code>rapidfuzz</code> for spelling variants only</span><span class="pt"><code>rapidfuzz</code> apenas para varia&ccedil;&otilde;es ortogr&aacute;ficas</span></li>
-            <li class="todo"><span class="en">Write out <code>data/processed/matches_clean.csv</code></span><span class="pt">Gravar <code>data/processed/matches_clean.csv</code></span></li>
+            <li class="ok"><span class="en">Explicit <code>competition</code> column, derived from <code>tournament_name</code></span><span class="pt">Coluna expl&iacute;cita <code>competition</code>, derivada de <code>tournament_name</code></span></li>
+            <li class="ok"><span class="en">Curated succession map &mdash; 8 rules in <code>reference/team_succession.csv</code></span><span class="pt">Mapa de sucess&atilde;o curado &mdash; 8 regras em <code>reference/team_succession.csv</code></span></li>
+            <li class="ok"><span class="en"><code>rapidfuzz</code> flags candidates only; it never decides</span><span class="pt"><code>rapidfuzz</code> s&oacute; sinaliza candidatos; nunca decide</span></li>
+            <li class="ok"><span class="en">1,352 matches in <code>data/processed/matches_clean.csv</code></span><span class="pt">1.352 partidas em <code>data/processed/matches_clean.csv</code></span></li>
           </ul>
           <div class="tools"><span class="tool">pandas</span><span class="tool">rapidfuzz</span><span class="tool">etl/transform.py</span></div>
           <div class="say">
@@ -562,45 +562,49 @@
       </article>
 
       <!-- 3 -->
-      <article class="stage">
+      <article class="stage done">
         <div class="stage-num">03</div>
         <div class="stage-body">
           <div class="stage-head">
             <h3><span class="en">Model, validate, geocode</span><span class="pt">Modelar, validar, geocodificar</span></h3>
-            <span class="pill ahead"><span class="en">Ahead</span><span class="pt">Pela frente</span></span>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
           </div>
           <p>
-            <span class="en">Split the flat file into four related tables, state the rules the data must obey as code, and give every venue a latitude and longitude so it can land on a map.</span>
-            <span class="pt">Quebrar o arquivo plano em quatro tabelas relacionadas, escrever como c&oacute;digo as regras que o dado deve obedecer, e dar latitude e longitude a cada sede para ela cair no mapa.</span>
+            <span class="en">Six related tables, the rules the data must obey written as code, a coordinate for every venue &mdash; and a country polygon for every team, because the map shades countries rather than dropping pins.</span>
+            <span class="pt">Seis tabelas relacionadas, as regras que o dado deve obedecer escritas como c&oacute;digo, uma coordenada para cada sede &mdash; e um pol&iacute;gono de pa&iacute;s para cada sele&ccedil;&atilde;o, porque o mapa pinta pa&iacute;ses em vez de espetar marcadores.</span>
           </p>
           <ul class="ticks">
-            <li class="todo"><span class="en"><code>tournaments</code> &middot; <code>matches</code> &middot; <code>teams</code> &middot; <code>venues</code></span><span class="pt"><code>tournaments</code> &middot; <code>matches</code> &middot; <code>teams</code> &middot; <code>venues</code></span></li>
-            <li class="todo"><span class="en">Geocode 202 cities via Nominatim, cached on disk, 1 request/second</span><span class="pt">Geocodificar 202 cidades via Nominatim, com cache em disco, 1 requisi&ccedil;&atilde;o/segundo</span></li>
-            <li class="todo"><span class="en">Export GeoJSON for the map, JSON for the tables</span><span class="pt">Exportar GeoJSON para o mapa, JSON para as tabelas</span></li>
+            <li class="ok"><span class="en">6 tables &mdash; <code>tournaments</code> &middot; <code>tournament_hosts</code> &middot; <code>teams</code> &middot; <code>venues</code> &middot; <code>matches</code> &middot; <code>team_matches</code></span><span class="pt">6 tabelas &mdash; <code>tournaments</code> &middot; <code>tournament_hosts</code> &middot; <code>teams</code> &middot; <code>venues</code> &middot; <code>matches</code> &middot; <code>team_matches</code></span></li>
+            <li class="ok"><span class="en">252 venues geocoded via Nominatim, 1 request/second, cache committed</span><span class="pt">252 sedes geocodificadas via Nominatim, 1 requisi&ccedil;&atilde;o/segundo, cache versionado</span></li>
+            <li class="ok"><span class="en">86 teams mapped to 88 map units &mdash; the UK is four, Belgium is three</span><span class="pt">86 sele&ccedil;&otilde;es em 88 unidades de mapa &mdash; o Reino Unido s&atilde;o quatro, a B&eacute;lgica s&atilde;o tr&ecirc;s</span></li>
+            <li class="ok"><span class="en"><code>pandera</code> caught two sentinel values no total would flag</span><span class="pt">O <code>pandera</code> pegou dois sentinels que nenhum total acusaria</span></li>
+            <li class="ok"><span class="en">GeoJSON for the map, JSON for the panels &mdash; and 2026 finally has a host country</span><span class="pt">GeoJSON para o mapa, JSON para os pain&eacute;is &mdash; e 2026 enfim tem pa&iacute;s-sede</span></li>
           </ul>
           <div class="tools"><span class="tool">pandera</span><span class="tool">geopy</span><span class="tool">Mermaid ERD</span></div>
           <div class="say">
             <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
-            <q><span class="en">I define the shape the data must have once, as code. Every run checks itself against those rules &mdash; so a bad join fails loudly instead of quietly producing a map that's wrong in a way nobody notices.</span><span class="pt">Eu defino uma vez, como c&oacute;digo, o formato que o dado precisa ter. Cada execu&ccedil;&atilde;o se verifica contra essas regras &mdash; ent&atilde;o um join errado falha alto, em vez de silenciosamente produzir um mapa errado que ningu&eacute;m percebe.</span></q>
+            <q><span class="en">I define the shape the data must have once, as code &mdash; and it paid for itself. Every total added up, so nothing looked wrong; the row-level rules found 1,205 matches carrying a &ldquo;0&ndash;0 on penalties&rdquo; that never happened, and 332 knockout games filed under a group called &ldquo;not applicable&rdquo;.</span><span class="pt">Eu defino uma vez, como c&oacute;digo, o formato que o dado precisa ter &mdash; e isso se pagou. Todos os totais fechavam, ent&atilde;o nada parecia errado; as regras linha a linha acharam 1.205 partidas com um &ldquo;0&ndash;0 nos p&ecirc;naltis&rdquo; que nunca houve, e 332 jogos de mata-mata arquivados num grupo chamado &ldquo;not applicable&rdquo;.</span></q>
           </div>
         </div>
       </article>
 
       <!-- 4 -->
-      <article class="stage">
+      <article class="stage now">
         <div class="stage-num">04</div>
         <div class="stage-body">
           <div class="stage-head">
             <h3><span class="en">Visualise</span><span class="pt">Visualiza&ccedil;&atilde;o</span></h3>
-            <span class="pill ahead"><span class="en">Ahead</span><span class="pt">Pela frente</span></span>
+            <span class="pill now"><span class="en">Next</span><span class="pt">Pr&oacute;ximo</span></span>
           </div>
           <p>
-            <span class="en">A Leaflet map with a marker at every host city. Click one, get the tournament: champion, top scorer, the matches played there.</span>
-            <span class="pt">Um mapa Leaflet com um marcador em cada cidade-sede. Clicou, aparece o torneio: campe&atilde;o, artilheiro, as partidas jogadas ali.</span>
+            <span class="en">A Leaflet choropleth: pick a metric and the world shades by it. Pick a country too and the map repaints by head-to-head &mdash; Brazil + goals lights Sweden brightest, 21 goals in 7 meetings.</span>
+            <span class="pt">Um coropl&eacute;tico em Leaflet: escolha uma m&eacute;trica e o mundo se pinta por ela. Escolha tamb&eacute;m um pa&iacute;s e o mapa repinta por confronto direto &mdash; Brasil + gols acende a Su&eacute;cia mais forte, 21 gols em 7 jogos.</span>
           </p>
           <ul class="ticks">
-            <li class="todo"><span class="en">Filter by decade, and toggle men's / women's</span><span class="pt">Filtro por d&eacute;cada, e alternar masculino / feminino</span></li>
-            <li class="todo"><span class="en">Side panel with the champions ranking</span><span class="pt">Painel lateral com o ranking de campe&otilde;es</span></li>
+            <li class="todo"><span class="en">Sequential single-hue scale &mdash; never a rainbow</span><span class="pt">Escala sequencial de uma cor s&oacute; &mdash; nunca arco-&iacute;ris</span></li>
+            <li class="todo"><span class="en">Toggle raw totals against per-match &mdash; the switch <em>is</em> the insight</span><span class="pt">Alternar contagem bruta e por partida &mdash; a altern&acirc;ncia <em>&eacute;</em> o insight</span></li>
+            <li class="todo"><span class="en">Filter by decade or era</span><span class="pt">Filtro por d&eacute;cada ou era</span></li>
+            <li class="todo"><span class="en">Side panel with the selected team's summary and head-to-head table</span><span class="pt">Painel lateral com o resumo da sele&ccedil;&atilde;o e a tabela de confrontos</span></li>
           </ul>
           <div class="tools"><span class="tool">Leaflet.js</span><span class="tool">GeoJSON</span><span class="tool">web/map.js</span></div>
           <div class="say">
@@ -762,18 +766,18 @@
       </div>
       <div class="decision">
         <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>
-        <h3><span class="en">Keep the women's data</span><span class="pt">Manter o dado feminino</span></h3>
-        <p><span class="en">It ships in the same files at zero extra cost. Tag it with a <code>competition</code> column and let the front-end filter &mdash; cheaper than dropping it now and reprocessing later.</span><span class="pt">Vem nos mesmos arquivos, custo zero. Marcar com a coluna <code>competition</code> e deixar o front-end filtrar &mdash; mais barato que descartar agora e reprocessar depois.</span></p>
+        <h3><span class="en">Men's Cup only &mdash; but keep the women's data</span><span class="pt">S&oacute; a Copa masculina &mdash; mas guardar o dado feminino</span></h3>
+        <p><span class="en">The map covers the men's tournament: 23 editions, 1,068 matches. The women's data is still extracted and cleaned &mdash; it ships in the same files at zero cost &mdash; but it stops before the model. The cut is one constant in <code>etl/model.py</code>, so adding it back later is a small diff, not a reprocessing job.</span><span class="pt">O mapa cobre a Copa masculina: 23 edi&ccedil;&otilde;es, 1.068 partidas. O dado feminino continua sendo extra&iacute;do e limpo &mdash; vem nos mesmos arquivos, custo zero &mdash; mas para antes do modelo. O corte &eacute; uma constante em <code>etl/model.py</code>, ent&atilde;o reincluir depois &eacute; um diff pequeno, n&atilde;o um reprocessamento.</span></p>
       </div>
       <div class="decision open">
         <span class="pill now" style="align-self:flex-start"><span class="en">Open &mdash; blocks stage 4</span><span class="pt">Aberta &mdash; trava a etapa 4</span></span>
         <h3><span class="en">Attendance or capacity?</span><span class="pt">P&uacute;blico ou capacidade?</span></h3>
         <p><span class="en">2026 now has real per-match attendance; 1930&ndash;2022 has none. Kaggle would cover through 2018 and leave 2022 blank. So: attendance everywhere except 2022, capacity everywhere, or both columns with the gap shown honestly.</span><span class="pt">2026 agora tem p&uacute;blico real por partida; 1930&ndash;2022 n&atilde;o tem nenhum. O Kaggle cobriria at&eacute; 2018 e deixaria 2022 vazio. Ent&atilde;o: p&uacute;blico em tudo menos 2022, capacidade em tudo, ou as duas colunas com a lacuna &agrave; mostra.</span></p>
       </div>
-      <div class="decision open">
-        <span class="pill now" style="align-self:flex-start"><span class="en">Open &mdash; blocks stage 2</span><span class="pt">Aberta &mdash; trava a etapa 2</span></span>
-        <h3><span class="en">Does Germany have 4 titles or 1?</span><span class="pt">A Alemanha tem 4 t&iacute;tulos ou 1?</span></h3>
-        <p><span class="en">If West Germany folds into Germany, it's four. If it stays separate, Germany has one and West Germany has three. Both are defensible. Not documenting which you picked is not.</span><span class="pt">Se a Alemanha Ocidental vira Alemanha, s&atilde;o quatro. Se fica separada, a Alemanha tem um e a Ocidental tr&ecirc;s. As duas s&atilde;o defens&aacute;veis. N&atilde;o documentar qual voc&ecirc; escolheu, n&atilde;o &eacute;.</span></p>
+      <div class="decision">
+        <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>
+        <h3><span class="en">Germany has 4 titles</span><span class="pt">A Alemanha tem 4 t&iacute;tulos</span></h3>
+        <p><span class="en">West Germany folds into Germany &mdash; FIFA's own count. The label governs the record, and that has exactly one visible consequence: East Germany 1&ndash;0 West Germany, 1974, now reads <code>Germany &times; Germany</code>. Every total still balances, and the validator prints that case on every run so the choice stays visible.</span><span class="pt">A Alemanha Ocidental vira Alemanha &mdash; a contagem oficial da FIFA. O r&oacute;tulo governa o registro, e isso tem exatamente uma consequ&ecirc;ncia vis&iacute;vel: Alemanha Oriental 1&ndash;0 Alemanha Ocidental, 1974, agora aparece como <code>Germany &times; Germany</code>. Todos os totais continuam fechando, e o validador imprime esse caso a cada execu&ccedil;&atilde;o para a escolha continuar &agrave; vista.</span></p>
       </div>
     </div>
   </section>

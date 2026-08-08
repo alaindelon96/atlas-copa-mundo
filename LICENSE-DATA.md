@@ -33,18 +33,41 @@ originates from the Fjelstul World Cup Database.
 ### Modifications made to this source
 
 The CC BY-SA 4.0 licence requires that modifications be indicated. As of
-**2026-08-07**:
+**2026-08-08**:
 
 | Location | Modified? | Detail |
 |---|---|---|
 | `data/raw/fjelstul/` | **No** | Byte-for-byte identical to the source. SHA-256 of every file is recorded in [`data/raw/metadata.json`](data/raw/metadata.json) and is independently verifiable against the origin. |
 | Subset selection | **Yes** | 16 of the 29 published tables were retrieved; the other 13 were not. No table was altered. The list is in [`etl/extract.py`](etl/extract.py). |
-| `data/interim/`, `data/processed/`, `web/data/` | **Not yet produced** | When these are generated, the transformations applied will be recorded here and in the commit history. |
+| `data/processed/`, `web/data/` | **Yes — derived works** | Detailed below. |
 
-Planned modifications, not yet applied: normalising national-team names across
-historical successions (e.g. West Germany, Soviet Union, Yugoslavia, Zaire),
-adding an explicit men's/women's `competition` column, geocoding venues to
-latitude/longitude, and deriving aggregate statistics.
+The derived data published in `data/processed/` and `web/data/` applies these
+transformations to the source. Nothing is edited in place; every change adds a
+column or a table, and the original values are preserved alongside:
+
+| Transformation | Detail |
+|---|---|
+| Men's/women's split | An explicit `competition` column derived from `tournament_name`. The source's `tournament_id` does not distinguish them. |
+| Scope filter | The published model and map cover the **men's** tournament only (1,068 of the 1,352 matches). The women's data is retained unmodified in `data/processed/matches_clean.csv`; it is excluded from the derived tables, not deleted. |
+| Historical name reconciliation | National-team names mapped to modern labels (West Germany, Soviet Union, Yugoslavia, Czechoslovakia, Zaire, Dutch East Indies…) via the curated map in [`reference/team_succession.csv`](reference/team_succession.csv). The names as recorded at the time are preserved in the `home_team_raw` / `away_team_raw` columns. |
+| Stage-name normalisation | The source itself carries both `quarter-final` and `quarter-finals`; these were collapsed to one spelling. |
+| Sentinel values converted to nulls | Penalty scores recorded as `0–0` for the 1,205 matches with no shootout, and the string `"not applicable"` in `group_name` for 332 knockout matches, became true nulls. |
+| Host country as a table | `tournaments.host_country` (a single column, holding `"Korea, Japan"` for 2002) was replaced by a `tournament_hosts` table derived from the venues where matches took place. |
+| Venue coordinates added | Latitude/longitude from Nominatim (OpenStreetMap, ODbL). This is added data, not altered data — see the note on mixed licensing below. |
+| Country polygons added | `web/data/countries.geojson` is Natural Earth (public domain) with a `team` property joined on. It contains no Fjelstul data. |
+| Aggregation | `web/data/metrics.json` and `head2head.json` are statistics computed from the match table. |
+
+**Editorial decision, stated because it is a choice and not a cleanup:** where a
+historic team resolves to a modern label, the **label governs the records**. West
+Germany's matches count as Germany's. The one visible consequence is that the 1974
+match East Germany 1–0 West Germany appears as `Germany × Germany`. Title counts
+follow the same rule and are unchanged by it, since no entity treated this way ever
+won the tournament. The reasoning is in [`docs/schema.md`](docs/schema.md).
+
+**Mixed licensing note:** `data/processed/venues.csv` combines venue names from
+Fjelstul (CC BY-SA 4.0) with coordinates from OpenStreetMap (ODbL). Both licences
+are share-alike, and both are honoured: reuse of that file must credit both sources
+and carry the corresponding terms.
 
 The database is provided by its author as-is and as-available, with no
 representations or warranties of any kind. That disclaimer is passed through here

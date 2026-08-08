@@ -1,0 +1,2276 @@
+{
+ "ahmad bin ali stadium, al rayyan, qatar": {
+  "lat": 25.3296917,
+  "lon": 51.3423218,
+  "display_name": "Ahmad bin Ali Stadium, Street 1755, Al Rayyan, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "way",
+  "osm_id": 155036824
+ },
+ "al bayt stadium, al khor, qatar": {
+  "lat": 25.6521339,
+  "lon": 51.4878055,
+  "display_name": "Al Bayt Stadium, Street 391, Al Khor, Al Khor and Al Thakhira, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "way",
+  "osm_id": 715878985
+ },
+ "al janoub stadium, al wakrah, qatar": {
+  "lat": 25.1597079,
+  "lon": 51.5742271,
+  "display_name": "Al-Janoub Stadium, Street 531, Al Wakrah, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "way",
+  "osm_id": 684148159
+ },
+ "al thumama stadium, doha, qatar": {
+  "lat": 25.2353106,
+  "lon": 51.5329152,
+  "display_name": "Al-Thumama Stadium, E Ring Road, Doha, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "relation",
+  "osm_id": 13417595
+ },
+ "allianz arena, munich, germany": {
+  "lat": 48.2187901,
+  "lon": 11.6236227,
+  "display_name": "Allianz Arena, 5, Hans-Jensen-Weg, Betriebshof Nord, Freimann, Schwabing-Freimann, Munich, Bavaria, 80939, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "relation",
+  "osm_id": 18413487
+ },
+ "allianz riviera, nice, france": {
+  "lat": 43.7051477,
+  "lon": 7.1926033,
+  "display_name": "Allianz Riviera, Allée Camille Muffat, Saint-Isidore, Nice, Maritime Alps, Provence-Alpes-Côte d'Azur, Metropolitan France, 06284, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 202892016
+ },
+ "arena aufshalke, gelsenkirchen, germany": null,
+ "arena corinthians, são paulo, brazil": {
+  "lat": -23.5453327,
+  "lon": -46.4743055,
+  "display_name": "Neo Química Arena, 111, Avenida Miguel Inácio Curi, Cidade Antônio Estêvão de Carvalho, Itaquera, São Paulo, Southeast Region, 08295-005, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 218678632
+ },
+ "arena da amazônia, manaus, brazil": {
+  "lat": -3.0831132,
+  "lon": -60.0280052,
+  "display_name": "Arena da Amazônia - Vivaldo Lima, Avenida Constantino Nery, Conjunto de Flores I, Flores, Manaus, Amazonas, North Region, 69050-010, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 832745951
+ },
+ "arena da baixada, curitiba, brazil": null,
+ "arena das dunas, natal, brazil": {
+  "lat": -5.8265802,
+  "lon": -35.2126879,
+  "display_name": "Arena das Dunas, 5121, Avenida Prudente de Morais, Conjunto Lagoa Nova I, Lagoa Nova, Região Sul, Natal, Rio Grande do Norte, Northeast Region, 59064-625, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 3821148
+ },
+ "arena fonte nova, salvador, brazil": {
+  "lat": -12.9787926,
+  "lon": -38.5035601,
+  "display_name": "Casa de Apostas Arena Fonte Nova, Avenida Presidente Costa e Silva, Lapa, Nazaré, Salvador, Bahia, Northeast Region, 40255-436, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 3346613
+ },
+ "arena pantanal, cuiabá, brazil": {
+  "lat": -15.6040649,
+  "lon": -56.1222989,
+  "display_name": "Arena Pantanal, Rua Professor Ranulfo Paes de Barros, Cidade Alta, Cuiabá, Mato Grosso, Central-West Region, 78030-370, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 7220795
+ },
+ "arena pernambuco, recife, brazil": {
+  "lat": -8.0327768,
+  "lon": -34.9960797,
+  "display_name": "Ramal Arena Pernambuco, Loteamento Varandas do Rio, Santa Mônica, Camaragibe, Pernambuco, Northeast Region, 54765-180, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 573609268
+ },
+ "arosvallen, västerås, sweden": {
+  "lat": 59.6204024,
+  "lon": 16.5406131,
+  "display_name": "Arosvallen, Vallgatan, Kristiansborg, Västerås, Västerås kommun, Västmanland County, 722 19, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "way",
+  "osm_id": 89561816
+ },
+ "arrowhead stadium, kansas city": {
+  "lat": 39.0489358,
+  "lon": -94.4839993,
+  "display_name": "Arrowhead Stadium, 1, Arrowhead Drive, Kansas City, Jackson County, Missouri, 64129, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 65960012
+ },
+ "at&t stadium, arlington": {
+  "lat": 32.7478503,
+  "lon": -97.0928337,
+  "display_name": "AT&T Stadium, 1, AT&T Way, Arlington, Tarrant County, Texas, 76011, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 47086748
+ },
+ "ayresome park, middlesbrough, england": {
+  "lat": 54.566736,
+  "lon": -1.2421523,
+  "display_name": "Ayresome Gardens, Ayresome, Middlesbrough, Tees Valley, England, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "way",
+  "osm_id": 47121540
+ },
+ "balaídos, vigo, spain": {
+  "lat": 42.2114076,
+  "lon": -8.7440784,
+  "display_name": "Balaídos, Vigo, Pontevedra, Galicia, 36209, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "node",
+  "osm_id": 6545538849
+ },
+ "bayarena, leverkusen, germany": {
+  "lat": 51.0381439,
+  "lon": 7.0030964,
+  "display_name": "BayArena, 122-124, Bismarckstraße, Küppersteg, Stadtbezirk II, Leverkusen, North Rhine-Westphalia, 51373, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "relation",
+  "osm_id": 5403784
+ },
+ "bc place, vancouver, canada": {
+  "lat": 49.2766905,
+  "lon": -123.1120062,
+  "display_name": "BC Place, 777, Pacific Boulevard, Downtown, Vancouver, Metro Vancouver Regional District, British Columbia, V6B 6G2, Canada",
+  "country": "Canada",
+  "country_code": "CA",
+  "osm_type": "way",
+  "osm_id": 24705904
+ },
+ "bmo field, toronto": {
+  "lat": 43.6333414,
+  "lon": -79.4185614,
+  "display_name": "BMO Field, 170, Princes' Boulevard, Fort York-Liberty Village, Spadina—Fort York, Toronto, Golden Horseshoe, Ontario, M6K 3C3, Canada",
+  "country": "Canada",
+  "country_code": "CA",
+  "osm_type": "way",
+  "osm_id": 663457707
+ },
+ "borussia-park, mönchengladbach, germany": {
+  "lat": 51.1746249,
+  "lon": 6.3854094,
+  "display_name": "ista-Borussia-Park, Dr.-Adalbert-Jordan-Straße, Dorthausen, Rheindahlen-Land, West, Mönchengladbach, North Rhine-Westphalia, 41179, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 41910550
+ },
+ "boston, united states": {
+  "lat": 42.3588336,
+  "lon": -71.0578303,
+  "display_name": "Boston, Suffolk County, Massachusetts, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 2315704
+ },
+ "busan asiad stadium, busan, south korea": {
+  "lat": 35.1900767,
+  "lon": 129.0595481,
+  "display_name": "Busan Asiad Main Stadium, Cheyukgongwon-ro, Geoje 2(i)-dong, Yeonje-gu, Busan, 47527, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "relation",
+  "osm_id": 10952708
+ },
+ "camp nou, barcelona, spain": {
+  "lat": 41.3807783,
+  "lon": 2.1156486,
+  "display_name": "Camp Nou, Avinguda del Doctor Marañón, Sant Ramon, la Maternitat i Sant Ramon, les Corts, Barcelona, Barcelonès, Barcelona, Catalonia, 08904, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "node",
+  "osm_id": 13410497373
+ },
+ "cape town stadium, cape town, south africa": {
+  "lat": -33.9034601,
+  "lon": 18.4111458,
+  "display_name": "DHL Stadium, South Forecourt, Cape Town Ward 115, Cape Town, City of Cape Town, Western Cape, 8005, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 626140250
+ },
+ "carson, united states": {
+  "lat": 35.3636563,
+  "lon": -101.3353895,
+  "display_name": "Carson County, Texas, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 1809554
+ },
+ "central stadium, yekaterinburg, russia": {
+  "lat": 56.8321778,
+  "lon": 60.573936,
+  "display_name": "Central Stadium, улица Попова, Крыловъ, ВИЗ, Верх-Исетский район, Yekaterinburg, Yekaterinburg Municipality, Sverdlovsk Oblast, Ural Federal District, 620019, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 18537813
+ },
+ "charmilles stadium, geneva, switzerland": null,
+ "chengdu sports center, chengdu, china": null,
+ "chengdu, china": {
+  "lat": 30.659867,
+  "lon": 104.063315,
+  "display_name": "Chengdu, Sichuan, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "relation",
+  "osm_id": 2110264
+ },
+ "citrus bowl, orlando, united states": null,
+ "civic stadium, portland, united states": null,
+ "columbus crew stadium, columbus, united states": {
+  "lat": 40.009468,
+  "lon": -82.9911382,
+  "display_name": "Historic Crew Stadium, 1, Black and Gold Boulevard, Columbus, Sharon, Franklin County, Ohio, 43211, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 11615864
+ },
+ "commonwealth stadium, edmonton, canada": {
+  "lat": 53.5596586,
+  "lon": -113.4764233,
+  "display_name": "Commonwealth Stadium, 11000, Stadium Road NW, McCauley, Central Core, Edmonton, Alberta, T5H 4E2, Canada",
+  "country": "Canada",
+  "country_code": "CA",
+  "osm_type": "way",
+  "osm_id": 1351822252
+ },
+ "cornaredo stadium, lugano, switzerland": {
+  "lat": 46.0238282,
+  "lon": 8.9611777,
+  "display_name": "Stadio Cornaredo, Via Trevano, Lugano, Circolo di Lugano ovest, Distretto di Lugano, Ticino, 6948, Switzerland",
+  "country": "Switzerland",
+  "country_code": "CH",
+  "osm_type": "way",
+  "osm_id": 32639949
+ },
+ "cotton bowl, dallas, united states": {
+  "lat": 32.7796119,
+  "lon": -96.7596025,
+  "display_name": "Cotton Bowl Stadium, 3750, The Midway, Fair Park, Dallas, Dallas County, Texas, 75210, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 27112448
+ },
+ "curitiba, brazil": {
+  "lat": -25.4295963,
+  "lon": -49.2712724,
+  "display_name": "Curitiba, Paraná, South Region, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 297514
+ },
+ "córdoba, argentina": {
+  "lat": -31.4166867,
+  "lon": -64.1834193,
+  "display_name": "Cordoba, Municipio de Córdoba, Pedanía Capital, Departamento Capital, Córdoba, X5000, Argentina",
+  "country": "Argentina",
+  "country_code": "AR",
+  "osm_type": "relation",
+  "osm_id": 5167559
+ },
+ "daegu world cup stadium, daegu, south korea": null,
+ "daegu, south korea": {
+  "lat": 35.8713,
+  "lon": 128.6018,
+  "display_name": "Daegu, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "relation",
+  "osm_id": 2395674
+ },
+ "daejeon world cup stadium, daejeon, south korea": {
+  "lat": 36.3652534,
+  "lon": 127.3251074,
+  "display_name": "Daejeon World Cup Stadium, Hanbat-daero, Noeun-dong, Noeun 1(il)-Dong, Yuseong-gu, Daejeon, 34148, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 27770920
+ },
+ "east rutherford, united states": {
+  "lat": 40.833989,
+  "lon": -74.0970865,
+  "display_name": "East Rutherford, Bergen County, New Jersey, 07073, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 170599
+ },
+ "education city stadium, al rayyan, qatar": {
+  "lat": 25.3108533,
+  "lon": 51.4244477,
+  "display_name": "Education City Stadium, Street 2742, Education City, Al Rayyan, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "way",
+  "osm_id": 684135642
+ },
+ "elche, spain": {
+  "lat": 38.2653307,
+  "lon": -0.6988391,
+  "display_name": "Elx / Elche, el Baix Vinalopó, Alacant / Alicante, Valencian Community, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "relation",
+  "osm_id": 347684
+ },
+ "ellis park stadium, johannesburg, south africa": {
+  "lat": -26.1974789,
+  "lon": 28.0607682,
+  "display_name": "Emirates Park, South Park Lane, Commercial area, Troyeville, Johannesburg Ward 123, Johannesburg, City of Johannesburg Metropolitan Municipality, Gauteng, 2001, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 50638867
+ },
+ "estadi de sarrià, barcelona, spain": {
+  "lat": 41.3802235,
+  "lon": 2.1126629,
+  "display_name": "Pista central de tennis, Avinguda de Xile, Sant Ramon, la Maternitat i Sant Ramon, les Corts, Barcelona, Barcelonès, Barcelona, Catalonia, 08904, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "relation",
+  "osm_id": 5369578
+ },
+ "estadio akron, zapopan": {
+  "lat": 20.6818469,
+  "lon": -103.4626718,
+  "display_name": "Estadio Akron, 2800, Circuito JVC, San Juan de Ocotán, Zapopan, Región Centro, Jalisco, 45019, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "way",
+  "osm_id": 133439454
+ },
+ "estadio azteca, mexico city, mexico": {
+  "lat": 19.3029794,
+  "lon": -99.15047,
+  "display_name": "Banorte Stadium, Circuito Estadio Banorte, Ex-ejido de Santa Úrsula Coapa, Santa Úrsula Coapa, Mexico City, Coyoacán, Mexico City, 04600, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "way",
+  "osm_id": 4758704
+ },
+ "estadio bbva, guadalupe": {
+  "lat": 25.6691106,
+  "lon": -100.2444506,
+  "display_name": "Estadio BBVA, Avenida Pablo Livas, La Quinta, Guadalupe, Nuevo León, 67176, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "way",
+  "osm_id": 346397099
+ },
+ "estadio benito villamarín, seville, spain": {
+  "lat": 37.3564503,
+  "lon": -5.9809176,
+  "display_name": "Estadio Benito Villamarín, Calle Orinoco, Heliópolis, Distrito Bellavista-La Palmera, Seville, Sevilla, Andalusia, 41012, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 28355046
+ },
+ "estadio carlos dittborn, arica, chile": {
+  "lat": -18.4874603,
+  "lon": -70.2991206,
+  "display_name": "Estadio Carlos Dittborn, Tucapel, Villa Albergue, Arica, Provincia de Arica, Arica y Parinacota Region, 1001110, Chile",
+  "country": "Chile",
+  "country_code": "CL",
+  "osm_type": "way",
+  "osm_id": 104367035
+ },
+ "estadio carlos tartiere, oviedo, spain": {
+  "lat": 43.3608716,
+  "lon": -5.8703316,
+  "display_name": "Estadio Municipal Carlos Tartiere, Calle Isidro Lángara / Cai Isidro Lángara, La Iría, Oviedo / Uviéu, Oviedo, Asturias, 33013, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 242234184
+ },
+ "estadio centenario, montevideo, uruguay": {
+  "lat": -34.8945392,
+  "lon": -56.1526841,
+  "display_name": "Estadio Centenario, Avenida Doctor Américo Ricaldoni, Parque Batlle, Montevideo, 11820, Uruguay",
+  "country": "Uruguay",
+  "country_code": "UY",
+  "osm_type": "relation",
+  "osm_id": 2512517
+ },
+ "estadio chateau carreras, córdoba, argentina": null,
+ "estadio ciudad de mendoza, mendoza, argentina": {
+  "lat": -32.889678,
+  "lon": -68.879901,
+  "display_name": "Estadio Malvinas Argentinas, Ciclovía, Mendoza, Sección 9ª Parque General San Martín, Departamento Capital, Mendoza, 5547, Argentina",
+  "country": "Argentina",
+  "country_code": "AR",
+  "osm_type": "way",
+  "osm_id": 97853728
+ },
+ "estadio cuauhtémoc, puebla, mexico": {
+  "lat": 19.0780308,
+  "lon": -98.1643653,
+  "display_name": "Estadio Cuauhtémoc, Calz. Ignacio Zaragoza 666, Parque Industrial, Calzada Ignacio Zaragoza, Maravillas, Puebla, Municipio de Puebla, Puebla, 72220, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "way",
+  "osm_id": 665861984
+ },
+ "estadio el molinón, gijón, spain": {
+  "lat": 43.5362711,
+  "lon": -5.6374766,
+  "display_name": "Estadio El Molinón-Enrique Castro “Quini”, Paseo fluvial del Rio Piles, El Bibio-Parque, Gijón / Xixón, Gijón, Asturias, 33203, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 4540461
+ },
+ "estadio el teniente, rancagua, chile": {
+  "lat": -34.1778095,
+  "lon": -70.7375478,
+  "display_name": "Estadio El Teniente, Santa Ana, Población Cantillana, La Granja, Rancagua Sur, Rancagua, Provincia de Cachapoal, O'Higgins Region, 2820687, Chile",
+  "country": "Chile",
+  "country_code": "CL",
+  "osm_type": "way",
+  "osm_id": 628756140
+ },
+ "estadio gigante de arroyito, rosario, argentina": {
+  "lat": -32.914023,
+  "lon": -60.674499,
+  "display_name": "Estadio Gigante de Arroyito, Avenida Génova, Lisandro de la Torre, Distrito Norte, Rosario, Gran Rosario, Departamento Rosario, Santa Fe, S2013, Argentina",
+  "country": "Argentina",
+  "country_code": "AR",
+  "osm_type": "way",
+  "osm_id": 73878564
+ },
+ "estadio gran parque central, montevideo, uruguay": {
+  "lat": -34.8844576,
+  "lon": -56.1587294,
+  "display_name": "Grand Park Central Stadium, 2900, Carlos Anaya, Larrañaga, Montevideo, 11820, Uruguay",
+  "country": "Uruguay",
+  "country_code": "UY",
+  "osm_type": "way",
+  "osm_id": 37578954
+ },
+ "estadio jalisco, guadalajara, mexico": {
+  "lat": 20.7047861,
+  "lon": -103.3276735,
+  "display_name": "Estadio Jalisco, 1772, Calle Siete Colinas, Independencia, Guadalajara, Región Centro, Jalisco, 44290, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "way",
+  "osm_id": 1014985700
+ },
+ "estadio josé amalfitani, buenos aires, argentina": {
+  "lat": -34.6353382,
+  "lon": -58.5206788,
+  "display_name": "Estadio José Amalfitani, Reservistas Argentinos, Liniers, Buenos Aires, Comuna 9, Autonomous City of Buenos Aires, C1408AKX, Argentina",
+  "country": "Argentina",
+  "country_code": "AR",
+  "osm_type": "way",
+  "osm_id": 23243149
+ },
+ "estadio josé maría minella, mar del plata, argentina": {
+  "lat": -38.0178995,
+  "lon": -57.5824062,
+  "display_name": "Estadio José María Minella, Diagonal Américo Raúl Canosa, Peralta Ramos Oeste, Mar del Plata, Partido de General Pueyrredón, Buenos Aires, 7602, Argentina",
+  "country": "Argentina",
+  "country_code": "AR",
+  "osm_type": "way",
+  "osm_id": 121848199
+ },
+ "estadio josé rico pérez, alicante, spain": {
+  "lat": 38.3573459,
+  "lon": -0.4925974,
+  "display_name": "Estadio José Rico Pérez, Carrer Camí de Ronda, el Tossal, Alicante, l'Alacantí, Alacant / Alicante, Valencian Community, 03004, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 43292292
+ },
+ "estadio josé zorrilla, valladolid, spain": {
+  "lat": 41.6445789,
+  "lon": -4.7612638,
+  "display_name": "José Zorrilla Stadium, Avenida del Real Valladolid, Villa del Prado, Huerta del Rey, Valladolid, Castile and León, 47016, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 26947312
+ },
+ "estadio la corregidora, querétaro, mexico": null,
+ "estadio la romareda, zaragoza, spain": {
+  "lat": 41.6430344,
+  "lon": -0.9010138,
+  "display_name": "Estadio José Manuel Juan Boix, Avenida de San Juan Bosco, Romareda, Universidad, Zaragoza, Aragon, 50009, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 23734990
+ },
+ "estadio la rosaleda, málaga, spain": {
+  "lat": 36.7349435,
+  "lon": -4.4265346,
+  "display_name": "Estadio La Rosaleda, Paseo Martiricos, Martiricos, Palma-Palmilla, Málaga, Málaga-Costa del Sol, Malaga, Andalusia, 29011, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 146539049
+ },
+ "estadio luis casanova, valencia, spain": null,
+ "estadio monumental, buenos aires, argentina": {
+  "lat": -34.5452932,
+  "lon": -58.4497385,
+  "display_name": "Estadio Monumental, Conector Interciclovías, Belgrano, Buenos Aires, Comuna 13, Autonomous City of Buenos Aires, C1424BCL, Argentina",
+  "country": "Argentina",
+  "country_code": "AR",
+  "osm_type": "relation",
+  "osm_id": 1646999
+ },
+ "estadio nacional, santiago, chile": {
+  "lat": -33.4623809,
+  "lon": -70.6062176,
+  "display_name": "Estadio Nacional, Avenida Pedro de Valdivia, Barrio Doctor Luis Bisquert, Ñuñoa, Santiago, Provincia de Santiago, Santiago Metropolitan Region, 8320000, Chile",
+  "country": "Chile",
+  "country_code": "CL",
+  "osm_type": "node",
+  "osm_id": 3932022758
+ },
+ "estadio neza 86, nezahualcóyotl, mexico": {
+  "lat": 19.4057722,
+  "lon": -98.9870641,
+  "display_name": "Estadio Universidad Tecnológica de Nezahualcóyotl, Circuito Universidad Tecnologica, Nezahualcóyotl, State of Mexico, 57809, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "way",
+  "osm_id": 280279000
+ },
+ "estadio nou camp, león, mexico": null,
+ "estadio olímpico universitario, mexico city, mexico": {
+  "lat": 19.3316881,
+  "lon": -99.1922864,
+  "display_name": "Estadio Olímpico Universitario, Circuito Zona Deportiva, Mexico City, Coyoacán, Ciudad Universitaria, Mexico City, 04360, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "relation",
+  "osm_id": 14549034
+ },
+ "estadio pocitos, montevideo, uruguay": null,
+ "estadio ramón sánchez pizjuán, seville, spain": {
+  "lat": 37.3840876,
+  "lon": -5.9706309,
+  "display_name": "Estadio Ramón Sánchez-Pizjuán, Calle Sevilla Futbol Club, La Buhaira, Nervión, Seville, Sevilla, Andalusia, 41018, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 22742138
+ },
+ "estadio riazor, a coruña, spain": {
+  "lat": 43.3687157,
+  "lon": -8.4175098,
+  "display_name": "Estadio ABANCA-RIAZOR, 1, Rúa Manuel Murguía, San Roque de Fóra, Riazor, A Coruña, Galicia, 15011, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 34237293
+ },
+ "estadio san mamés, bilbao, spain": {
+  "lat": 43.264204,
+  "lon": -2.9493915,
+  "display_name": "San Mames, Telmo Zarra kalea, Basurtu, Basurtu-Zorrotza, Bilbao, Biscay, Autonomous Community of the Basque Country, 48014, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 59171758
+ },
+ "estadio santiago bernabéu, madrid, spain": {
+  "lat": 40.4530437,
+  "lon": -3.688197,
+  "display_name": "Bernabéu, Calle del Padre Damián, Hispanoamérica, Chamartín, Madrid, Community of Madrid, 28020, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "way",
+  "osm_id": 1507411898
+ },
+ "estadio sausalito, viña del mar, chile": {
+  "lat": -33.0144473,
+  "lon": -71.5341445,
+  "display_name": "Estadio Sausalito, Avenida Padre Alberto Hurtado, Conjunto Habitacional Población Textil Viña, Miraflores, Viña del Mar, Provincia de Valparaíso, Valparaiso Region, 2530796, Chile",
+  "country": "Chile",
+  "country_code": "CL",
+  "osm_type": "relation",
+  "osm_id": 1914626
+ },
+ "estadio sergio león chavez, irapuato, mexico": {
+  "lat": 20.6844987,
+  "lon": -101.356357,
+  "display_name": "Estadio Sergio León Chávez, Avenida Vicente Guerrero, Del Moral, Irapuato, Guanajuato, 36660, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "way",
+  "osm_id": 1022538058
+ },
+ "estadio tecnológico, monterrey, mexico": null,
+ "estadio tres de marzo, guadalajara, mexico": null,
+ "estadio universitario, monterrey, mexico": null,
+ "estádio beira-rio, porto alegre, brazil": {
+  "lat": -30.0654898,
+  "lon": -51.2349178,
+  "display_name": "José Pinheiro Borda Stadium, 891, Avenida Padre Cacique, Praia de Belas, Porto Alegre, Rio Grande do Sul, South Region, 90810-240, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 4587043
+ },
+ "estádio castelão, fortaleza, brazil": {
+  "lat": -3.8067419,
+  "lon": -38.5216794,
+  "display_name": "Arena Castelão, 2901, Avenida Alberto Craveiro, Boa Vista/Castelão, Fortaleza, Ceará, Northeast Region, 60861-211, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 8822987
+ },
+ "estádio do maracanã, rio de janeiro, brazil": {
+  "lat": -22.9121619,
+  "lon": -43.2311861,
+  "display_name": "Journalist Mário Filho Stadium, Avenida Rei Pelé, Maracanã, Rio de Janeiro, Southeast Region, 20271-130, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 4587734
+ },
+ "estádio do pacaembu, são paulo, brazil": {
+  "lat": -23.5485641,
+  "lon": -46.6653519,
+  "display_name": "Mercado Livre Arena Pacaembu, Praça Charles Miller, Pacaembu, Consolação, São Paulo, Southeast Region, 01234-010, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 666148829
+ },
+ "estádio dos eucaliptos, porto alegre, brazil": {
+  "lat": -30.0617155,
+  "lon": -51.227347,
+  "display_name": "Condomínio Grand Park Eucaliptos, 200, Menino Deus, Porto Alegre, Rio Grande do Sul, South Region, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 242673983
+ },
+ "estádio ilha do retiro, recife, brazil": {
+  "lat": -8.0630099,
+  "lon": -34.9036005,
+  "display_name": "Estádio Adelmar da Costa Carvalho, Avenida Prefeito Lima Castro, Ilha do Retiro, Recife, Pernambuco, Northeast Region, 50750-510, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "relation",
+  "osm_id": 8330801
+ },
+ "estádio independência, belo horizonte, brazil": {
+  "lat": -19.9083526,
+  "lon": -43.917778,
+  "display_name": "Estádio Raimundo Sampaio (Arena Independência), 3230, Rua Pitangui, Horto, Regional Leste, Belo Horizonte, Minas Gerais, Southeast Region, 31030-010, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 31281833
+ },
+ "estádio mineirão, belo horizonte, brazil": {
+  "lat": -19.8659115,
+  "lon": -43.9710434,
+  "display_name": "Estádio Governador Magalhães Pinto, 1001, Avenida Antônio Abrahão Caram, São Luiz, Campus UFMG, Pampulha, Belo Horizonte, Minas Gerais, Southeast Region, 31275-000, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 178504792
+ },
+ "estádio nacional, brasília, brazil": {
+  "lat": -15.7837498,
+  "lon": -47.8990287,
+  "display_name": "Arena BRB Mané Garrincha, SRPN Trecho 1, Quadra 1, Setor de Administração Municipal, Brasília, Plano Piloto, Federal District, Central-West Region, 70070-710, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 1013043185
+ },
+ "estádio vila capanema, curitiba, brazil": {
+  "lat": -25.4393937,
+  "lon": -49.2558444,
+  "display_name": "Estádio Durival Britto e Silva, 1100, Rua Engenheiros Rebouças, Jardim Botânico, Curitiba, Paraná, South Region, 81210-040, Brazil",
+  "country": "Brazil",
+  "country_code": "BR",
+  "osm_type": "way",
+  "osm_id": 634198717
+ },
+ "eyravallen, örebro, sweden": null,
+ "fisht olympic stadium, sochi, russia": null,
+ "foshan, china": {
+  "lat": 23.0239788,
+  "lon": 113.1159558,
+  "display_name": "Foshan, Nanhai, Guangdong, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "relation",
+  "osm_id": 3464719
+ },
+ "foxboro stadium, boston, united states": null,
+ "foxboro stadium, foxborough, united states": null,
+ "foxborough, united states": {
+  "lat": 42.0653768,
+  "lon": -71.2478308,
+  "display_name": "Foxborough, Norfolk County, Massachusetts, 02035, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 1948160
+ },
+ "frankenstadion, nuremberg, germany": {
+  "lat": 49.4292379,
+  "lon": 11.1292082,
+  "display_name": "Frankenstadion, Beuthener Straße, Dutzendteich, Südöstliche Außenstadt, Nuremberg, Bavaria, 90471, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "node",
+  "osm_id": 783428883
+ },
+ "free state stadium, bloemfontein, south africa": {
+  "lat": -29.1172351,
+  "lon": 26.2087696,
+  "display_name": "Toyota Stadium, A.T. Horak Street, Mangaung Ward 20, Bloemfontein, Mangaung Metropolitan Municipality, Free State, 9301, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 43791926
+ },
+ "fritz-walter-stadion, kaiserslautern, germany": {
+  "lat": 49.4345765,
+  "lon": 7.7766303,
+  "display_name": "Fritz-Walter-Stadion, 1, Fritz-Walter-Straße, Betzenberg, Kaiserslautern, Rhineland-Palatinate, 67663, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 27880400
+ },
+ "gaungdong provincial stadium, guangzhou, china": null,
+ "gelsenkirchen, germany": {
+  "lat": 51.5110321,
+  "lon": 7.0960124,
+  "display_name": "Gelsenkirchen, North Rhine-Westphalia, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "relation",
+  "osm_id": 62522
+ },
+ "geneva, switzerland": {
+  "lat": 46.2017559,
+  "lon": 6.1466014,
+  "display_name": "Geneva, Switzerland",
+  "country": "Switzerland",
+  "country_code": "CH",
+  "osm_type": "relation",
+  "osm_id": 1685488
+ },
+ "giants stadium, east rutherford, united states": null,
+ "giants stadium, new york city, united states": null,
+ "gillette stadium, foxborough, united states": {
+  "lat": 42.0908879,
+  "lon": -71.2641731,
+  "display_name": "Gillette Stadium, 1, Patriot Place, Foxborough, Norfolk County, Massachusetts, 02035, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 18511570
+ },
+ "goodison park, liverpool, england": {
+  "lat": 53.4386898,
+  "lon": -2.9664193,
+  "display_name": "Goodison Park, Goodison Road, Walton, Liverpool, Liverpool City Region, England, L4 4EL, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "way",
+  "osm_id": 154716043
+ },
+ "guadalajara, mexico": {
+  "lat": 20.6720375,
+  "lon": -103.338396,
+  "display_name": "Guadalajara, Región Centro, Jalisco, 44450, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "node",
+  "osm_id": 1663173902
+ },
+ "guangdong provincial stadium, guangzhou, china": {
+  "lat": 23.1271622,
+  "lon": 113.2787243,
+  "display_name": "Guangdong Provincial People's Stadium, 18, Jiaochang West Road, Dadong, Yuexiu District, Guangzhou City, Guangdong, 510100, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "way",
+  "osm_id": 29163006
+ },
+ "guangzhou, china": {
+  "lat": 23.1288429,
+  "lon": 113.2589581,
+  "display_name": "Guangzhou City, Guangdong, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "relation",
+  "osm_id": 3287346
+ },
+ "gwangju world cup stadium, gwangju, south korea": {
+  "lat": 35.1337706,
+  "lon": 126.8750042,
+  "display_name": "Gwangju World Cup Stadium, 240, Geumhwa-ro, Geumho-dong, 풍암동, Seo-gu, Gwangju, Jeonnam-Gwangju Special Metropolitan City, 62028, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 489466785
+ },
+ "hangzhou, china": {
+  "lat": 30.2489634,
+  "lon": 120.2052342,
+  "display_name": "Hangzhou City, Zhejiang, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "relation",
+  "osm_id": 3221112
+ },
+ "hard rock stadium, miami gardens": {
+  "lat": 25.9579032,
+  "lon": -80.2388497,
+  "display_name": "Hard Rock Stadium, 347, Northwest 199th Street, Miami Gardens, Miami-Dade County, Florida, 33056, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 171419981
+ },
+ "hardturm stadium, zürich, switzerland": null,
+ "hillsborough stadium, sheffield, england": {
+  "lat": 53.411379,
+  "lon": -1.5006311,
+  "display_name": "Hillsborough Stadium, Catch Bar Lane, Middlewood, Hillsborough, Sheffield, South Yorkshire, England, S6 1SW, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "way",
+  "osm_id": 23049323
+ },
+ "home depot center, carson, united states": null,
+ "hongkou football stadium, shanghai, china": {
+  "lat": 31.2733385,
+  "lon": 121.4763298,
+  "display_name": "Hongkou Football Stadium, 444, Dongjiangwan Road, Ouyanglu, Hongkou District, Shanghai, 200083, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "way",
+  "osm_id": 24448592
+ },
+ "idrottsparken, norrköping, sweden": {
+  "lat": 58.5843928,
+  "lon": 16.1720584,
+  "display_name": "PlatinumCars Arena, Matchgatan, Såpkullen, Norrköping, Norrköpings kommun, Östergötland County, 601 86, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "relation",
+  "osm_id": 1440621
+ },
+ "impuls arena, augsburg, germany": {
+  "lat": 48.3231179,
+  "lon": 10.885879,
+  "display_name": "WWK ARENA, 90, Bürgermeister-Ulrich-Straße, Universitätsviertel, Augsburg, Bavaria, 86199, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 38532924
+ },
+ "incheon munhak stadium, incheon, south korea": {
+  "lat": 37.4350773,
+  "lon": 126.6907516,
+  "display_name": "Incheon Munhak Stadium, Je2gyeongin Expressway, Munhak-dong, Michuhol-gu, Incheon, 22235, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 71498193
+ },
+ "international stadium yokohama, yokohama, japan": {
+  "lat": 35.5099882,
+  "lon": 139.6063825,
+  "display_name": "NISSAN Stadium, 港北区小机町3300, 西ゲート広場, Toriyamacho, Kohoku Ward, Yokohama, Kanagawa Prefecture, 222-0036, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 119477713
+ },
+ "investors group field, winnipeg, canada": null,
+ "jack kent cooke stadium, washington, d.c., united states": null,
+ "jeju world cup stadium, seogwipo, south korea": {
+  "lat": 33.2462695,
+  "lon": 126.5091071,
+  "display_name": "Jeju World Cup Stadium, 33, Worldcup-ro, Beophwan-dong, 신서귀포, Daeryun-dong, Seogwipo-si, Jeju, 63572, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 175919449
+ },
+ "jeonju world cup stadium, jeonju, south korea": {
+  "lat": 35.8682089,
+  "lon": 127.0645509,
+  "display_name": "Jeonju World Cup Stadium, 1055, Girin-daero, Banwol-dong, Deokjin-gu, Jeonju-si, Jeonbuk-do, 54809, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 655672992
+ },
+ "jernvallen, sandviken, sweden": {
+  "lat": 60.6081312,
+  "lon": 16.7724836,
+  "display_name": "Jernvallen, Nell Sjöströms väg, Nya Bruket, Sandviken, Sandvikens kommun, Gävleborg County, 811 33, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "way",
+  "osm_id": 30539752
+ },
+ "jiangmen stadium, jiangmen, china": {
+  "lat": 22.6542075,
+  "lon": 113.0640009,
+  "display_name": "Jiangmen Sports Centre Stadium, Tiyuchang West Road, Binjiang, Tangxia, Pengjiang District, Jiangmen, Guangdong, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "way",
+  "osm_id": 1158113336
+ },
+ "kaliningrad stadium, kaliningrad, russia": {
+  "lat": 54.6980018,
+  "lon": 20.534963,
+  "display_name": "Kaliningrad Stadium, 25, Солнечный бульвар, Rosenau, Московский район, Kaliningrad, Northwestern Federal District, 236035, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 8940837
+ },
+ "kashima stadium, ibaraki, japan": {
+  "lat": 35.9920049,
+  "lon": 140.6403679,
+  "display_name": "Kashima Football Stadium, Kashima Bypass, Shimizu, Kashima, Ibaraki Prefecture, 314-0006, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 175922114
+ },
+ "kazan arena, kazan, russia": {
+  "lat": 55.8231963,
+  "lon": 49.1641317,
+  "display_name": "Kazan Arena football stadium, проспект Ямашева, Ново-Савиновский район, Kazan, Tatarstan, Volga Federal District, 420133, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "node",
+  "osm_id": 9732820321
+ },
+ "khalifa international stadium, al rayyan, qatar": {
+  "lat": 25.2636512,
+  "lon": 51.449225,
+  "display_name": "Khalifa International Stadium, Khalifa Stadium Parking, Baaya, Mehairja, Al Rayyan, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "relation",
+  "osm_id": 8677986
+ },
+ "kobe wing stadium, kobe, japan": {
+  "lat": 34.6566966,
+  "lon": 135.16976,
+  "display_name": "NOEVIR Stadium Kobe, 川中御影線, Zaimokucho, Hyogo Ward, Kobe, Hyogo Prefecture, 652-0855, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "relation",
+  "osm_id": 1721297
+ },
+ "krestovsky stadium, saint petersburg, russia": {
+  "lat": 59.9723766,
+  "lon": 30.2210608,
+  "display_name": "Gazprom Arena, 1 с1, Футбольная аллея, округ Чкаловское, Saint Petersburg, Northwestern Federal District, 197042, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 8841754
+ },
+ "la bombonera, toluca, mexico": null,
+ "levi's stadium, santa clara": {
+  "lat": 37.4029867,
+  "lon": -121.9696489,
+  "display_name": "Levi’s Stadium, 4900, Marie P. DeBartolo Way, Agnew, Santa Clara, Santa Clara County, California, 95054, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 296503400
+ },
+ "león, mexico": {
+  "lat": 21.121965,
+  "lon": -101.6829766,
+  "display_name": "León, Guanajuato, 37004, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "node",
+  "osm_id": 273601416
+ },
+ "lille, france": {
+  "lat": 50.6365654,
+  "lon": 3.0635282,
+  "display_name": "Lille, Nord, Hauts-de-France, Metropolitan France, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "relation",
+  "osm_id": 58404
+ },
+ "lincoln financial field, philadelphia, united states": {
+  "lat": 39.9009099,
+  "lon": -75.1674892,
+  "display_name": "Lincoln Financial Field, 1, South Darien Street, South Philadelphia, Philadelphia, Philadelphia County, Pennsylvania, 19147, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 32891768
+ },
+ "loftus versfeld stadium, pretoria, south africa": {
+  "lat": -25.7532347,
+  "lon": 28.2229327,
+  "display_name": "Loftus Versfeld Stadium, Kirkness Street, Arcadia, Tshwane Ward 92, Pretoria, City of Tshwane Metropolitan Municipality, Gauteng, 0132, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 656161698
+ },
+ "london, england": {
+  "lat": 51.5074456,
+  "lon": -0.1277653,
+  "display_name": "Greater London, England, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "relation",
+  "osm_id": 175342
+ },
+ "lumen field, seattle": {
+  "lat": 47.5953459,
+  "lon": -122.3316443,
+  "display_name": "Lumen Field, 800, Occidental Avenue South, Yesler Terrace, Seattle, King County, Washington, 98134, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 5838734
+ },
+ "lusail stadium, lusail, qatar": {
+  "lat": 25.4131991,
+  "lon": 51.4942435,
+  "display_name": "Lusail Stadium Street, Lusail, Al-Daayen, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "way",
+  "osm_id": 1433198798
+ },
+ "luzhniki stadium, moscow, russia": {
+  "lat": 55.7157445,
+  "lon": 37.5537673,
+  "display_name": "Grand Sports Arena of the Luzhniki Olympic Complex, Luzhnetskaya Embankment, Luzhniki, 531, Khamovniki District, Moscow, Central Federal District, 119270, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 162802
+ },
+ "madrid, spain": {
+  "lat": 40.416782,
+  "lon": -3.703507,
+  "display_name": "Madrid, Community of Madrid, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "relation",
+  "osm_id": 5326784
+ },
+ "malmö stadion, malmö, sweden": {
+  "lat": 55.5859136,
+  "lon": 12.9893554,
+  "display_name": "Malmö Stadion, Stadion, Väster, Malmö, Malmö kommun, Skåne County, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "relation",
+  "osm_id": 53037
+ },
+ "mbombela stadium, nelspruit, south africa": {
+  "lat": -25.4617294,
+  "lon": 30.9296899,
+  "display_name": "Mbombela Stadium, Halls Sport Grounds Entrance, Gateway, Mbombela Ward 14, Mbombela (Nelspruit), Mbombela, Ehlanzeni District Municipality, Mpumalanga, 1211, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 52908226
+ },
+ "mercedes-benz stadium, atlanta": {
+  "lat": 33.7554123,
+  "lon": -84.4008493,
+  "display_name": "Mercedes-Benz Stadium, 1414, Andrew Young International Boulevard, Atlanta, Fulton County, Georgia, 30313, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 536744534
+ },
+ "metlife stadium, east rutherford": {
+  "lat": 40.8135071,
+  "lon": -74.0743442,
+  "display_name": "MetLife Stadium, 1, MetLife Stadium Drive, East Rutherford, Bergen County, New Jersey, 07073, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 24221553
+ },
+ "miyagi stadium, miyagi, japan": {
+  "lat": 38.3353606,
+  "lon": 140.9504567,
+  "display_name": "Q&A Stadium Miyagi, 利府岩切停車場線, Aobadai 2-chome, Kamiyasawa, Miyagino Ward, Rifu, Miyagi County, Miyagi Prefecture, 981-0122, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 103894920
+ },
+ "moncton stadium, moncton, canada": {
+  "lat": 46.1083217,
+  "lon": -64.7832509,
+  "display_name": "Moncton Stadium, avenue Antonine-Maillet, Downtown, Moncton, Moncton Parish, City of Moncton, Westmorland County, New Brunswick, E1A 3E9, Canada",
+  "country": "Canada",
+  "country_code": "CA",
+  "osm_type": "way",
+  "osm_id": 403195815
+ },
+ "monterrey, mexico": {
+  "lat": 25.6802019,
+  "lon": -100.315258,
+  "display_name": "Monterrey, Nuevo León, 64490, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "node",
+  "osm_id": 4145210488
+ },
+ "montevideo, uruguay": {
+  "lat": -34.9058916,
+  "lon": -56.1913095,
+  "display_name": "Montevideo, Uruguay",
+  "country": "Uruguay",
+  "country_code": "UY",
+  "osm_type": "relation",
+  "osm_id": 2929054
+ },
+ "mordovia arena, saransk, russia": {
+  "lat": 54.1818304,
+  "lon": 45.2044289,
+  "display_name": "Mordovia Arena, Кочкуровская улица, Yubileyny, Октябрьский район, Saransk, Saransk Urban District, Republic of Mordovia, Volga Federal District, 430005, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "way",
+  "osm_id": 592486130
+ },
+ "moscow, russia": {
+  "lat": 55.625578,
+  "lon": 37.6063916,
+  "display_name": "Moscow, Central Federal District, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 102269
+ },
+ "moses mabhida stadium, durban, south africa": {
+  "lat": -29.8290201,
+  "lon": 31.0313741,
+  "display_name": "Moses Mabhida Stadium, Battery Beach Road, eThekwini Ward 27, Durban, eThekwini Metropolitan Municipality, KwaZulu-Natal, 4025, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "relation",
+  "osm_id": 318673
+ },
+ "nagai stadium, osaka, japan": {
+  "lat": 34.6141064,
+  "lon": 135.518511,
+  "display_name": "Yanmar Stadium Nagai, 北スロープ, Yamasaka 5-chome, Higashisumiyoshi Ward, Osaka, Osaka Prefecture, 546-0035, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 66676943
+ },
+ "naples, italy": {
+  "lat": 40.8358846,
+  "lon": 14.2487679,
+  "display_name": "Naples, Campania, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "relation",
+  "osm_id": 40767
+ },
+ "neckarstadion, stuttgart, germany": {
+  "lat": 48.7922488,
+  "lon": 9.2320857,
+  "display_name": "MHPArena, 87, Mercedesstraße, Wasen, Bad Cannstatt, Stuttgart, Baden-Württemberg, 70372, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 3869991
+ },
+ "nelson mandela bay stadium, port elizabeth, south africa": {
+  "lat": -33.937792,
+  "lon": 25.5994087,
+  "display_name": "Nelson Mandela Bay Stadium, Fettes Road, Kensington, Holland Park, North End, Gqeberha, Nelson Mandela Bay Metropolitan Municipality, Eastern Cape, 6056, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 27345494
+ },
+ "new plaza stadium, foshan, china": null,
+ "new york city, united states": {
+  "lat": 40.7127281,
+  "lon": -74.0060152,
+  "display_name": "New York, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 175905
+ },
+ "niedersachsenstadion, hanover, germany": {
+  "lat": 52.360026,
+  "lon": 9.7310161,
+  "display_name": "Heinz-von-Heiden-Arena, 3, Robert-Enke-Straße, Calenberger Neustadt, Centre, Hanover, Region Hannover, Lower Saxony, 30169, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 9923195
+ },
+ "niigata stadium, niigata, japan": {
+  "lat": 37.9483599,
+  "lon": 139.1883607,
+  "display_name": "Niigata Racecourse, 豊栄太夫浜線, Shimooyachi, Kita Ward, Niigata, Niigata Prefecture, 950-3304, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 332008125
+ },
+ "nizhny novgorod stadium, nizhny novgorod, russia": null,
+ "nizhny novgorod, russia": {
+  "lat": 56.3264816,
+  "lon": 44.0051395,
+  "display_name": "Nizhny Novgorod, Nizhny Novgorod Oblast, Volga Federal District, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 1752948
+ },
+ "nrg stadium, houston": {
+  "lat": 29.6848581,
+  "lon": -95.4108015,
+  "display_name": "NRG Stadium, 1, NRG Parkway, Houston, Harris County, Texas, 77054, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 119422708
+ },
+ "nuevo estadio, elche, spain": null,
+ "old trafford, manchester, england": {
+  "lat": 53.4631096,
+  "lon": -2.2913865,
+  "display_name": "Old Trafford, Sir Matt Busby Way, Wharfside, Stretford, Trafford, Greater Manchester, England, M16 0RA, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "way",
+  "osm_id": 99403577
+ },
+ "olympia, helsingborg, sweden": {
+  "lat": 56.0499907,
+  "lon": 12.7077617,
+  "display_name": "Olympia, Mellersta Stenbocksgatan, Olympia, Helsingborg, Helsingborgs kommun, Skåne County, 254 37, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "relation",
+  "osm_id": 5892720
+ },
+ "olympiastadion, berlin, germany": {
+  "lat": 52.5145846,
+  "lon": 13.2398144,
+  "display_name": "Berlin Olympic Stadium, 3, Olympischer Platz, Ostpreußenviertel, Westend, Charlottenburg-Wilmersdorf, Berlin, 14053, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 38862723
+ },
+ "olympiastadion, munich, germany": {
+  "lat": 48.1731314,
+  "lon": 11.5464786,
+  "display_name": "Olympic Stadium Munich, 27, Spiridon-Louis-Ring, Milbertshofen-Am Hart, Munich, Bavaria, 80809, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 419656920
+ },
+ "olympic stadium, montreal, canada": {
+  "lat": 45.5577984,
+  "lon": -73.5516458,
+  "display_name": "Olympic Stadium, 4545, Avenue Pierre-De Coubertin, Maisonneuve, Mercier–Hochelaga-Maisonneuve, Montreal, Urban agglomeration of Montreal, Montreal (administrative region), Quebec, H1V 3N7, Canada",
+  "country": "Canada",
+  "country_code": "CA",
+  "osm_type": "way",
+  "osm_id": 108505523
+ },
+ "orlando, united states": {
+  "lat": 28.5421218,
+  "lon": -81.379045,
+  "display_name": "Orlando, Orange County, Florida, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 1128379
+ },
+ "otkritie arena, moscow, russia": null,
+ "parc des princes, paris, france": {
+  "lat": 48.8413634,
+  "lon": 2.2530693,
+  "display_name": "Parc des Princes, 24, Rue du Commandant Guilbaud, Quartier d'Auteuil, 16th Arrondissement, Paris, Ile-de-France, Metropolitan France, 75016, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 53559935
+ },
+ "parc olympique lyonnais, lyon, france": {
+  "lat": 45.7653624,
+  "lon": 4.9820543,
+  "display_name": "Groupama Stadium, Allée Nord-Ouest, Le Grand Montout, Charpieu, Décines-Charpieu, Lyon, Métropole de Lyon, Rhône, Auvergne-Rhône-Alpes, Metropolitan France, 69150, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 353267337
+ },
+ "paris, france": {
+  "lat": 48.8534951,
+  "lon": 2.3483915,
+  "display_name": "Paris, Ile-de-France, Metropolitan France, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "relation",
+  "osm_id": 71525
+ },
+ "parkstadion, gelsenkirchen, germany": {
+  "lat": 51.5592587,
+  "lon": 7.0675771,
+  "display_name": "Parkstadion, Stadionring, Erle-Berger Feld, Erle, Gelsenkirchen-Ost, Gelsenkirchen, North Rhine-Westphalia, 45891, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 770742075
+ },
+ "peter mokaba stadium, polokwane, south africa": {
+  "lat": -23.9248058,
+  "lon": 29.4679601,
+  "display_name": "Peter Mokaba Stadium, Webster Street, Penina Park, Polokwane Ward 6, Polokwane, Polokwane Local Municipality, Capricorn District Municipality, Limpopo, 0699, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "relation",
+  "osm_id": 952159
+ },
+ "pge park, portland, united states": null,
+ "pontiac silverdome, pontiac, united states": null,
+ "pontiac, united states": {
+  "lat": 42.6389216,
+  "lon": -83.2910468,
+  "display_name": "Pontiac, Oakland County, Michigan, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 134564
+ },
+ "portland, united states": {
+  "lat": 45.5202471,
+  "lon": -122.674194,
+  "display_name": "Portland, Multnomah County, Oregon, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 186579
+ },
+ "querétaro, mexico": {
+  "lat": 20.8052225,
+  "lon": -99.8837376,
+  "display_name": "Querétaro, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "relation",
+  "osm_id": 2340903
+ },
+ "reims, france": {
+  "lat": 49.2577886,
+  "lon": 4.031926,
+  "display_name": "Reims, Marne, Grand Est, Metropolitan France, 51100, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "relation",
+  "osm_id": 36458
+ },
+ "rfk stadium, washington, d.c., united states": {
+  "lat": 38.8898387,
+  "lon": -76.9719023,
+  "display_name": "New Stadium at RFK Campus, 2400, East Capitol Street Southeast, Hill East, Ward 7, Washington, District of Columbia, 20003, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 298594984
+ },
+ "rhein-neckar-arena, sinsheim, germany": {
+  "lat": 49.2380604,
+  "lon": 8.8876414,
+  "display_name": "Rhein-Neckar-Arena, 1, Dietmar-Hopp-Straße, Sinsheim, VVG der Stadt Sinsheim, Rhein-Neckar-Kreis, Baden-Württemberg, 74889, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 29987143
+ },
+ "rheinenergiestadion, cologne, germany": {
+  "lat": 50.9335055,
+  "lon": 6.8751167,
+  "display_name": "RheinEnergieSTADION, 999, Aachener Straße, Müngersdorf, Lindenthal, Cologne, North Rhine-Westphalia, 50933, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 145246719
+ },
+ "rheinstadion, düsseldorf, germany": {
+  "lat": 51.2610188,
+  "lon": 6.7317788,
+  "display_name": "Rheinstadionstraße, Stockum, Stadtbezirk 5, Dusseldorf, North Rhine-Westphalia, 40474, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 1286175140
+ },
+ "rimnersvallen, uddevalla, sweden": {
+  "lat": 58.3570576,
+  "lon": 11.9492993,
+  "display_name": "Rimnersvallen, Valhallavägen, Hedegärde, Uddevalla, Ramneröd, Uddevalla kommun, Västra Götaland County, 451 54, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "way",
+  "osm_id": 89504743
+ },
+ "roazhon park, rennes, france": {
+  "lat": 48.1075655,
+  "lon": -1.7126543,
+  "display_name": "Roazhon Park, Rue de Lorient, Moulin du Comte, Bourg l'Évesque - La Touche - Moulin du Comte, Quartiers Ouest, Rennes, Ille-et-Vilaine, Brittany, Metropolitan France, 35000, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 1313073237
+ },
+ "roker park, sunderland, england": {
+  "lat": 54.9238049,
+  "lon": -1.3701154,
+  "display_name": "Roker Park, Roker, Sunderland, Tyne and Wear, North East, England, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "relation",
+  "osm_id": 10773936
+ },
+ "rome, italy": {
+  "lat": 41.8933203,
+  "lon": 12.4829321,
+  "display_name": "Rome, Roma Capitale, Lazio, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "relation",
+  "osm_id": 41485
+ },
+ "rose bowl, los angeles, united states": {
+  "lat": 34.1613492,
+  "lon": -118.1676674,
+  "display_name": "Rose Bowl Stadium, 1001, Rose Bowl Drive, Pasadena Council District 1, Pasadena, Los Angeles County, California, 91103, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 5208863
+ },
+ "rose bowl, pasadena, united states": {
+  "lat": 34.1613492,
+  "lon": -118.1676674,
+  "display_name": "Rose Bowl Stadium, 1001, Rose Bowl Drive, Pasadena Council District 1, Pasadena, Los Angeles County, California, 91103, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 5208863
+ },
+ "rostov arena, rostov-on-don, russia": {
+  "lat": 47.2093548,
+  "lon": 39.7382824,
+  "display_name": "Rostov Arena, Левобережная улица, Bogatyanovka, Кировский район, Rostov-on-Don, Rostov Oblast, Southern Federal District, 344002, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "way",
+  "osm_id": 137831707
+ },
+ "royal bafokeng stadium, rustenburg, south africa": {
+  "lat": -25.5787762,
+  "lon": 27.1609204,
+  "display_name": "Royal bafokeng Stadium, Entrance 3, Saron, Rustenburg Ward 6, Phokeng, Rustenburg Local Municipality, Bojanala Platinum District Municipality, North West, 0335, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 61318435
+ },
+ "rudolf-harbig-stadion, dresden, germany": {
+  "lat": 51.040849,
+  "lon": 13.7480416,
+  "display_name": "Rudolf-Harbig-Stadion, 12, Lennéstraße, Seevorstadt-Ost/Großer Garten, Seevorstadt, Altstadt, Dresden, Saxony, 01069, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 101383573
+ },
+ "ruhrstadion, bochum, germany": {
+  "lat": 51.4900826,
+  "lon": 7.2365091,
+  "display_name": "Vonovia Ruhrstadion, 145, Castroper Straße, Innenstadt, Bochum-Mitte, Bochum, North Rhine-Westphalia, 44791, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 18690902
+ },
+ "ryavallen, borås, sweden": {
+  "lat": 57.7357069,
+  "lon": 12.9349295,
+  "display_name": "Ryavallen, Idrottsgatan, Alideberg, Borås, Borås kommun, Västra Götaland County, 506 30, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "way",
+  "osm_id": 37997781
+ },
+ "råsunda stadium, solna, sweden": null,
+ "saitama stadium, saitama, japan": {
+  "lat": 35.9030742,
+  "lon": 139.7176057,
+  "display_name": "Saitama Stadium 2002, 野田陸橋, Nakanoda, Midori Ward, Saitama, Saitama Prefecture, 336-0962, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 119665760
+ },
+ "samara arena, samara, russia": {
+  "lat": 53.2780085,
+  "lon": 50.2375022,
+  "display_name": "Solidarnost Samara Arena, Dalnyaya Street, Kirovskiy rayon, Samara, Samara Oblast, Volga Federal District, 443028, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "way",
+  "osm_id": 572625474
+ },
+ "san fransisco, united states": {
+  "lat": 37.0394571,
+  "lon": -104.3528426,
+  "display_name": "San Fransisco Pass (East), Las Animas County, Colorado, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "node",
+  "osm_id": 1941621631
+ },
+ "san siro, milan, italy": {
+  "lat": 45.4782003,
+  "lon": 9.123964,
+  "display_name": "Giuseppe Meazza Stadium, Via dei Piccolomini, Quartiere Harar, San Siro, Municipio 7, Milan, Lombardy, 20148, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 218520505
+ },
+ "sapporo dome, sapporo, japan": {
+  "lat": 43.0178018,
+  "lon": 141.4087419,
+  "display_name": "Sapporo Dome, Fukuzumi soen dori, Hitsujigaoka, Toyohira Ward, Sapporo, Ishikari Subprefecture, Hokkaido Prefecture, Hokkaido Region, 062-0043, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "node",
+  "osm_id": 346170361
+ },
+ "seoul world cup stadium, seoul, south korea": {
+  "lat": 37.5683021,
+  "lon": 126.8972477,
+  "display_name": "Seoul World Cup Stadium, 240, World Cup-ro, Seongsan-dong, Seongsan 2(i)-dong, Mapo-gu, Seoul, 03932, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 168102974
+ },
+ "shizuoka stadium ecopa, shizuoka, japan": {
+  "lat": 34.7434305,
+  "lon": 137.9707289,
+  "display_name": "Shizuoka Stadium ECOPA, 磐田掛川線, 愛野南二丁目, 愛野, Fukuroi, Shizuoka Prefecture, 436-0048, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 175920589
+ },
+ "soccer city, johannesburg, south africa": {
+  "lat": -26.2347063,
+  "lon": 27.9826439,
+  "display_name": "FNB Stadium, Stadium Avenue, Aeroton, Johannesburg Ward 125, Johannesburg, City of Johannesburg Metropolitan Municipality, Gauteng, 2001, South Africa",
+  "country": "South Africa",
+  "country_code": "ZA",
+  "osm_type": "way",
+  "osm_id": 48848017
+ },
+ "sochi, russia": {
+  "lat": 43.5854823,
+  "lon": 39.723109,
+  "display_name": "Sochi, town district of Sochi, Krasnodar Krai, Southern Federal District, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 1430508
+ },
+ "sofi stadium, inglewood": {
+  "lat": 33.9534074,
+  "lon": -118.3390098,
+  "display_name": "SoFi Stadium, 1001, Champion Drive, Hollywood Park, Morningside Park, Inglewood, Los Angeles County, California, 90301, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 860635712
+ },
+ "soldier field, chicago, united states": {
+  "lat": 41.8623356,
+  "lon": -87.6176477,
+  "display_name": "Soldier Field, 425, East McFetridge Drive, Central Station, South Loop, Near South Side, Chicago, South Chicago Township, Cook County, Illinois, 60605, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 16699535
+ },
+ "solna, sweden": {
+  "lat": 59.366667,
+  "lon": 18.016667,
+  "display_name": "Solna kommun, Stockholm County, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "relation",
+  "osm_id": 398040
+ },
+ "spartan stadium, san jose, united states": {
+  "lat": 37.3196895,
+  "lon": -121.8683139,
+  "display_name": "CEFCU Stadium, East Alma Avenue, Spartan Keyes, San Jose, Santa Clara County, California, 95192, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "way",
+  "osm_id": 28462717
+ },
+ "st. jakob stadium, basel, switzerland": {
+  "lat": 47.5416464,
+  "lon": 7.6201249,
+  "display_name": "St. Jakob-Park, St. Jakobs-Strasse, St. Alban, Kleinbasel, Basel, Basel-City, 4127, Switzerland",
+  "country": "Switzerland",
+  "country_code": "CH",
+  "osm_type": "way",
+  "osm_id": 24887273
+ },
+ "stade auguste-delaune, reims, france": {
+  "lat": 49.2470758,
+  "lon": 4.0247869,
+  "display_name": "Stade Auguste-Delaune, Voie Jean Taittinger, Reims, Marne, Grand Est, Metropolitan France, 51100, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 762501755
+ },
+ "stade de france, saint-denis, france": {
+  "lat": 48.9244726,
+  "lon": 2.3601325,
+  "display_name": "Stade de France, Avenue du Stade de France, Franc-Moisin - Bel-Air - Stade de France, Saint-Denis, Seine-Saint-Denis, Ile-de-France, Metropolitan France, 93200, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 64003104
+ },
+ "stade de gerland, lyon, france": {
+  "lat": 45.7237756,
+  "lon": 4.8322517,
+  "display_name": "Matmut Stadium de Gerland, Rue Jean Bouin, Gerland, 7th Arrondissement, Lyon, Métropole de Lyon, Rhône, Auvergne-Rhône-Alpes, Metropolitan France, 69007, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 4585967
+ },
+ "stade de la beaujoire, nantes, france": {
+  "lat": 47.256005,
+  "lon": -1.5247552,
+  "display_name": "Stade de La Beaujoire - Louis Fonteneau, Périphérique Extérieur, La Halvêque, Beaujoire - Halvèque, Nantes Erdre, Nantes, Loire-Atlantique, Pays de la Loire, Metropolitan France, 44300, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 27581749
+ },
+ "stade de la meinau, strasbourg, france": {
+  "lat": 48.5599481,
+  "lon": 7.7551221,
+  "display_name": "Stade de la Meinau, Piste Georges Speicher, Meinau, Strasbourg, Bas-Rhin, European Collectivity of Alsace, Grand Est, Metropolitan France, 67100, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "relation",
+  "osm_id": 3856635
+ },
+ "stade de la mosson, montpellier, france": {
+  "lat": 43.622022,
+  "lon": 3.8120898,
+  "display_name": "Stade de la Mosson, Plan Fernand Sastre, La Paillade, Mosson, Montpellier, Hérault, Occitania, Metropolitan France, 34080, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 265589684
+ },
+ "stade de toulouse, toulouse, france": {
+  "lat": 43.5832262,
+  "lon": 1.4340638,
+  "display_name": "Stadium de Toulouse, 1bis, Allée Gabriel Biénès, Empalot, Saint-Michel / Saint-Agne / Empalot / Le Busca / Île du Ramier / Montplaisir, Toulouse, Haute-Garonne, Occitania, Metropolitan France, 31028, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 534217397
+ },
+ "stade des alpes, grenoble, france": {
+  "lat": 45.1873945,
+  "lon": 5.7402434,
+  "display_name": "Stade des Alpes, Avenue de Valmy, Exposition Bajatière, Secteur 5, Grenoble, Isère, Auvergne-Rhône-Alpes, Metropolitan France, 38100, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 490606260
+ },
+ "stade du fort carré, antibes, france": {
+  "lat": 43.5909793,
+  "lon": 7.1254181,
+  "display_name": "Stade du Fort Carré, Avenue du 11 Novembre, Val Claret, Centre Ville, Antibes, Grasse, Maritime Alps, Provence-Alpes-Côte d'Azur, Metropolitan France, 06160, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 292942244
+ },
+ "stade du hainaut, valenciennes, france": {
+  "lat": 50.3484274,
+  "lon": 3.5317455,
+  "display_name": "Stade du Hainaut, Avenue des Sports, Faubourg de Cambrai, Valenciennes, Nord, Hauts-de-France, Metropolitan France, 59300, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 138266077
+ },
+ "stade du parc lescure, bordeaux, france": {
+  "lat": 44.829308,
+  "lon": -0.5982638,
+  "display_name": "Stade Chaban-Delmas, Avenue du Parc de Lescure, Barrière Saint-Augustin, Saint-Augustin, Saint-Augustin - Tauzin - Alphonse Dupeux, Bordeaux, Gironde, Nouvelle-Aquitaine, Metropolitan France, 33000, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 268785934
+ },
+ "stade du t.o.e.c., toulouse, france": null,
+ "stade félix-bollaert, lens, france": {
+  "lat": 50.4328242,
+  "lon": 2.8149863,
+  "display_name": "Stade Bollaert-Delelis, Avenue Alfred Maës, Cité n°4, Lens, Pas-de-Calais, Hauts-de-France, Metropolitan France, 62300, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 268785933
+ },
+ "stade geoffroy-guichard, saint-étienne, france": {
+  "lat": 45.4607567,
+  "lon": 4.3900932,
+  "display_name": "Stade Geoffroy-Guichard, 14, Rue Paul et Pierre Guichard, Le Marais, Montreynaud, Saint-Étienne, Loire, Auvergne-Rhône-Alpes, Metropolitan France, 42000, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 499335246
+ },
+ "stade jules deschaseaux, le havre, france": {
+  "lat": 49.5017357,
+  "lon": 0.1711773,
+  "display_name": "Stade Jules-Deschaseaux, Rue du Docteur Lamaze, Soquence, Le Havre, Seine-Maritime, Normandy, Metropolitan France, 76610, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 76089685
+ },
+ "stade océane, le havre, france": {
+  "lat": 49.4987513,
+  "lon": 0.1694637,
+  "display_name": "Stade CMA CGM Océane, Parvis, Champs Barets, Le Havre, Seine-Maritime, Normandy, Metropolitan France, 76610, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 238067304
+ },
+ "stade olympique de colombes, paris, france": null,
+ "stade olympique de la pontaise, lausanne, switzerland": {
+  "lat": 46.5332284,
+  "lon": 6.6243167,
+  "display_name": "Stade Olympique de la Pontaise, Chemin des Grandes-Roches, Lausanne, District de Lausanne, Vaud, 1004, Switzerland",
+  "country": "Switzerland",
+  "country_code": "CH",
+  "osm_type": "way",
+  "osm_id": 45746506
+ },
+ "stade victor boucquey, lille, france": null,
+ "stade vélodrome, marseille, france": {
+  "lat": 43.2698474,
+  "lon": 5.3959082,
+  "display_name": "CEPAC Vélodrome, 3, Boulevard Michelet, Saint-Giniez, 8th Arrondissement, Marseille, Bouches-du-Rhône, Provence-Alpes-Côte d'Azur, Metropolitan France, 13008, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "way",
+  "osm_id": 172853962
+ },
+ "stadio benito mussolini, turin, italy": null,
+ "stadio comunale, florence, italy": {
+  "lat": 43.7808838,
+  "lon": 11.2828191,
+  "display_name": "Stadio comunale Artemio Franchi, Viale Pierluigi Nervi, Campo di Marte, Quartiere 2, Florence, Tuscany, 50137, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 28653500
+ },
+ "stadio delle alpi, turin, italy": null,
+ "stadio friuli, udine, italy": {
+  "lat": 46.081402,
+  "lon": 13.1997411,
+  "display_name": "Bluenergy Stadium, Viale Agostino e Angelo Candolini, Villaggio del Sole, Rizzi / I Riçs, Udine, Udine / Udin / Videm, Friuli – Venezia Giulia, 33100, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 566753907
+ },
+ "stadio giorgio ascarelli, naples, italy": null,
+ "stadio giovanni berta, florence, italy": {
+  "lat": 43.7808838,
+  "lon": 11.2828191,
+  "display_name": "Stadio comunale Artemio Franchi, Via San Gervasio, Campo di Marte, Quartiere 2, Florence, Tuscany, 50137, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 28653500
+ },
+ "stadio la favorita, palermo, italy": {
+  "lat": 38.1528194,
+  "lon": 13.3420112,
+  "display_name": "Stadio Renzo Barbera, 11, Viale del Fante, Resuttana, San Lorenzo, VI Circoscrizione, Palermo, Sicily, 90146, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 353225089
+ },
+ "stadio littorio, trieste, italy": {
+  "lat": 45.6239473,
+  "lon": 13.7941502,
+  "display_name": "Stadio Giuseppe Grezar, Via Valmaura, Valmaura, Servola-Chiarbola-Valmaura-Borgo San Sergio, Trieste, Friuli – Venezia Giulia, 34146, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 219812110
+ },
+ "stadio luigi ferraris, genoa, italy": {
+  "lat": 44.4164753,
+  "lon": 8.9525341,
+  "display_name": "Luigi Ferraris Stadium, Largo 7 settembre 1893, Marassi, Bassa Val Bisagno, Genoa, Liguria, 16139, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 379998036
+ },
+ "stadio marc'antonio bentegodi, verona, italy": null,
+ "stadio nazionale pnf, rome, italy": null,
+ "stadio olimpico, rome, italy": {
+  "lat": 41.9387659,
+  "lon": 12.458134,
+  "display_name": "Stadio Olimpico;Ponte Milvio, Galleria Giovanni Ventitreesimo, Municipio Roma XV, Rome, Roma Capitale, Lazio, 00194, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "node",
+  "osm_id": 324815671
+ },
+ "stadio renato dall'ara, bologna, italy": {
+  "lat": 44.492317,
+  "lon": 11.3099971,
+  "display_name": "Stadio Renato Dall'Ara, Via Pietro De Coubertin, Meloncello, Saragozza, Porto-Saragozza, Bologna, Emilia-Romagna, 40134, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 823094953
+ },
+ "stadio san nicola, bari, italy": {
+  "lat": 41.0847276,
+  "lon": 16.8400849,
+  "display_name": "Stadio San Nicola, Salita Vito Minnuno, Parco Adria, Municipio 4, Bari, Apulia, 70124, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 28693751
+ },
+ "stadio san paolo, naples, italy": {
+  "lat": 40.826824,
+  "lon": 14.1948087,
+  "display_name": "Marino - Stadio San Paolo, Via Giovan Battista Marino, Rione Lauro, Fuorigrotta, Municipalità 10, Naples, Campania, 80125, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "node",
+  "osm_id": 4146655113
+ },
+ "stadio sant'elia, cagliari, italy": {
+  "lat": 39.1994235,
+  "lon": 9.1348054,
+  "display_name": "Ex Stadio Sant'Elia, Nuovo Borgo Sant'Elia, Cagliari, Casteddu/Cagliari, Sardinia, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "way",
+  "osm_id": 623799113
+ },
+ "stadium 974, doha, qatar": {
+  "lat": 25.2887882,
+  "lon": 51.5663991,
+  "display_name": "Stadium 974, Street 207, Mina District, (Sharg Zone) - Al Khulaifat, Doha, Qatar",
+  "country": "Qatar",
+  "country_code": "QA",
+  "osm_type": "way",
+  "osm_id": 984031641
+ },
+ "stanford stadium, san fransisco, united states": null,
+ "stanford stadium, stanford, united states": {
+  "lat": 37.4345264,
+  "lon": -122.1619867,
+  "display_name": "Stanford Stadium, 625, Nelson Road, Stanford, Santa Clara County, California, 94301, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 18564360
+ },
+ "strömvallen, gävle, sweden": {
+  "lat": 60.6728658,
+  "lon": 17.1286625,
+  "display_name": "Strömvallen, Kungsbäcksvägen, Villastan, Gävle, Gävle kommun, Gävleborg County, 803 24, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "way",
+  "osm_id": 25832135
+ },
+ "suwon world cup stadium, suwon, south korea": {
+  "lat": 37.2864084,
+  "lon": 127.036805,
+  "display_name": "Suwon World Cup Stadium, Changnyong-daero 210beon-gil, Uman-dong, 팔달구, Suwon-si, Gyeonggi, 16230, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 175910262
+ },
+ "tainhe stadium, guangzhou, china": null,
+ "td place stadium, ottawa, canada": {
+  "lat": 45.3984326,
+  "lon": -75.6835457,
+  "display_name": "TD Place Stadium, 1015, Bank Street, The Glebe, Capital, Ottawa, Eastern Ontario, Ontario, K1S 3W7, Canada",
+  "country": "Canada",
+  "country_code": "CA",
+  "osm_type": "way",
+  "osm_id": 163034504
+ },
+ "tianhe stadium, guangzhou, china": {
+  "lat": 23.1405033,
+  "lon": 113.3193597,
+  "display_name": "Tianhe Stadium, 299号, Tianhe Road, Tianhenan, Tianhe District, Guangzhou City, Guangdong, 510620, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "way",
+  "osm_id": 29162424
+ },
+ "tianjin olympic center, tianjin, china": null,
+ "tianjin, china": {
+  "lat": 39.3032619,
+  "lon": 117.4163641,
+  "display_name": "Tianjin, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "relation",
+  "osm_id": 912999
+ },
+ "tingvalla ip, karlstad, sweden": {
+  "lat": 59.3856931,
+  "lon": 13.4925687,
+  "display_name": "Tingvalla Idrottsplats, E 18, Kasernhöjden, Fanfaren, Karlstad, Karlstads kommun, Värmland County, 653 40, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "way",
+  "osm_id": 4342895
+ },
+ "toluca, mexico": {
+  "lat": 19.292545,
+  "lon": -99.6569007,
+  "display_name": "Toluca, State of Mexico, 50000, Mexico",
+  "country": "Mexico",
+  "country_code": "MX",
+  "osm_type": "node",
+  "osm_id": 269914302
+ },
+ "toulouse, france": {
+  "lat": 43.6044638,
+  "lon": 1.4442433,
+  "display_name": "Toulouse, Haute-Garonne, Occitania, Metropolitan France, France",
+  "country": "France",
+  "country_code": "FR",
+  "osm_type": "relation",
+  "osm_id": 35738
+ },
+ "tunavallen, eskilstuna, sweden": {
+  "lat": 59.3706685,
+  "lon": 16.4959531,
+  "display_name": "Tunavallen, Krongatan, Nyfors, Snopptorp, Eskilstuna, Eskilstuna kommun, Södermanland County, 632 26, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "relation",
+  "osm_id": 4536984
+ },
+ "turin, italy": {
+  "lat": 45.0677551,
+  "lon": 7.6824892,
+  "display_name": "Turin, Piedmont, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "relation",
+  "osm_id": 43992
+ },
+ "ullevi, gothenburg, sweden": {
+  "lat": 57.7059197,
+  "lon": 11.9873276,
+  "display_name": "Ullevi, Ingemar Johanssons Plats, Heden, Centrum, Gothenburg, Göteborgs Stad, Västra Götaland County, 402 25, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "way",
+  "osm_id": 13893118
+ },
+ "ulsan munsu football stadium, ulsan, south korea": {
+  "lat": 35.535263,
+  "lon": 129.2594949,
+  "display_name": "Ulsan Munsu Football Stadium, Munsu-ro, Mugeo-dong, Nam-gu, Ulsan, 44614, South Korea",
+  "country": "South Korea",
+  "country_code": "KR",
+  "osm_type": "way",
+  "osm_id": 154286470
+ },
+ "valencia, spain": {
+  "lat": 39.4697065,
+  "lon": -0.3763353,
+  "display_name": "Valencia, Comarca de València, Valencia, Valencian Community, Spain",
+  "country": "Spain",
+  "country_code": "ES",
+  "osm_type": "relation",
+  "osm_id": 344953
+ },
+ "verona, italy": {
+  "lat": 45.4424977,
+  "lon": 10.9857377,
+  "display_name": "Verona, Veneto, Italy",
+  "country": "Italy",
+  "country_code": "IT",
+  "osm_type": "relation",
+  "osm_id": 44107
+ },
+ "vicente calderón, madrid, spain": null,
+ "villa park, birmingham, england": {
+  "lat": 52.5091264,
+  "lon": -1.8850354,
+  "display_name": "Villa Park, Trinity Road, Aston, Birmingham, West Midlands, England, B6 6HE, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "way",
+  "osm_id": 23136743
+ },
+ "volgograd arena, volgograd, russia": {
+  "lat": 48.7344642,
+  "lon": 44.5473936,
+  "display_name": "Volgograd Arena, 76, Lenina Avenue, пос. Метизный, Tsentralnyy District, Volgograd, Volgograd Oblast, Southern Federal District, 400078, Russia",
+  "country": "Russia",
+  "country_code": "RU",
+  "osm_type": "relation",
+  "osm_id": 7718662
+ },
+ "volksparkstadion, hamburg, germany": {
+  "lat": 53.5871535,
+  "lon": 9.8987056,
+  "display_name": "Volksparkstadion, 9, Uwe-Seeler-Allee, Bahrenfeld, Altona, Hamburg, 22525, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 19617443
+ },
+ "volkswagen arena, wolfsburg, germany": {
+  "lat": 52.4326524,
+  "lon": 10.8038151,
+  "display_name": "Volkswagen Arena, 1, In den Allerwiesen, Hellwinkel, Wolfsburg, Lower Saxony, 38448, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 24950693
+ },
+ "vélodrome municipal, reims, france": null,
+ "waldstadion, frankfurt, germany": {
+  "lat": 50.0686103,
+  "lon": 8.6454154,
+  "display_name": "Deutsche Bank Park, 362, Mörfelder Landstraße, Sachsenhausen Süd, Sachsenhausen, Süd, Frankfurt, Hesse, 60528, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 5117941
+ },
+ "wankdorf stadium, bern, switzerland": {
+  "lat": 46.9631042,
+  "lon": 7.4648638,
+  "display_name": "Stadion Wankdorf, Sempachstrasse, Breitfeld, Stadtteil V, Bern, Bern-Mittelland administrative district, Bernese Mittelland administrative region, Bern, 3014, Switzerland",
+  "country": "Switzerland",
+  "country_code": "CH",
+  "osm_type": "way",
+  "osm_id": 32485183
+ },
+ "washington, d.c., united states": {
+  "lat": 38.8950982,
+  "lon": -77.0363849,
+  "display_name": "Washington, District of Columbia, United States",
+  "country": "United States",
+  "country_code": "US",
+  "osm_type": "relation",
+  "osm_id": 5396194
+ },
+ "wembley stadium, london, england": {
+  "lat": 51.5560695,
+  "lon": -0.2796034,
+  "display_name": "Wembley Stadium, Spanish Steps, London Borough of Brent, Greater London, England, HA9 0SN, United Kingdom",
+  "country": "United Kingdom",
+  "country_code": "GB",
+  "osm_type": "relation",
+  "osm_id": 12942436
+ },
+ "westfalenstadion, dortmund, germany": {
+  "lat": 51.4924922,
+  "lon": 7.4518549,
+  "display_name": "SIGNAL IDUNA PARK, 50, Strobelallee, Innenstadt West, Dortmund, North Rhine-Westphalia, 44139, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 17235929
+ },
+ "white city stadium, london, england": null,
+ "winnipeg, canada": {
+  "lat": 49.8955367,
+  "lon": -97.1384584,
+  "display_name": "Winnipeg, Manitoba, Canada",
+  "country": "Canada",
+  "country_code": "CA",
+  "osm_type": "relation",
+  "osm_id": 1790696
+ },
+ "wuhan sports center, wuhan, china": null,
+ "wuhan, china": {
+  "lat": 30.578891,
+  "lon": 114.2921197,
+  "display_name": "Wuhan, Hubei, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "relation",
+  "osm_id": 3076268
+ },
+ "yellow dragon sports center, hangzhou, china": null,
+ "ying tung stadium, guangzhou, china": null,
+ "zentralstadion, leipzig, germany": {
+  "lat": 51.3457078,
+  "lon": 12.3482361,
+  "display_name": "Red Bull Arena, Am Sportforum, Centre North West, Mitte, Leipzig, Saxony, 04105, Germany",
+  "country": "Germany",
+  "country_code": "DE",
+  "osm_type": "way",
+  "osm_id": 8015060
+ },
+ "zhongshan stadium, zhongshan, china": {
+  "lat": 22.5099027,
+  "lon": 113.383217,
+  "display_name": "Zhongshan Sports Centre Stadium, 体育路, 夏洋社区, Dongqu Subdistrict, Zhongshan, Guangdong, 528403, China",
+  "country": "China",
+  "country_code": "CN",
+  "osm_type": "way",
+  "osm_id": 394532207
+ },
+ "zürich, switzerland": {
+  "lat": 47.3744489,
+  "lon": 8.5410422,
+  "display_name": "Zurich, District Zurich, Zurich, Switzerland",
+  "country": "Switzerland",
+  "country_code": "CH",
+  "osm_type": "relation",
+  "osm_id": 1682248
+ },
+ "örebro, sweden": {
+  "lat": 59.2747287,
+  "lon": 15.2151181,
+  "display_name": "Örebro, Örebro kommun, Örebro County, 703 61, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "node",
+  "osm_id": 27593232
+ },
+ "örjans vall, halmstad, sweden": {
+  "lat": 56.6849037,
+  "lon": 12.8679973,
+  "display_name": "Örjans vall, Slottsmöllevägen, Gamletull, Halmstad, Halmstads kommun, Halland County, 302 31, Sweden",
+  "country": "Sweden",
+  "country_code": "SE",
+  "osm_type": "relation",
+  "osm_id": 1326589
+ },
+ "ōita stadium, ōita, japan": {
+  "lat": 33.2007824,
+  "lon": 131.6574852,
+  "display_name": "Crasus Dome Ōita, Higashikyushu Expressway, Koendorinishi 2-chome, Oita, Oita Prefecture, 870-8504, Japan",
+  "country": "Japan",
+  "country_code": "JP",
+  "osm_type": "way",
+  "osm_id": 119673228
+ }
+}

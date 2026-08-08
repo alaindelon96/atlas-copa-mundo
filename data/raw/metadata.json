@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-08T06:16:33+00:00",
+  "generated_at": "2026-08-08T12:48:26+00:00",
   "files": {
     "data/raw/fjelstul/award_winners.csv": {
       "source": "fjelstul-worldcup",
@@ -144,6 +144,17 @@
       "downloaded_at": "2026-08-07T22:12:32+00:00",
       "bytes": 3287,
       "sha256": "906b122d80aae5302486bafa9dfd925378503a2a11de6f5db39d6c4879040ce0"
+    },
+    "data/raw/naturalearth/ne_50m_admin_0_map_units.geojson": {
+      "source": "Natural Earth (nvkelso/natural-earth-vector)",
+      "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_map_units.geojson",
+      "license": "Public domain (Natural Earth)",
+      "attribution": "Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com",
+      "downloaded_at": "2026-08-08T12:48:26+00:00",
+      "bytes": 3179420,
+      "sha256": "b8d421aca6e9e08e8cdf09cc26af111cc3e0deba4fe915611d58ade71e8a4db0",
+      "scale": "1:50m",
+      "division": "admin_0_map_units"
     },
     "data/raw/scraped/2026_FIFA_World_Cup.html": {
       "source": "wikipedia",

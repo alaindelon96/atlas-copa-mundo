@@ -17,10 +17,11 @@ inconsistent records, relational modelling, validation, and publication.
 
 | | |
 |---|---|
-| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, and a reconciled match table |
-| **Data on hand** | `data/processed/matches_clean.csv` — 1,352 matches, 31 tournaments, 1930–2026, both competitions |
-| **Not built yet** | Modelling, geocoding, the map itself |
-| **Known gap** | Attendance exists only for 2026; `country_name` is blank for 2026 until stage 3 geocodes it |
+| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, and the geodata the map needs |
+| **Data on hand** | `data/processed/` — 1,068 men's matches, 23 tournaments, 83 teams, 208 geocoded venues, 1930–2026. Schema: [`docs/schema.md`](docs/schema.md) |
+| **Not built yet** | The map itself, and publication |
+| **Known gap** | Attendance exists only for 2026 (Fjelstul carries none) |
+| **Scope** | The men's World Cup. The women's data is extracted and cleaned but excluded from the model and the map — see [Scope](#scope) |
 
 ---
 
@@ -65,6 +66,19 @@ python -m etl.parse_2026
 reproduces all 16 files with SHA-256 hashes identical to the committed provenance
 record. The data is not stored; it is *regenerable*, and the hashes prove the
 regeneration is byte-identical.
+
+Then build the model, validate it, and generate what the map loads:
+
+```bash
+python -m etl.transform && python -m etl.geocode --offline && python -m etl.geo
+```
+
+```bash
+python -m etl.model && python -m etl.validate && python -m etl.metrics
+```
+
+`--offline` replays the committed geocoding cache and never touches the network. Drop it
+only if you intend to re-query Nominatim — that is ~5 minutes at 1 request/second.
 
 ---
 
@@ -191,10 +205,71 @@ editions.
 Stage 2 also normalises stage names, which were inconsistent *within* Fjelstul itself —
 `quarter-final` (32 rows) alongside `quarter-finals` (70).
 
-### Stages 3–5 — not yet built
+### Stage 3 — Model, geocode and validate ✅
 
-Modelling/validation/geocoding, the Leaflet map, and publication. See
-[Roadmap](#roadmap).
+```bash
+python -m etl.geocode --offline && python -m etl.geo
+```
+
+```bash
+python -m etl.model && python -m etl.validate && python -m etl.metrics
+```
+
+Six tables in `data/processed/` — `tournaments`, `tournament_hosts`, `teams`, `venues`,
+`matches`, `team_matches` — plus the two JSONs and the GeoJSON the front-end loads. The
+ERD and the reasoning behind every schema decision are in [`docs/schema.md`](docs/schema.md).
+
+Note the order: `etl.geo` writes the `reference/team_country.csv` that `etl.model` reads.
+
+**Geocoding.** All 252 venues in the data resolved through Nominatim at 1 request/second, with the
+responses cached on disk *and committed*. `--offline` replays that cache and never touches
+the network — reproducing the pipeline should not cost a free public service five minutes
+of traffic. The query descends in steps (`stadium, city, country` → `city, country` →
+`stadium, city`) and the step that answered is kept in `venues.match_level`, because 51 of
+the 252 coordinates point at a city centre rather than a pitch, and a marker layer needs to
+know that.
+
+This is what filled `country_name` for the 104 matches of 2026, which the Wikipedia tables
+never carried. That unblocked "matches received" — and added **Canada** as the 19th country
+ever to host a men's World Cup match.
+
+**Country polygons.** The map shades countries, so it needs shapes, not points. The base is
+Natural Earth's `admin_0_map_units` rather than `admin_0_countries`, and the difference
+decides the project: only `map_units` separates England, Scotland, Wales and Northern
+Ireland, which is the split football uses. The price is that the same division splits
+**Belgium** into Flanders, Wallonia and Brussels — so `reference/team_country.csv` is
+one-to-many, 88 polygons for 86 teams. The three Belgian regions take the same colour and
+the seam does not show.
+
+**Validation.** `etl/validate.py` declares each table's contract in `pandera` and checks
+what is *on disk*, without recomputing it. It earned its place immediately. The checks the
+scripts already ran verify **totals** — "do the goals add up?" — and are therefore blind to
+row-level error. Declarative validation found two sentinels no sum would ever flag:
+
+| Column | Fjelstul writes | Wikipedia writes | Rows |
+|---|---|---|---|
+| penalty score, no shootout | `0` and `0` | blank | 1,205 |
+| `group_name`, knockout stage | `"not applicable"` | blank | 332 |
+
+Neither breaks anything, and that is the problem. `0` is a valid score, and a `groupby` on
+group would happily return a "group" called `not applicable` holding 332 knockout matches.
+Both are real nulls now.
+
+It also caught something sharper: **the project's own documentation was wrong.** Stage 2
+claimed that teams with `merge_records=0` kept separate records. They did not — only the
+title count respected that flag; match records always followed the display label. No
+headline number was affected (none of those entities ever won a World Cup), but Russia
+shows 53 matches of which 22 are Russia's. Faced with the choice, the project kept the
+behaviour — **the label wins** — and made the consequence loud instead of hidden:
+
+> **1974, East Germany 1–0 West Germany** becomes `Germany × Germany`. Germany books one
+> win and one loss, one goal for and one against; every total still balances. `etl.validate`
+> prints the case on every run and a test locks it, so nobody "fixes" an editorial decision
+> by accident.
+
+### Stages 4–5 — not yet built
+
+The Leaflet map and publication. See [Roadmap](#roadmap).
 
 ## Tests
 
@@ -202,10 +277,12 @@ Modelling/validation/geocoding, the Leaflet map, and publication. See
 pytest
 ```
 
-14 tests, all offline. They pin the decisions and the traps — the succession ruling, the
-men's/women's split, stage normalisation, the 1950 case, and the fact that fuzzy matching
-scores Zaire against DR Congo below 50. If someone edits the succession map without
-realising the consequence, a test fails with the reason attached.
+38 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
+scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
+two sentinel nulls, and a hand-checked sample of coordinates (a valid schema cannot tell
+Wembley in London from Wembley in the Atlantic). If someone edits the succession map
+without realising the consequence, a test fails with the reason attached.
 
 ---
 
@@ -277,6 +354,34 @@ web/                     Leaflet map + its GeoJSON
 docs/roadmap.html        visual roadmap (bilingual PT/EN)
 tests/                   pytest suite for transformation logic
 ```
+
+---
+
+## Scope
+
+**This project covers the men's World Cup — 23 editions, 1,068 matches, 1930–2026.**
+
+The women's tournament is *extracted and cleaned, but not modelled*. That distinction
+is the point:
+
+| Layer | Women's data |
+|---|---|
+| `data/raw/` | Present — the source ships both in the same files |
+| `data/processed/matches_clean.csv` | Present — 284 matches, 1991–2019, tagged by the `competition` column |
+| The model, the metrics, the map | Excluded |
+
+The cut happens in exactly one place: the `COMPETITION` constant in
+[`etl/model.py`](etl/model.py). Everything downstream inherits it. That is why the
+model tables carry no `competition` column — it would hold a single value across
+1,068 rows, and a constant column tells you nothing while implying a variation that
+is not there.
+
+Re-adding the women's tournament later means changing that constant and putting the
+column back. The cleaning stage, the succession map and the geocoding cache already
+cover it, so nothing has to be re-derived — the venues that only ever hosted women's
+matches are geocoded and sitting in the cache. A test in
+[`tests/test_model.py`](tests/test_model.py) fails if anyone strips the women's rows
+further upstream, so the option stays open by construction rather than by memory.
 
 ---
 
@@ -400,6 +505,17 @@ attribution — the 14 exact revision IDs used are listed in
 [`LICENSE-DATA.md`](LICENSE-DATA.md), recorded per file in
 [`data/raw/metadata.json`](data/raw/metadata.json), and carried per row in the parsed
 output's `source_revision` column.
+
+Country polygons come from **Natural Earth** (`ne_50m_admin_0_map_units`), which is in the
+**public domain** and therefore imposes no obligation — the attribution below is the one
+its makers ask for, and is carried in the published `web/data/countries.geojson`:
+
+> Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com
+
+Venue coordinates come from **Nominatim / OpenStreetMap**, whose data is licensed under the
+[ODbL](https://opendatacommons.org/licenses/odbl/) — © OpenStreetMap contributors. The
+cached responses are committed at `data/interim/geocode_cache.json` so that reproducing the
+pipeline costs the service nothing.
 
 ### Built with
 

@@ -1,0 +1,209 @@
+venue_id,stadium_name,city_name,country_name,country_code,latitude,longitude,matches_hosted,first_year,last_year,match_level
+V-001,Estadio José Amalfitani,Buenos Aires,Argentina,AR,-34.635338,-58.520679,3,1978,1978,stadium+country
+V-002,Estadio Monumental,Buenos Aires,Argentina,AR,-34.545293,-58.449739,9,1978,1978,stadium+country
+V-003,Estadio Chateau Carreras,Córdoba,Argentina,AR,-31.416687,-64.183419,8,1978,1978,city+country
+V-004,Estadio José María Minella,Mar del Plata,Argentina,AR,-38.017899,-57.582406,6,1978,1978,stadium+country
+V-005,Estadio Ciudad de Mendoza,Mendoza,Argentina,AR,-32.889678,-68.879901,6,1978,1978,stadium+country
+V-006,Estadio Gigante de Arroyito,Rosario,Argentina,AR,-32.914023,-60.674499,6,1978,1978,stadium+country
+V-007,Estádio Independência,Belo Horizonte,Brazil,BR,-19.908353,-43.917778,3,1950,1950,stadium+country
+V-008,Estádio Mineirão,Belo Horizonte,Brazil,BR,-19.865911,-43.971043,6,2014,2014,stadium+country
+V-009,Estádio Nacional,Brasília,Brazil,BR,-15.78375,-47.899029,7,2014,2014,stadium+country
+V-010,Arena Pantanal,Cuiabá,Brazil,BR,-15.604065,-56.122299,4,2014,2014,stadium+country
+V-011,Arena da Baixada,Curitiba,Brazil,BR,-25.429596,-49.271272,4,2014,2014,city+country
+V-012,Estádio Vila Capanema,Curitiba,Brazil,BR,-25.439394,-49.255844,2,1950,1950,stadium+country
+V-013,Estádio Castelão,Fortaleza,Brazil,BR,-3.806742,-38.521679,6,2014,2014,stadium+country
+V-014,Arena da Amazônia,Manaus,Brazil,BR,-3.083113,-60.028005,4,2014,2014,stadium+country
+V-015,Arena das Dunas,Natal,Brazil,BR,-5.82658,-35.212688,4,2014,2014,stadium+country
+V-016,Estádio Beira-Rio,Porto Alegre,Brazil,BR,-30.06549,-51.234918,5,2014,2014,stadium+country
+V-017,Estádio dos Eucaliptos,Porto Alegre,Brazil,BR,-30.061715,-51.227347,2,1950,1950,stadium+country
+V-018,Arena Pernambuco,Recife,Brazil,BR,-8.032777,-34.99608,5,2014,2014,stadium+country
+V-019,Estádio Ilha do Retiro,Recife,Brazil,BR,-8.06301,-34.903601,1,1950,1950,stadium+country
+V-020,Estádio do Maracanã,Rio de Janeiro,Brazil,BR,-22.912162,-43.231186,15,1950,2014,stadium+country
+V-021,Arena Fonte Nova,Salvador,Brazil,BR,-12.978793,-38.50356,6,2014,2014,stadium+country
+V-022,Arena Corinthians,São Paulo,Brazil,BR,-23.545333,-46.474305,6,2014,2014,stadium+country
+V-023,Estádio do Pacaembu,São Paulo,Brazil,BR,-23.548564,-46.665352,6,1950,1950,stadium+country
+V-024,BMO Field,Toronto,Canada,CA,43.633341,-79.418561,6,2026,2026,stadium
+V-025,BC Place,Vancouver,Canada,CA,49.276691,-123.112006,7,2026,2026,stadium+country
+V-026,Estadio Carlos Dittborn,Arica,Chile,CL,-18.48746,-70.299121,7,1962,1962,stadium+country
+V-027,Estadio El Teniente,Rancagua,Chile,CL,-34.17781,-70.737548,7,1962,1962,stadium+country
+V-028,Estadio Nacional,Santiago,Chile,CL,-33.462381,-70.606218,10,1962,1962,stadium+country
+V-029,Estadio Sausalito,Viña del Mar,Chile,CL,-33.014447,-71.534144,8,1962,1962,stadium+country
+V-030,Villa Park,Birmingham,England,GB,52.509126,-1.885035,3,1966,1966,stadium+country
+V-031,Goodison Park,Liverpool,England,GB,53.43869,-2.966419,5,1966,1966,stadium+country
+V-032,Wembley Stadium,London,England,GB,51.556069,-0.279603,9,1966,1966,stadium+country
+V-033,White City Stadium,London,England,GB,51.507446,-0.127765,1,1966,1966,city+country
+V-034,Old Trafford,Manchester,England,GB,53.46311,-2.291387,3,1966,1966,stadium+country
+V-035,Ayresome Park,Middlesbrough,England,GB,54.566736,-1.242152,3,1966,1966,stadium+country
+V-036,Hillsborough Stadium,Sheffield,England,GB,53.411379,-1.500631,4,1966,1966,stadium+country
+V-037,Roker Park,Sunderland,England,GB,54.923805,-1.370115,4,1966,1966,stadium+country
+V-038,Stade du Fort Carré,Antibes,France,FR,43.590979,7.125418,1,1938,1938,stadium+country
+V-039,Stade du Parc Lescure,Bordeaux,France,FR,44.829308,-0.598264,9,1938,1998,stadium+country
+V-040,Stade Jules Deschaseaux,Le Havre,France,FR,49.501736,0.171177,1,1938,1938,stadium+country
+V-041,Stade Félix-Bollaert,Lens,France,FR,50.432824,2.814986,6,1998,1998,stadium+country
+V-042,Stade Victor Boucquey,Lille,France,FR,50.636565,3.063528,1,1938,1938,city+country
+V-043,Stade de Gerland,Lyon,France,FR,45.723776,4.832252,6,1998,1998,stadium+country
+V-044,Stade Vélodrome,Marseille,France,FR,43.269847,5.395908,9,1938,1998,stadium+country
+V-045,Stade de la Mosson,Montpellier,France,FR,43.622022,3.81209,6,1998,1998,stadium+country
+V-046,Stade de la Beaujoire,Nantes,France,FR,47.256005,-1.524755,6,1998,1998,stadium+country
+V-047,Parc des Princes,Paris,France,FR,48.841363,2.253069,9,1938,1998,stadium+country
+V-048,Stade Olympique de Colombes,Paris,France,FR,48.853495,2.348391,3,1938,1938,city+country
+V-049,Vélodrome Municipal,Reims,France,FR,49.257789,4.031926,1,1938,1938,city+country
+V-050,Stade de France,Saint-Denis,France,FR,48.924473,2.360133,9,1998,1998,stadium+country
+V-051,Stade Geoffroy-Guichard,Saint-Étienne,France,FR,45.460757,4.390093,6,1998,1998,stadium+country
+V-052,Stade de la Meinau,Strasbourg,France,FR,48.559948,7.755122,1,1938,1938,stadium+country
+V-053,Stade de Toulouse,Toulouse,France,FR,43.583226,1.434064,6,1998,1998,stadium+country
+V-054,Stade du T.O.E.C.,Toulouse,France,FR,43.604464,1.444243,2,1938,1938,city+country
+V-055,Olympiastadion,Berlin,Germany,DE,52.514585,13.239814,9,1974,2006,stadium+country
+V-056,RheinEnergieStadion,Cologne,Germany,DE,50.933506,6.875117,5,2006,2006,stadium+country
+V-057,Westfalenstadion,Dortmund,Germany,DE,51.492492,7.451855,10,1974,2006,stadium+country
+V-058,Rheinstadion,Düsseldorf,Germany,DE,51.261019,6.731779,5,1974,1974,stadium+country
+V-059,Waldstadion,Frankfurt,Germany,DE,50.06861,8.645415,10,1974,2006,stadium+country
+V-060,Arena AufShalke,Gelsenkirchen,Germany,DE,51.511032,7.096012,5,2006,2006,city+country
+V-061,Parkstadion,Gelsenkirchen,Germany,DE,51.559259,7.067577,5,1974,1974,stadium+country
+V-062,Volksparkstadion,Hamburg,Germany,DE,53.587153,9.898706,8,1974,2006,stadium+country
+V-063,Niedersachsenstadion,Hanover,Germany,DE,52.360026,9.731016,9,1974,2006,stadium+country
+V-064,Fritz-Walter-Stadion,Kaiserslautern,Germany,DE,49.434576,7.77663,5,2006,2006,stadium+country
+V-065,Zentralstadion,Leipzig,Germany,DE,51.345708,12.348236,5,2006,2006,stadium+country
+V-066,Allianz Arena,Munich,Germany,DE,48.21879,11.623623,6,2006,2006,stadium+country
+V-067,Olympiastadion,Munich,Germany,DE,48.173131,11.546479,5,1974,1974,stadium+country
+V-068,Frankenstadion,Nuremberg,Germany,DE,49.429238,11.129208,5,2006,2006,stadium+country
+V-069,Neckarstadion,Stuttgart,Germany,DE,48.792249,9.232086,10,1974,2006,stadium+country
+V-070,Stadio San Nicola,Bari,Italy,IT,41.084728,16.840085,5,1990,1990,stadium+country
+V-071,Stadio Renato Dall'Ara,Bologna,Italy,IT,44.492317,11.309997,6,1934,1990,stadium+country
+V-072,Stadio Sant'Elia,Cagliari,Italy,IT,39.199424,9.134805,3,1990,1990,stadium+country
+V-073,Stadio Comunale,Florence,Italy,IT,43.780884,11.282819,4,1990,1990,stadium+country
+V-074,Stadio Giovanni Berta,Florence,Italy,IT,43.780884,11.282819,3,1934,1934,stadium+country
+V-075,Stadio Luigi Ferraris,Genoa,Italy,IT,44.416475,8.952534,5,1934,1990,stadium+country
+V-076,San Siro,Milan,Italy,IT,45.4782,9.123964,9,1934,1990,stadium+country
+V-077,Stadio Giorgio Ascarelli,Naples,Italy,IT,40.835885,14.248768,2,1934,1934,city+country
+V-078,Stadio San Paolo,Naples,Italy,IT,40.826824,14.194809,5,1990,1990,stadium+country
+V-079,Stadio La Favorita,Palermo,Italy,IT,38.152819,13.342011,3,1990,1990,stadium+country
+V-080,Stadio Nazionale PNF,Rome,Italy,IT,41.89332,12.482932,3,1934,1934,city+country
+V-081,Stadio Olimpico,Rome,Italy,IT,41.938766,12.458134,6,1990,1990,stadium+country
+V-082,Stadio Littorio,Trieste,Italy,IT,45.623947,13.79415,1,1934,1934,stadium+country
+V-083,Stadio Benito Mussolini,Turin,Italy,IT,45.067755,7.682489,2,1934,1934,city+country
+V-084,Stadio delle Alpi,Turin,Italy,IT,45.067755,7.682489,5,1990,1990,city+country
+V-085,Stadio Friuli,Udine,Italy,IT,46.081402,13.199741,3,1990,1990,stadium+country
+V-086,Stadio Marc'Antonio Bentegodi,Verona,Italy,IT,45.442498,10.985738,4,1990,1990,city+country
+V-087,Kashima Stadium,Ibaraki,Japan,JP,35.992005,140.640368,3,2002,2002,stadium+country
+V-088,Kobe Wing Stadium,Kobe,Japan,JP,34.656697,135.16976,3,2002,2002,stadium+country
+V-089,Miyagi Stadium,Miyagi,Japan,JP,38.335361,140.950457,3,2002,2002,stadium+country
+V-090,Niigata Stadium,Niigata,Japan,JP,37.94836,139.188361,3,2002,2002,stadium+country
+V-091,Nagai Stadium,Osaka,Japan,JP,34.614106,135.518511,3,2002,2002,stadium+country
+V-092,Saitama Stadium,Saitama,Japan,JP,35.903074,139.717606,4,2002,2002,stadium+country
+V-093,Sapporo Dome,Sapporo,Japan,JP,43.017802,141.408742,3,2002,2002,stadium+country
+V-094,Shizuoka Stadium ECOPA,Shizuoka,Japan,JP,34.743431,137.970729,3,2002,2002,stadium+country
+V-095,International Stadium Yokohama,Yokohama,Japan,JP,35.509988,139.606382,4,2002,2002,stadium+country
+V-096,Ōita Stadium,Ōita,Japan,JP,33.200782,131.657485,3,2002,2002,stadium+country
+V-097,Estadio Jalisco,Guadalajara,Mexico,MX,20.704786,-103.327674,14,1970,1986,stadium+country
+V-098,Estadio Tres de Marzo,Guadalajara,Mexico,MX,20.672037,-103.338396,3,1986,1986,city+country
+V-099,Estadio BBVA,Guadalupe,Mexico,MX,25.669111,-100.244451,4,2026,2026,stadium
+V-100,Estadio Sergio León Chavez,Irapuato,Mexico,MX,20.684499,-101.356357,3,1986,1986,stadium+country
+V-101,Estadio Nou Camp,León,Mexico,MX,21.121965,-101.682977,11,1970,1986,city+country
+V-102,Estadio Azteca,Mexico City,Mexico,MX,19.302979,-99.15047,24,1970,2026,stadium+country
+V-103,Estadio Olímpico Universitario,Mexico City,Mexico,MX,19.331688,-99.192286,4,1986,1986,stadium+country
+V-104,Estadio Tecnológico,Monterrey,Mexico,MX,25.680202,-100.315258,3,1986,1986,city+country
+V-105,Estadio Universitario,Monterrey,Mexico,MX,25.680202,-100.315258,5,1986,1986,city+country
+V-106,Estadio Neza 86,Nezahualcóyotl,Mexico,MX,19.405772,-98.987064,3,1986,1986,stadium+country
+V-107,Estadio Cuauhtémoc,Puebla,Mexico,MX,19.078031,-98.164365,8,1970,1986,stadium+country
+V-108,Estadio La Corregidora,Querétaro,Mexico,MX,20.805222,-99.883738,4,1986,1986,city+country
+V-109,La Bombonera,Toluca,Mexico,MX,19.292545,-99.656901,7,1970,1986,city+country
+V-110,Estadio Akron,Zapopan,Mexico,MX,20.681847,-103.462672,4,2026,2026,stadium
+V-111,Al Bayt Stadium,Al Khor,Qatar,QA,25.652134,51.487806,9,2022,2022,stadium+country
+V-112,Ahmad bin Ali Stadium,Al Rayyan,Qatar,QA,25.329692,51.342322,7,2022,2022,stadium+country
+V-113,Education City Stadium,Al Rayyan,Qatar,QA,25.310853,51.424448,8,2022,2022,stadium+country
+V-114,Khalifa International Stadium,Al Rayyan,Qatar,QA,25.263651,51.449225,8,2022,2022,stadium+country
+V-115,Al Janoub Stadium,Al Wakrah,Qatar,QA,25.159708,51.574227,7,2022,2022,stadium+country
+V-116,Al Thumama Stadium,Doha,Qatar,QA,25.235311,51.532915,8,2022,2022,stadium+country
+V-117,Stadium 974,Doha,Qatar,QA,25.288788,51.566399,7,2022,2022,stadium+country
+V-118,Lusail Stadium,Lusail,Qatar,QA,25.413199,51.494244,10,2022,2022,stadium+country
+V-119,Kaliningrad Stadium,Kaliningrad,Russia,RU,54.698002,20.534963,4,2018,2018,stadium+country
+V-120,Kazan Arena,Kazan,Russia,RU,55.823196,49.164132,6,2018,2018,stadium+country
+V-121,Luzhniki Stadium,Moscow,Russia,RU,55.715744,37.553767,7,2018,2018,stadium+country
+V-122,Otkritie Arena,Moscow,Russia,RU,55.625578,37.606392,5,2018,2018,city+country
+V-123,Nizhny Novgorod Stadium,Nizhny Novgorod,Russia,RU,56.326482,44.005139,6,2018,2018,city+country
+V-124,Rostov Arena,Rostov-on-Don,Russia,RU,47.209355,39.738282,5,2018,2018,stadium+country
+V-125,Krestovsky Stadium,Saint Petersburg,Russia,RU,59.972377,30.221061,7,2018,2018,stadium+country
+V-126,Samara Arena,Samara,Russia,RU,53.278008,50.237502,6,2018,2018,stadium+country
+V-127,Mordovia Arena,Saransk,Russia,RU,54.18183,45.204429,4,2018,2018,stadium+country
+V-128,Fisht Olympic Stadium,Sochi,Russia,RU,43.585482,39.723109,6,2018,2018,city+country
+V-129,Volgograd Arena,Volgograd,Russia,RU,48.734464,44.547394,4,2018,2018,stadium+country
+V-130,Central Stadium,Yekaterinburg,Russia,RU,56.832178,60.573936,4,2018,2018,stadium+country
+V-131,Free State Stadium,Bloemfontein,South Africa,ZA,-29.117235,26.20877,6,2010,2010,stadium+country
+V-132,Cape Town Stadium,Cape Town,South Africa,ZA,-33.90346,18.411146,8,2010,2010,stadium+country
+V-133,Moses Mabhida Stadium,Durban,South Africa,ZA,-29.82902,31.031374,7,2010,2010,stadium+country
+V-134,Ellis Park Stadium,Johannesburg,South Africa,ZA,-26.197479,28.060768,7,2010,2010,stadium+country
+V-135,Soccer City,Johannesburg,South Africa,ZA,-26.234706,27.982644,8,2010,2010,stadium+country
+V-136,Mbombela Stadium,Nelspruit,South Africa,ZA,-25.461729,30.92969,4,2010,2010,stadium+country
+V-137,Peter Mokaba Stadium,Polokwane,South Africa,ZA,-23.924806,29.46796,4,2010,2010,stadium+country
+V-138,Nelson Mandela Bay Stadium,Port Elizabeth,South Africa,ZA,-33.937792,25.599409,8,2010,2010,stadium+country
+V-139,Loftus Versfeld Stadium,Pretoria,South Africa,ZA,-25.753235,28.222933,6,2010,2010,stadium+country
+V-140,Royal Bafokeng Stadium,Rustenburg,South Africa,ZA,-25.578776,27.16092,6,2010,2010,stadium+country
+V-141,Busan Asiad Stadium,Busan,South Korea,KR,35.190077,129.059548,3,2002,2002,stadium+country
+V-142,Daegu World Cup Stadium,Daegu,South Korea,KR,35.8713,128.6018,4,2002,2002,city+country
+V-143,Daejeon World Cup Stadium,Daejeon,South Korea,KR,36.365253,127.325107,3,2002,2002,stadium+country
+V-144,Gwangju World Cup Stadium,Gwangju,South Korea,KR,35.133771,126.875004,3,2002,2002,stadium+country
+V-145,Incheon Munhak Stadium,Incheon,South Korea,KR,37.435077,126.690752,3,2002,2002,stadium+country
+V-146,Jeonju World Cup Stadium,Jeonju,South Korea,KR,35.868209,127.064551,3,2002,2002,stadium+country
+V-147,Jeju World Cup Stadium,Seogwipo,South Korea,KR,33.246269,126.509107,3,2002,2002,stadium+country
+V-148,Seoul World Cup Stadium,Seoul,South Korea,KR,37.568302,126.897248,3,2002,2002,stadium+country
+V-149,Suwon World Cup Stadium,Suwon,South Korea,KR,37.286408,127.036805,4,2002,2002,stadium+country
+V-150,Ulsan Munsu Football Stadium,Ulsan,South Korea,KR,35.535263,129.259495,3,2002,2002,stadium+country
+V-151,Estadio Riazor,A Coruña,Spain,ES,43.368716,-8.41751,3,1982,1982,stadium+country
+V-152,Estadio José Rico Pérez,Alicante,Spain,ES,38.357346,-0.492597,3,1982,1982,stadium+country
+V-153,Camp Nou,Barcelona,Spain,ES,41.380778,2.115649,5,1982,1982,stadium+country
+V-154,Estadi de Sarrià,Barcelona,Spain,ES,41.380223,2.112663,3,1982,1982,stadium+country
+V-155,Estadio San Mamés,Bilbao,Spain,ES,43.264204,-2.949391,3,1982,1982,stadium+country
+V-156,Nuevo Estadio,Elche,Spain,ES,38.265331,-0.698839,3,1982,1982,city+country
+V-157,Estadio El Molinón,Gijón,Spain,ES,43.536271,-5.637477,3,1982,1982,stadium+country
+V-158,Estadio Santiago Bernabéu,Madrid,Spain,ES,40.453044,-3.688197,4,1982,1982,stadium+country
+V-159,Vicente Calderón,Madrid,Spain,ES,40.416782,-3.703507,3,1982,1982,city+country
+V-160,Estadio La Rosaleda,Málaga,Spain,ES,36.734943,-4.426535,3,1982,1982,stadium+country
+V-161,Estadio Carlos Tartiere,Oviedo,Spain,ES,43.360872,-5.870332,3,1982,1982,stadium+country
+V-162,Estadio Benito Villamarín,Seville,Spain,ES,37.35645,-5.980918,2,1982,1982,stadium+country
+V-163,Estadio Ramón Sánchez Pizjuán,Seville,Spain,ES,37.384088,-5.970631,2,1982,1982,stadium+country
+V-164,Estadio Luis Casanova,Valencia,Spain,ES,39.469707,-0.376335,3,1982,1982,city+country
+V-165,Estadio José Zorrilla,Valladolid,Spain,ES,41.644579,-4.761264,3,1982,1982,stadium+country
+V-166,Balaídos,Vigo,Spain,ES,42.211408,-8.744078,3,1982,1982,stadium+country
+V-167,Estadio La Romareda,Zaragoza,Spain,ES,41.643034,-0.901014,3,1982,1982,stadium+country
+V-168,Ryavallen,Borås,Sweden,SE,57.735707,12.93493,2,1958,1958,stadium+country
+V-169,Tunavallen,Eskilstuna,Sweden,SE,59.370669,16.495953,1,1958,1958,stadium+country
+V-170,Ullevi,Gothenburg,Sweden,SE,57.70592,11.987328,7,1958,1958,stadium+country
+V-171,Örjans Vall,Halmstad,Sweden,SE,56.684904,12.867997,2,1958,1958,stadium+country
+V-172,Olympia,Helsingborg,Sweden,SE,56.049991,12.707762,2,1958,1958,stadium+country
+V-173,Malmö Stadion,Malmö,Sweden,SE,55.585914,12.989355,4,1958,1958,stadium+country
+V-174,Idrottsparken,Norrköping,Sweden,SE,58.584393,16.172058,3,1958,1958,stadium+country
+V-175,Jernvallen,Sandviken,Sweden,SE,60.608131,16.772484,2,1958,1958,stadium+country
+V-176,Råsunda Stadium,Solna,Sweden,SE,59.366667,18.016667,8,1958,1958,city+country
+V-177,Rimnersvallen,Uddevalla,Sweden,SE,58.357058,11.949299,1,1958,1958,stadium+country
+V-178,Arosvallen,Västerås,Sweden,SE,59.620402,16.540613,2,1958,1958,stadium+country
+V-179,Eyravallen,Örebro,Sweden,SE,59.274729,15.215118,1,1958,1958,city+country
+V-180,St. Jakob Stadium,Basel,Switzerland,CH,47.541646,7.620125,6,1954,1954,stadium+country
+V-181,Wankdorf Stadium,Bern,Switzerland,CH,46.963104,7.464864,5,1954,1954,stadium+country
+V-182,Charmilles Stadium,Geneva,Switzerland,CH,46.201756,6.146601,4,1954,1954,city+country
+V-183,Stade Olympique de la Pontaise,Lausanne,Switzerland,CH,46.533228,6.624317,5,1954,1954,stadium+country
+V-184,Cornaredo Stadium,Lugano,Switzerland,CH,46.023828,8.961178,1,1954,1954,stadium+country
+V-185,Hardturm Stadium,Zürich,Switzerland,CH,47.374449,8.541042,5,1954,1954,city+country
+V-186,AT&T Stadium,Arlington,United States,US,32.74785,-97.092834,9,2026,2026,stadium
+V-187,Mercedes-Benz Stadium,Atlanta,United States,US,33.755412,-84.400849,8,2026,2026,stadium
+V-188,Soldier Field,Chicago,United States,US,41.862336,-87.617648,5,1994,1994,stadium+country
+V-189,Cotton Bowl,Dallas,United States,US,32.779612,-96.759602,6,1994,1994,stadium+country
+V-190,Giants Stadium,East Rutherford,United States,US,40.833989,-74.097087,7,1994,1994,city+country
+V-191,MetLife Stadium,East Rutherford,United States,US,40.813507,-74.074344,8,2026,2026,stadium
+V-192,Foxboro Stadium,Foxborough,United States,US,42.065377,-71.247831,6,1994,1994,city+country
+V-193,Gillette Stadium,Foxborough,United States,US,42.090888,-71.264173,7,2026,2026,stadium+country
+V-194,NRG Stadium,Houston,United States,US,29.684858,-95.410802,7,2026,2026,stadium
+V-195,SoFi Stadium,Inglewood,United States,US,33.953407,-118.33901,8,2026,2026,stadium
+V-196,Arrowhead Stadium,Kansas City,United States,US,39.048936,-94.483999,6,2026,2026,stadium
+V-197,Hard Rock Stadium,Miami Gardens,United States,US,25.957903,-80.23885,7,2026,2026,stadium
+V-198,Citrus Bowl,Orlando,United States,US,28.542122,-81.379045,5,1994,1994,city+country
+V-199,Rose Bowl,Pasadena,United States,US,34.161349,-118.167667,8,1994,1994,stadium+country
+V-200,Lincoln Financial Field,Philadelphia,United States,US,39.90091,-75.167489,6,2026,2026,stadium+country
+V-201,Pontiac Silverdome,Pontiac,United States,US,42.638922,-83.291047,4,1994,1994,city+country
+V-202,Levi's Stadium,Santa Clara,United States,US,37.402987,-121.969649,6,2026,2026,stadium
+V-203,Lumen Field,Seattle,United States,US,47.595346,-122.331644,6,2026,2026,stadium
+V-204,Stanford Stadium,Stanford,United States,US,37.434526,-122.161987,6,1994,1994,stadium+country
+V-205,RFK Stadium,"Washington, D.C.",United States,US,38.889839,-76.971902,5,1994,1994,stadium+country
+V-206,Estadio Centenario,Montevideo,Uruguay,UY,-34.894539,-56.152684,10,1930,1930,stadium+country
+V-207,Estadio Gran Parque Central,Montevideo,Uruguay,UY,-34.884458,-56.158729,6,1930,1930,stadium+country
+V-208,Estadio Pocitos,Montevideo,Uruguay,UY,-34.905892,-56.19131,2,1930,1930,city+country

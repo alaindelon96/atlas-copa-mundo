@@ -1,9 +1,15 @@
-"""Etapa 3 (parte 1) — métricas do mapa coroplético.
+"""Etapa 3 — métricas do mapa coroplético.
 
-Transforma `data/processed/matches_clean.csv` no que o front-end consome:
+Transforma as tabelas modeladas (`etl.model`) no que o front-end consome:
 
     web/data/metrics.json    uma entrada por seleção, com as 6 métricas
     web/data/head2head.json  matriz de confrontos diretos
+
+**Escopo: Copa masculina**, herdado de `etl.model` — este módulo não filtra
+nada, ele lê as tabelas do modelo. Por isso nenhum dos dois JSONs tem dimensão
+de competição: `head2head` é `{seleção: {adversário: {...}}}`, e não
+`{competição: {seleção: ...}}`. O feminino segue no dado bruto e em
+`matches_clean.csv`.
 
 O desenho do mapa (decidido em 08/08/2026) tem dois seletores — métrica e país
 — e o modo de país repinta o mapa por confronto direto. Ambos os arquivos são
@@ -22,8 +28,13 @@ Duas decisões do projeto estão implementadas aqui:
    Irlanda do Norte entram separadas, como estão no dado. A junção viraria uma
    "seleção do Reino Unido" que nunca existiu.
 
+3. **A chave do mapa é `gu_a3`, não o nome.** Cada entrada carrega o código da
+   unidade de mapa vinda de `reference/team_country.csv`; o Leaflet casa o
+   GeoJSON por esse código. Casar por nome faria o front-end repetir — e
+   divergir de — as decisões de nomenclatura tomadas no ETL.
+
 Uso:
-    python -m etl.metrics
+    python -m etl.model && python -m etl.metrics
 """
 
 from __future__ import annotations
@@ -34,7 +45,9 @@ import sys
 
 import pandas as pd
 
-from etl.paths import INTERIM, PROCESSED, RAW_FJELSTUL, ROOT, WEB_DATA, ensure_dirs
+from etl.model import COMPETITION
+from etl.paths import (INTERIM, PROCESSED, RAW_FJELSTUL, REFERENCE, ROOT,
+                       WEB_DATA, ensure_dirs)
 
 # Abaixo deste número de partidas, a média por partida não é comparável: uma
 # seleção com 3 jogos passaria o Brasil por acidente amostral.
@@ -43,93 +56,79 @@ PER_MATCH_FLOOR = 10
 GROUP_STAGES = {"group stage", "second group stage"}
 
 
-def to_long(matches: pd.DataFrame) -> pd.DataFrame:
-    """Uma linha por (partida, seleção).
+def load_model() -> tuple[pd.DataFrame, pd.DataFrame]:
+    """As tabelas do modelo. Este módulo não deriva nada que `etl.model` já deriva.
 
-    A tabela de partidas tem duas seleções por linha; quase toda métrica quer o
-    contrário. Empilhar mandante e visitante uma vez aqui evita repetir a mesma
-    dobra em cada agregação — e evita o erro clássico de contar só os mandantes.
+    A tabela longa `(partida, seleção)` e a coluna `result` — que resolve
+    disputas por pênaltis — são produzidas uma vez, na modelagem. Recalculá-las
+    aqui seria manter duas definições da mesma coisa em dois arquivos.
     """
-    shared = ["tournament_id", "competition", "year", "stage", "country_name",
-              "stadium_name", "city_name", "penalty_shootout"]
-    home = matches.rename(columns={
-        "home_team": "team", "away_team": "opponent",
-        "home_team_score": "gf", "away_team_score": "ga",
-        "home_team_score_penalties": "pf", "away_team_score_penalties": "pa"})
-    away = matches.rename(columns={
-        "away_team": "team", "home_team": "opponent",
-        "away_team_score": "gf", "home_team_score": "ga",
-        "away_team_score_penalties": "pf", "home_team_score_penalties": "pa"})
-    cols = shared + ["team", "opponent", "gf", "ga", "pf", "pa"]
-    return pd.concat([home[cols], away[cols]], ignore_index=True)
+    missing = [name for name in ("matches.csv", "team_matches.csv")
+               if not (PROCESSED / name).exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"{', '.join(missing)} não encontrado(s) — rode `python -m etl.model` antes.")
+    return (pd.read_csv(PROCESSED / "matches.csv"),
+            pd.read_csv(PROCESSED / "team_matches.csv"))
 
 
-def outcome(row: pd.Series) -> str:
-    """V, E ou D — resolvendo disputas por pênaltis.
-
-    No mata-mata um 1–1 não é empate: alguém avançou. Tratar o placar do tempo
-    normal como resultado final daria empates que não existiram e tiraria
-    vitórias reais de quem passou nos pênaltis.
-    """
-    if row.gf > row.ga:
-        return "W"
-    if row.gf < row.ga:
-        return "L"
-    if row.penalty_shootout == 1:
-        return "W" if row.pf > row.pa else "L"
-    return "D"
+def map_units() -> dict[str, str]:
+    """Seleção -> código da unidade de mapa, para o front-end casar o GeoJSON."""
+    mapping = pd.read_csv(REFERENCE / "team_country.csv")
+    return dict(zip(mapping.team_name, mapping.gu_a3))
 
 
-def titles_by_team() -> dict[str, dict[str, int]]:
-    """Títulos por seleção e competição, com o mapa de sucessão aplicado.
+def titles_by_team(editions: set[str]) -> dict[str, int]:
+    """Títulos por seleção, com o mapa de sucessão aplicado.
 
     Vem de `tournament_standings.csv`, não das finais: a Copa de 1950 não teve
     final, e derivar campeão do `stage == "final"` perderia aquela edição em
     silêncio (ver `transform.titles_table`).
+
+    O recorte não é uma regex sobre `tournament_name`: são os `tournament_id`
+    que o modelo de fato contém. Assim o escopo é decidido em um lugar só
+    (`etl.model.COMPETITION`) em vez de ser reinterpretado aqui.
     """
     succession = pd.read_csv(ROOT / "reference" / "team_succession.csv")
     merges = dict(zip(succession.historic_name, succession.merge_records))
     labels = dict(zip(succession.historic_name, succession.display_name))
 
     standings = pd.read_csv(RAW_FJELSTUL / "tournament_standings.csv")
-    comp = standings.tournament_name.str.extract(r"(Men's|Women's)")[0]
-    standings["competition"] = comp.map({"Men's": "mens", "Women's": "womens"})
-    champions = standings[standings.position == 1][["competition", "team_name"]]
+    champions = standings[(standings.position == 1)
+                          & standings.tournament_id.isin(editions)].team_name.tolist()
 
     modern = pd.read_csv(INTERIM / "tournament_2026.csv")
-    champions = pd.concat([champions, pd.DataFrame(
-        {"competition": ["mens"] * len(modern), "team_name": modern.winner})])
+    champions.extend(modern.loc[modern.tournament_id.isin(editions), "winner"])
 
-    counts: dict[str, dict[str, int]] = {}
-    for competition, raw in champions.itertuples(index=False):
+    counts: dict[str, int] = {}
+    for raw in champions:
         name = labels[raw] if merges.get(raw, 0) == 1 else raw
-        counts.setdefault(competition, {}).setdefault(name, 0)
-        counts[competition][name] += 1
+        counts[name] = counts.get(name, 0) + 1
     return counts
 
 
 def build_metrics(long: pd.DataFrame, matches: pd.DataFrame) -> list[dict]:
-    """As seis métricas, por seleção e competição."""
-    titles = titles_by_team()
+    """As seis métricas, por seleção."""
+    titles = titles_by_team(set(matches.tournament_id))
+    units = map_units()
 
     # "Partidas recebidas" é a única métrica que não olha para a seleção, e sim
-    # para o país onde se jogou. As 104 partidas de 2026 ainda estão sem
-    # country_name, então a métrica sai incompleta e o JSON diz isso.
-    received = (matches.dropna(subset=["country_name"])
-                .groupby(["competition", "country_name"]).size())
+    # para o país onde se jogou. Desde a geocodificação das sedes de 2026 ela
+    # está completa — era a última coluna nula do modelo.
+    received = matches.dropna(subset=["country_name"]).groupby("country_name").size()
 
     rows = []
-    for (competition, team), block in long.groupby(["competition", "team"]):
+    for team, block in long.groupby("team"):
         played = len(block)
-        wins = int((block.res == "W").sum())
-        draws = int((block.res == "D").sum())
-        losses = int((block.res == "L").sum())
-        goals = int(block.gf.sum())
-        conceded = int(block.ga.sum())
+        wins = int((block.result == "W").sum())
+        draws = int((block.result == "D").sum())
+        losses = int((block.result == "L").sum())
+        goals = int(block.goals_for.sum())
+        conceded = int(block.goals_against.sum())
 
         rows.append({
             "team": team,
-            "competition": competition,
+            "gu_a3": units.get(team),
             "goals": goals,
             "conceded": conceded,
             "goal_difference": goals - conceded,
@@ -138,8 +137,8 @@ def build_metrics(long: pd.DataFrame, matches: pd.DataFrame) -> list[dict]:
             "losses": losses,
             "win_pct": round(100 * wins / played, 1),
             "matches_played": played,
-            "matches_received": int(received.get((competition, team), 0)),
-            "titles": titles.get(competition, {}).get(team, 0),
+            "matches_received": int(received.get(team, 0)),
+            "titles": titles.get(team, 0),
             "participations": int(block.year.nunique()),
             "first_year": int(block.year.min()),
             "last_year": int(block.year.max()),
@@ -154,18 +153,16 @@ def build_metrics(long: pd.DataFrame, matches: pd.DataFrame) -> list[dict]:
 
 def build_head_to_head(long: pd.DataFrame) -> dict:
     """Matriz seleção × adversário — o que o modo de país selecionado pinta."""
-    matrix: dict[str, dict[str, dict[str, dict[str, int]]]] = {}
-    grouped = long.groupby(["competition", "team", "opponent"])
-    for (competition, team, opponent), block in grouped:
-        entry = {
-            "goals": int(block.gf.sum()),
-            "conceded": int(block.ga.sum()),
+    matrix: dict[str, dict[str, dict[str, int]]] = {}
+    for (team, opponent), block in long.groupby(["team", "opponent"]):
+        matrix.setdefault(team, {})[opponent] = {
+            "goals": int(block.goals_for.sum()),
+            "conceded": int(block.goals_against.sum()),
             "matches": len(block),
-            "wins": int((block.res == "W").sum()),
-            "draws": int((block.res == "D").sum()),
-            "losses": int((block.res == "L").sum()),
+            "wins": int((block.result == "W").sum()),
+            "draws": int((block.result == "D").sum()),
+            "losses": int((block.result == "L").sum()),
         }
-        matrix.setdefault(competition, {}).setdefault(team, {})[opponent] = entry
     return matrix
 
 
@@ -174,9 +171,11 @@ def main() -> int:
     parser.parse_args()
 
     ensure_dirs()
-    matches = pd.read_csv(PROCESSED / "matches_clean.csv")
-    long = to_long(matches)
-    long["res"] = long.apply(outcome, axis=1)
+    try:
+        matches, long = load_model()
+    except FileNotFoundError as error:
+        print(f"ERRO: {error}")
+        return 1
 
     # Cada partida gera exatamente duas linhas na tabela longa.
     if len(long) != 2 * len(matches):
@@ -187,7 +186,9 @@ def main() -> int:
     head2head = build_head_to_head(long)
 
     for name, payload in (("metrics.json", {
-        "generated_from": "data/processed/matches_clean.csv",
+        "generated_from": "data/processed/team_matches.csv",
+        # O front-end não deve inferir o escopo contando linhas.
+        "competition": COMPETITION,
         "per_match_floor": PER_MATCH_FLOOR,
         "matches_received_complete": bool(matches.country_name.notna().all()),
         "teams": metrics,
@@ -209,13 +210,17 @@ def main() -> int:
     total_played = sum(r["matches_played"] for r in metrics)
     checks.append(("participações em partidas", total_played, 2 * len(matches)))
 
-    mens_titles = sum(r["titles"] for r in metrics if r["competition"] == "mens")
-    mens_editions = matches[matches.competition == "mens"].tournament_id.nunique()
-    checks.append(("títulos masculinos", mens_titles, mens_editions))
+    total_titles = sum(r["titles"] for r in metrics)
+    checks.append(("títulos", total_titles, matches.tournament_id.nunique()))
 
     # V + E + D tem que fechar com as partidas jogadas
     wdl = sum(r["wins"] + r["draws"] + r["losses"] for r in metrics)
     checks.append(("V+E+D", wdl, 2 * len(matches)))
+
+    # Uma seleção sem `gu_a3` existe nas métricas mas não pinta nada no mapa —
+    # some da visualização sem gerar erro. Por isso é conferência, não aviso.
+    with_unit = sum(1 for r in metrics if r["gu_a3"])
+    checks.append(("entradas com gu_a3", with_unit, len(metrics)))
 
     failed = 0
     for label, got, expected in checks:
@@ -232,7 +237,7 @@ def main() -> int:
         print(f"\nAVISO: 'partidas recebidas' está incompleta — {incomplete} partidas "
               f"sem country_name (2026). Preencher na geocodificação.")
 
-    print(f"\n{len(metrics)} entradas seleção×competição prontas para o mapa.")
+    print(f"\n{len(metrics)} seleções prontas para o mapa.")
     return 0
 
 
