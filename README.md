@@ -207,6 +207,10 @@ origins.
 The data licence is not a choice. The source is published under CC BY-SA 4.0, whose
 ShareAlike term requires derived data to carry the same licence.
 
+> GitHub's sidebar detects a single licence and will display **MIT**. That label
+> applies to the code only — the data is CC BY-SA 4.0 regardless of what the sidebar
+> says.
+
 ### Required attribution
 
 All World Cup data in this repository comes from the **Fjelstul World Cup Database**:
