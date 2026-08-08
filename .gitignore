@@ -19,6 +19,16 @@ data/raw/scraped/**
 data/interim/**
 !data/interim/**/
 
+# EXCEÇÃO — os dados de 2026 SÃO versionados, e o motivo importa:
+# o Fjelstul é um repositório git estável, então data/raw/fjelstul/ é de fato
+# reproduzível a qualquer momento. A Wikipédia não é: os artigos mudam todo dia,
+# e o permalink de uma revisão específica fica em /w/index.php?oldid=..., caminho
+# que o robots.txt proíbe. Ou seja, não dá para re-baixar automaticamente a
+# revisão exata que usamos. Estes CSVs (27 KB) são o único registro durável.
+!data/interim/matches_2026.csv
+!data/interim/venues_2026.csv
+!data/interim/tournament_2026.csv
+
 # data/processed/ e web/data/ SÃO versionados — são o produto final
 # consumido pelo GitHub Pages.
 

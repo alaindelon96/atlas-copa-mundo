@@ -7,8 +7,8 @@ inconsistent records, relational modelling, validation, and publication.
 *Documentação de planejamento em português: [`plano-atlas-copa-mundo.md`](plano-atlas-copa-mundo.md)*
 
 > ### Status: stage 1 of 5
-> Extraction works and is reproducible. **The map does not exist yet**, and the 2026
-> tournament is not in the dataset. This README describes what is built, not what is
+> Extraction works and is reproducible, and the 2026 tournament has been scraped.
+> **The map does not exist yet.** This README describes what is built, not what is
 > planned — see [Roadmap](#roadmap) for the gap.
 
 ---
@@ -17,10 +17,10 @@ inconsistent records, relational modelling, validation, and publication.
 
 | | |
 |---|---|
-| **Working** | A reproducible extraction pipeline with cryptographic provenance |
-| **Data on hand** | 1,248 matches across 30 tournaments (22 men's 1930–2022, 8 women's 1991–2019) |
+| **Working** | A reproducible extraction pipeline with cryptographic provenance, plus a Wikipedia scraper for 2026 |
+| **Data on hand** | 1,352 matches across 31 tournaments — 1,248 from 1930–2022 (22 men's, 8 women's) and 104 from 2026 |
 | **Not built yet** | Cleaning, modelling, geocoding, the map itself |
-| **Missing data** | The 2026 tournament — no public dataset covers it |
+| **Not yet reconciled** | The 2026 data sits in `data/interim/`; merging it with the 1930–2022 tables is stage 2 |
 
 ---
 
@@ -49,6 +49,16 @@ overwriting anything:
 
 ```bash
 python -m etl.extract --check
+```
+
+Then fetch and parse the 2026 tournament, which no dataset covers:
+
+```bash
+python -m etl.scrape_2026
+```
+
+```bash
+python -m etl.parse_2026
 ```
 
 **This has been verified**: a fresh clone followed by `python -m etl.extract`
@@ -101,6 +111,44 @@ script and a pipeline:
   without overwriting, so you can detect upstream changes. This is the hook that makes
   scheduled automation possible later.
 
+### Stage 1b — Scrape 2026 ✅
+
+No published dataset covers the 2026 tournament, so it comes from Wikipedia.
+Scraping and parsing are **separate modules**, deliberately:
+
+| Module | Responsibility |
+|---|---|
+| [`etl/scrape_2026.py`](etl/scrape_2026.py) | Fetches raw HTML into `data/raw/scraped/`. Nothing is interpreted. |
+| [`etl/parse_2026.py`](etl/parse_2026.py) | Reads that cached HTML and extracts data. **Makes no network requests.** |
+
+Splitting them means a parsing bug can be fixed and re-run instantly without
+touching Wikipedia again, the parser is testable offline, and the cached HTML is
+evidence of what the page said at collection time.
+
+**Compliance**, since scraping has rules worth following:
+
+- Wikipedia's `robots.txt` disallows `/w/` and `/api/` for generic agents but
+  permits articles at `/wiki/<Title>` — which is what this fetches. The REST API
+  would *not* have been allowed.
+- Identifiable user-agent with contact details, per Wikimedia policy.
+- One second between requests.
+- The **revision ID** of every page is recorded. Wikipedia changes constantly, so
+  naming the article is not sufficient attribution — see
+  [`LICENSE-DATA.md`](LICENSE-DATA.md).
+
+The 104 matches are spread across 14 pages: 12 group pages (6 matches each) plus
+the knockout stage (32). The parser verifies itself against the article's own
+declared totals and **refuses to succeed if they disagree**:
+
+```
+OK  partidas   extraído=104    infobox=104
+OK  gols       extraído=308    infobox=308
+OK  sedes      extraído=16     infobox=16
+```
+
+Attendance independently sums to 6,810,966 across 104 matches — matching the
+infobox exactly, average included.
+
 ### Stages 2–5 — not yet built
 
 Cleaning, modelling/validation/geocoding, the Leaflet map, and publication. See
@@ -119,9 +167,10 @@ All 30 editions use the same `WC-<year>` pattern — `WC-1991` is the women's to
 overlap and the ID is genuinely unique, grouping by ID silently blends two competitions
 and raises no error. An explicit `competition` column is the first thing stage 2 will add.
 
-**2. There is no attendance data.** `matches.csv` has 36 columns and none is attendance,
-though `stadium_capacity` is complete across all 240 stadiums. Still an open decision —
-see below.
+**2. There is no attendance data — for 1930–2022.** `matches.csv` has 36 columns and
+none is attendance, though `stadium_capacity` is complete across all 240 stadiums.
+Wikipedia, by contrast, carries per-match attendance, so 2026 has it and the earlier
+tournaments do not. Still an open decision — see below.
 
 **3. Geocoding cannot be done by hand.** The plan assumed "a few cities". It is 240
 stadiums across 202 cities. That is `geopy`/Nominatim with an on-disk cache, not a
@@ -145,6 +194,22 @@ similarity. The solution is a curated succession map for the political changes, 
 fuzzy matching reserved for spelling variants — and the reasoning documented, because
 the choice is editorial rather than technical.
 
+**5. In the 2026 data, city names are not a usable join key.** Match records give the
+municipality the stadium physically sits in; the venues table gives the metro area it
+is marketed under. Joining on city matches **8 of 16**; joining on stadium name matches
+**16 of 16**.
+
+| Match record says | Venue table says |
+|---|---|
+| Inglewood | Los Angeles |
+| East Rutherford | New York/New Jersey |
+| Santa Clara | San Francisco Bay Area |
+| Zapopan | Guadalajara |
+| Arlington | Dallas |
+
+Neither is wrong — they answer different questions. This matters directly for the map,
+because the marker coordinate should be the *stadium*, not the metro centroid.
+
 ---
 
 ## Layout
@@ -166,9 +231,10 @@ tests/                   pytest suite for transformation logic
 
 Both are judgement calls, not technical blockers, and each gates a stage:
 
-- **Attendance or capacity?** Real attendance requires a Kaggle source that stops at
-  2018, leaving 2022 and 2026 blank. Stadium capacity is complete and consistent but is
-  a different measure and would need to be labelled honestly. *Gates the map popups.*
+- **Attendance or capacity?** 2026 now has real per-match attendance from Wikipedia,
+  but 1930–2022 still has none. A Kaggle source would cover through 2018 and leave 2022
+  blank. So the options are: attendance everywhere except 2022, capacity everywhere, or
+  both columns with the gap shown honestly. *Gates the map popups.*
 - **Does Germany have 4 titles or 1?** Whether West Germany folds into Germany. Both
   answers are defensible; not documenting the choice is not. *Gates stage 2.*
 
@@ -179,7 +245,7 @@ Both are judgement calls, not technical blockers, and each gates a stage:
 | Stage | Status |
 |---|---|
 | 1 · Extract ready-made datasets | ✅ Done |
-| 1b · Scrape the 2026 tournament | ⬜ Not started |
+| 1b · Scrape the 2026 tournament | ✅ Done |
 | 2 · Clean and reconcile names | ⬜ Blocked on the succession decision |
 | 3 · Model, validate, geocode | ⬜ Not started |
 | 4 · Build the Leaflet map | ⬜ Not started |
@@ -188,9 +254,24 @@ Both are judgement calls, not technical blockers, and each gates a stage:
 A bilingual visual roadmap with the reasoning behind each stage is in
 [`docs/roadmap.html`](docs/roadmap.html).
 
-> **A note on 2026.** The planning documents record that the 2026 tournament ended on
-> 19 July 2026. That has **not** been verified by any source inside this project. When
-> the scraper is written, the scraped data — not the note — is the authority.
+### 2026, verified
+
+The planning documents had recorded — from outside the project, unverified — that the
+2026 tournament ended on 19 July 2026 with Spain beating Argentina. The scraper has now
+confirmed it against the source:
+
+| | |
+|---|---|
+| **Champions** | Spain (2nd title) |
+| **Runners-up** | Argentina |
+| **Final** | 1–0, 19 July 2026, MetLife Stadium — 80,663 present |
+| **Third / fourth** | England / France |
+| **Format** | 48 teams, 3 host countries, 16 venues, 104 matches |
+| **Top scorer** | Kylian Mbappé (10 goals) |
+
+The 2026 tournament breaks two schema assumptions that held for 1930–2022: `host_country`
+is no longer a single value, and there is one knockout round more than in any previous
+edition. Both need handling in stage 3.
 
 ---
 
@@ -213,7 +294,7 @@ ShareAlike term requires derived data to carry the same licence.
 
 ### Required attribution
 
-All World Cup data in this repository comes from the **Fjelstul World Cup Database**:
+World Cup data for **1930–2022** comes from the **Fjelstul World Cup Database**:
 
 - **Author:** Joshua C. Fjelstul, Ph.D.
 - **Copyright:** © 2023 Joshua C. Fjelstul, Ph.D.
@@ -224,11 +305,18 @@ All World Cup data in this repository comes from the **Fjelstul World Cup Databa
 > https://www.github.com/jfjelstul/worldcup.
 
 **Modifications:** the files in `data/raw/fjelstul/` are byte-for-byte identical to the
-source — 16 of the 29 published tables were retrieved, none altered. Derived data does
-not exist yet. A full modification record is maintained in
-[`LICENSE-DATA.md`](LICENSE-DATA.md), as the licence requires.
+source — 16 of the 29 published tables were retrieved, none altered. A full modification
+record is maintained in [`LICENSE-DATA.md`](LICENSE-DATA.md), as the licence requires.
 
 The database is provided by its author as-is, with no warranties of any kind.
+
+Data for **2026** comes from the English **Wikipedia**, also under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode). Because
+Wikipedia articles change continuously, naming the article is not sufficient
+attribution — the 14 exact revision IDs used are listed in
+[`LICENSE-DATA.md`](LICENSE-DATA.md), recorded per file in
+[`data/raw/metadata.json`](data/raw/metadata.json), and carried per row in the parsed
+output's `source_revision` column.
 
 ### Built with
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-07T22:12:49+00:00",
+  "generated_at": "2026-08-08T06:16:33+00:00",
   "files": {
     "data/raw/fjelstul/award_winners.csv": {
       "source": "fjelstul-worldcup",
@@ -144,6 +144,160 @@
       "downloaded_at": "2026-08-07T22:12:32+00:00",
       "bytes": 3287,
       "sha256": "906b122d80aae5302486bafa9dfd925378503a2a11de6f5db39d6c4879040ce0"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:16+00:00",
+      "bytes": 2695700,
+      "sha256": "f0930f5b9648e959797da2f417b2f9b419b0effbc516b6de653573a055249fdf",
+      "revision_id": "1368037326",
+      "page_title": "2026 FIFA World Cup"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_A.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_A",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:17+00:00",
+      "bytes": 624299,
+      "sha256": "e86ed1e8298d32560190e38527f4376e69c2b186c3f6b32a9f70970b592c91f9",
+      "revision_id": "1368129117",
+      "page_title": "2026 FIFA World Cup Group A"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_B.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_B",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:19+00:00",
+      "bytes": 612362,
+      "sha256": "b85c9c0767a2a2a010cc0f2f33a40d1cc066c01945cccb66489d43d1f39aa7eb",
+      "revision_id": "1368282937",
+      "page_title": "2026 FIFA World Cup Group B"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_C.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_C",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:20+00:00",
+      "bytes": 596897,
+      "sha256": "5e2c742b804e837cc3170b9f8f724b17b0b7641e396589c3d72e838590267ec2",
+      "revision_id": "1368283749",
+      "page_title": "2026 FIFA World Cup Group C"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_D.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_D",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:21+00:00",
+      "bytes": 659271,
+      "sha256": "39aacc597aa3991c6532350e87034eea1552a6a512a229e9f81bdf9dad32ac8e",
+      "revision_id": "1368284732",
+      "page_title": "2026 FIFA World Cup Group D"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_E.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_E",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:22+00:00",
+      "bytes": 567889,
+      "sha256": "4a06e8c3f7c872548c69803386de516d6d08bd5ea8fb7733ef59abf1db82ee7b",
+      "revision_id": "1368284951",
+      "page_title": "2026 FIFA World Cup Group E"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_F.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_F",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:23+00:00",
+      "bytes": 600657,
+      "sha256": "71c0313b083346771e9c24513fbe4ac62c5d310df0f4373c4ffc4fbcb7885b71",
+      "revision_id": "1368285128",
+      "page_title": "2026 FIFA World Cup Group F"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_G.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_G",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:25+00:00",
+      "bytes": 597059,
+      "sha256": "64c0e5c7413b516880b765ac7150f8aabefbf90ca1f59050e15bdefa97f25e27",
+      "revision_id": "1368285341",
+      "page_title": "2026 FIFA World Cup Group G"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_H.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_H",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:26+00:00",
+      "bytes": 576881,
+      "sha256": "7414767ced4e0f50bf79160409bd077580637a086cfbc6d235380260910bc3dc",
+      "revision_id": "1368285642",
+      "page_title": "2026 FIFA World Cup Group H"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_I.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_I",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:27+00:00",
+      "bytes": 578359,
+      "sha256": "78e5e3bb0eabaa3cffe40b3a71db1e191743046437856e58537a574ff42e4a4c",
+      "revision_id": "1368283456",
+      "page_title": "2026 FIFA World Cup Group I"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_J.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_J",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:28+00:00",
+      "bytes": 590276,
+      "sha256": "90b94f705ae1be3c613f4c19bb0cdeb1943b2b4c249dc8bcc83e57427f3a204e",
+      "revision_id": "1368286276",
+      "page_title": "2026 FIFA World Cup Group J"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_K.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_K",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:29+00:00",
+      "bytes": 574091,
+      "sha256": "93d8742e6a6d385711221ad1c29ad915bac8821dbd5fa46155ca9e25baf0a775",
+      "revision_id": "1368286465",
+      "page_title": "2026 FIFA World Cup Group K"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_Group_L.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_Group_L",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:30+00:00",
+      "bytes": 574315,
+      "sha256": "ca63eb1d03ddb9b22d2bfa6f2366ac122cabb483dc37dd0733a9375ce598cd40",
+      "revision_id": "1368283601",
+      "page_title": "2026 FIFA World Cup Group L"
+    },
+    "data/raw/scraped/2026_FIFA_World_Cup_knockout_stage.html": {
+      "source": "wikipedia",
+      "url": "https://en.wikipedia.org/wiki/2026_FIFA_World_Cup_knockout_stage",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors, English Wikipedia — https://en.wikipedia.org (CC BY-SA 4.0)",
+      "downloaded_at": "2026-08-08T06:16:32+00:00",
+      "bytes": 1920096,
+      "sha256": "03bd531f9b6a9abb5671e83503e3bc887bda9656ba38c5271dd78844eb194748",
+      "revision_id": "1368128792",
+      "page_title": "2026 FIFA World Cup knockout stage"
     }
   }
 }

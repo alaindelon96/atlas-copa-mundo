@@ -83,7 +83,7 @@ Não há sobreposição de anos entre as duas, e `tournament_id` é único — p
 - [ ] Baixar dataset complementar do Kaggle — **só se a decisão sobre público exigir** (ver 2.1)
 - [x] Salvar tudo em `data/raw/` sem alterações (preservar dado original)
 - [x] Registrar data/hora e fonte de cada download em um `metadata.json`
-- [ ] Executar o scraping complementar da Copa de 2026 (ver seção 4)
+- [x] Executar o scraping complementar da Copa de 2026 (ver seção 4) — 104 partidas, 16 sedes
 
 **O que foi construído:**
 
@@ -167,7 +167,19 @@ Schema proposto (formato tabular relacional):
 
 Nenhuma fonte pronta cobre o torneio de 2026. A melhor forma de complementar é raspar os dados diretamente da Wikipédia, que mantém tabelas estruturadas de resultados por partida, artilheiros e sedes.
 
-> ⚠️ **A ser verificado pelo scraping:** a nota anterior deste documento registrava que a Copa de 2026 terminou em 19/07/2026 com título da Espanha sobre a Argentina. **Esse dado ainda não foi confirmado por nenhuma fonte dentro do projeto.** Trate como hipótese até o scraping rodar — e, quando rodar, deixe o dado raspado ser a verdade, não a anotação.
+> ✅ **VERIFICADO em 08/08/2026.** A nota anterior estava correta: a Copa de 2026 terminou em 19/07/2026, com a Espanha batendo a Argentina por 1–0 no MetLife Stadium, diante de 80.663 pessoas (2º título espanhol). Terceiro lugar: Inglaterra; quarto: França. Artilheiro: Kylian Mbappé (10 gols). O dado agora vem do scraping, não da anotação.
+
+**Resultado do scraping (14 páginas, revisões registradas):**
+
+| | |
+|---|---|
+| Partidas | 104 (72 de grupo + 32 de mata-mata) |
+| Gols | 308 (2,96 por partida) |
+| Público total | 6.810.966 (média de 65.490) |
+| Sedes | 16 estádios, 3 países |
+| Seleções | 48 |
+
+As três conferências do parser batem exatamente com os totais que o próprio artigo declara — partidas, gols e sedes. O parser **falha** se não baterem.
 
 **Fonte alvo:** páginas da Wikipédia sobre a Copa de 2026 (ex: "2026 FIFA World Cup", "2026 FIFA World Cup final", páginas de cada grupo/fase). Conteúdo sob CC BY-SA 4.0 — exige atribuição.
 
@@ -265,4 +277,6 @@ atlas-copa-mundo/
 - **07/08/2026** — estrutura de repositório criada; `.gitignore` e `requirements.txt` escritos.
 - **07/08/2026** — **Etapa 1 concluída para a fonte principal:** `etl/paths.py`, `etl/provenance.py` e `etl/extract.py` implementados; 16 CSVs do Fjelstul baixados (~1,9 MB) com proveniência SHA-256 em `data/raw/metadata.json`.
 - **07/08/2026** — exploração dos dados revelou quatro pontos que mudam o plano: (1) `tournament_id` não separa masculino de feminino; (2) não há dado de público; (3) são 202 cidades para geocodificar, não "poucas"; (4) os dados estão limpos — o desafio real é reconciliação histórica de nomes, não sujeira. Detalhes na seção 2.1.
-- **07/08/2026** — scraping de 2026 ainda não iniciado.
+- **08/08/2026** — repositório publicado em https://github.com/alaindelon96/atlas-copa-mundo; README, `LICENSE` (MIT, código) e `LICENSE-DATA.md` (CC-BY-SA 4.0, dados) escritos.
+- **08/08/2026** — **Etapa 1b concluída: scraping da Copa de 2026.** `robots.txt` da Wikipédia verificado (artigos em `/wiki/` são permitidos; `/w/` e `/api/` não). `etl/scrape_2026.py` baixou 14 páginas com o `revision_id` de cada uma; `etl/parse_2026.py` extraiu 104 partidas, 16 sedes e o registro do torneio, conferindo tudo contra os totais do próprio artigo.
+- **08/08/2026** — dois achados novos: (1) a Wikipédia **tem público por partida** (6.810.966 no total em 2026), enquanto o Fjelstul não tem nenhum — o que muda a decisão em aberto sobre público; (2) no dado de 2026, `city_name` **não serve como chave de join** (casa 8 de 16), porque a partida registra o município e a tabela de sedes registra a região metropolitana — `stadium_name` casa 16 de 16.

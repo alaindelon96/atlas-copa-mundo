@@ -47,12 +47,17 @@ def record(
     url: str,
     license_: str,
     attribution: str,
+    extra: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Adiciona (ou atualiza) a entrada de um arquivo no registro.
 
     A chave é o caminho relativo à raiz do repositório, em formato POSIX, para
     que o metadata.json fique idêntico no Windows e no Linux (o pipeline pode
     rodar tanto na máquina local quanto no GitHub Actions).
+
+    `extra` carrega campos específicos da fonte. Para a Wikipédia é onde vai o
+    `revision_id`: a licença CC BY-SA exige atribuir a revisão exata usada, e
+    um artigo pode mudar entre duas execuções do scraping.
     """
     key = path.relative_to(ROOT).as_posix()
     entry = {
@@ -64,6 +69,8 @@ def record(
         "bytes": path.stat().st_size,
         "sha256": sha256(path),
     }
+    if extra:
+        entry.update(extra)
     registry["files"][key] = entry
     return entry
 

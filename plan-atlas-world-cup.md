@@ -83,7 +83,7 @@ This is precisely where `rapidfuzz` **cannot** solve it alone: "Zaire" and "DR C
 - [ ] Download the complementary Kaggle dataset — **only if the attendance decision requires it** (see 2.1)
 - [x] Save everything to `data/raw/` unaltered (preserve the original data)
 - [x] Record timestamp and source of every download in a `metadata.json`
-- [ ] Run the complementary 2026 World Cup scraping (see section 4)
+- [x] Run the complementary 2026 World Cup scraping (see section 4) — 104 matches, 16 venues
 
 **What was built:**
 
@@ -167,7 +167,19 @@ Proposed schema (relational tabular form):
 
 No ready-made source covers the 2026 tournament. The best way to fill the gap is to scrape directly from Wikipedia, which maintains structured tables of match results, top scorers and venues.
 
-> ⚠️ **To be verified by the scraping:** this document's earlier note recorded that the 2026 World Cup ended on 2026-07-19 with Spain beating Argentina. **That fact has not yet been confirmed by any source inside the project.** Treat it as a hypothesis until the scraper runs — and when it does, let the scraped data be the truth, not the note.
+> ✅ **VERIFIED on 2026-08-08.** The earlier note was correct: the 2026 World Cup ended on 2026-07-19, with Spain beating Argentina 1–0 at MetLife Stadium in front of 80,663 people (Spain's 2nd title). Third place: England; fourth: France. Top scorer: Kylian Mbappé (10 goals). This now comes from the scraped data, not the note.
+
+**Scraping result (14 pages, revisions recorded):**
+
+| | |
+|---|---|
+| Matches | 104 (72 group + 32 knockout) |
+| Goals | 308 (2.96 per match) |
+| Total attendance | 6,810,966 (65,490 average) |
+| Venues | 16 stadiums, 3 countries |
+| Teams | 48 |
+
+All three of the parser's self-checks match the article's own declared totals exactly — matches, goals and venues. The parser **fails** if they disagree.
 
 **Target source:** Wikipedia pages on the 2026 World Cup (e.g. "2026 FIFA World Cup", "2026 FIFA World Cup final", per-group/stage pages). Content under CC BY-SA 4.0 — attribution required.
 
@@ -265,4 +277,6 @@ atlas-copa-mundo/
 - **2026-08-07** — repository structure created; `.gitignore` and `requirements.txt` written.
 - **2026-08-07** — **Stage 1 complete for the primary source:** `etl/paths.py`, `etl/provenance.py` and `etl/extract.py` implemented; 16 Fjelstul CSVs downloaded (~1.9 MB) with SHA-256 provenance in `data/raw/metadata.json`.
 - **2026-08-07** — data exploration surfaced four points that change the plan: (1) `tournament_id` does not separate men's from women's; (2) there is no attendance data; (3) there are 202 cities to geocode, not "a few"; (4) the data is clean — the real challenge is historical name reconciliation, not dirtiness. Details in section 2.1.
-- **2026-08-07** — 2026 scraping not yet started.
+- **2026-08-08** — repository published at https://github.com/alaindelon96/atlas-copa-mundo; README, `LICENSE` (MIT, code) and `LICENSE-DATA.md` (CC-BY-SA 4.0, data) written.
+- **2026-08-08** — **Stage 1b complete: 2026 World Cup scraped.** Wikipedia's `robots.txt` verified (articles under `/wiki/` are permitted; `/w/` and `/api/` are not). `etl/scrape_2026.py` fetched 14 pages recording each one's `revision_id`; `etl/parse_2026.py` extracted 104 matches, 16 venues and the tournament record, checking everything against the article's own totals.
+- **2026-08-08** — two new findings: (1) Wikipedia **does carry per-match attendance** (6,810,966 total in 2026) where Fjelstul carries none — which reshapes the open attendance decision; (2) in the 2026 data, `city_name` is **not a usable join key** (matches 8 of 16), because match records give the municipality and the venues table gives the metro area — `stadium_name` matches 16 of 16.

@@ -54,12 +54,47 @@ unchanged.
 
 ## Source 2 — Wikipedia (2026 tournament)
 
-**Not yet in use.** Once `etl/scrape_2026.py` exists, data for the 2026 tournament
-will be derived from Wikipedia, whose text is published under
+Data for the 2026 tournament — which no published dataset covers — is derived from
+the English Wikipedia, whose text is published under
 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode).
 
-When that happens, this section will name the exact article revisions used. Until
-then, no Wikipedia-derived content is present in this repository.
+- **Author:** Wikipedia contributors
+- **Licence:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode)
+- **Source:** https://en.wikipedia.org
+
+Wikipedia articles change continuously, so naming the article is not sufficient
+attribution — the **exact revision** must be identified. These are the revisions
+retrieved on **2026-08-08** and used to produce the 2026 data:
+
+| Article | Revision ID | Permanent link |
+|---|---|---|
+| 2026 FIFA World Cup | `1368037326` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368037326) |
+| 2026 FIFA World Cup Group A | `1368129117` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368129117) |
+| 2026 FIFA World Cup Group B | `1368282937` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368282937) |
+| 2026 FIFA World Cup Group C | `1368283749` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368283749) |
+| 2026 FIFA World Cup Group D | `1368284732` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368284732) |
+| 2026 FIFA World Cup Group E | `1368284951` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368284951) |
+| 2026 FIFA World Cup Group F | `1368285128` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368285128) |
+| 2026 FIFA World Cup Group G | `1368285341` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368285341) |
+| 2026 FIFA World Cup Group H | `1368285642` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368285642) |
+| 2026 FIFA World Cup Group I | `1368283456` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368283456) |
+| 2026 FIFA World Cup Group J | `1368286276` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368286276) |
+| 2026 FIFA World Cup Group K | `1368286465` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368286465) |
+| 2026 FIFA World Cup Group L | `1368283601` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368283601) |
+| 2026 FIFA World Cup knockout stage | `1368128792` | [permalink](https://en.wikipedia.org/w/index.php?oldid=1368128792) |
+
+These revision IDs are also recorded per-file in
+[`data/raw/metadata.json`](data/raw/metadata.json), and carried per-row in the
+`source_page` and `source_revision` columns of the parsed output — so any single
+figure in the 2026 data can be traced back to the exact article revision it came
+from.
+
+### Modifications made to this source
+
+The article HTML in `data/raw/scraped/` is stored unmodified. Data was extracted
+from it — match results, venues and tournament totals restructured into tabular
+form — but no source text was altered. Prose, references and formatting were
+discarded rather than changed.
 
 ---
 
