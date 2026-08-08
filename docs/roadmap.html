@@ -330,6 +330,24 @@
   .term dt { font-family: var(--mono); font-size: .82rem; color: var(--ink); }
   .term dd { margin: 0; font-size: .89em; color: var(--ink-2); }
 
+  a { color: var(--done); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: var(--ink); }
+  a:focus-visible { outline: 2px solid var(--done); outline-offset: 2px; border-radius: 1px; }
+
+  /* verified result panel */
+  .verified {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    border: 1px solid var(--done);
+    background: var(--done-soft);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .verified div { padding: .9rem 1.1rem; border-right: 1px solid color-mix(in srgb, var(--done) 30%, transparent); display: flex; flex-direction: column; gap: .15rem; }
+  .verified div:last-child { border-right: 0; }
+  .verified b { font-family: var(--serif); font-size: 1.2rem; color: var(--ink); line-height: 1.2; }
+  .verified span { font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--done); }
+
   footer { color: var(--ink-3); font-size: .82em; border-top: 1px solid var(--rule); padding-top: 1.2rem; display: flex; flex-direction: column; gap: .3rem; }
   code { font-family: var(--mono); font-size: .88em; background: var(--surface-2); border: 1px solid var(--rule); border-radius: 2px; padding: .05rem .3rem; }
 
@@ -359,11 +377,11 @@
     </p>
 
     <div class="scoreboard">
-      <div class="stat is-done"><b>1&nbsp;/&nbsp;5</b><span class="en">stages complete</span><span class="pt">etapas conclu&iacute;das</span></div>
-      <div class="stat is-done"><b>16</b><span class="en">tables extracted</span><span class="pt">tabelas extra&iacute;das</span></div>
-      <div class="stat"><b>1,248</b><span class="en">matches on hand</span><span class="pt">partidas em m&atilde;os</span></div>
-      <div class="stat"><b>202</b><span class="en">cities to geocode</span><span class="pt">cidades a geocodificar</span></div>
-      <div class="stat is-now"><b>1</b><span class="en">tournament missing</span><span class="pt">torneio faltando</span></div>
+      <div class="stat is-done"><b>1,352</b><span class="en">matches on hand</span><span class="pt">partidas em m&atilde;os</span></div>
+      <div class="stat is-done"><b>31</b><span class="en">tournaments, 1930&ndash;2026</span><span class="pt">torneios, 1930&ndash;2026</span></div>
+      <div class="stat is-done"><b>0</b><span class="en">tournaments missing</span><span class="pt">torneios faltando</span></div>
+      <div class="stat"><b>213</b><span class="en">cities to geocode</span><span class="pt">cidades a geocodificar</span></div>
+      <div class="stat is-now"><b>1</b><span class="en">decision blocking stage 2</span><span class="pt">decis&atilde;o travando a etapa 2</span></div>
     </div>
   </header>
 
@@ -391,9 +409,9 @@
         <text class="name" x="28" y="60">Fjelstul DB</text>
         <text class="meta" x="28" y="76">16 CSV &middot; 1930&ndash;2022</text>
 
-        <rect class="box-next" x="14" y="98" width="150" height="46" rx="3"/>
+        <rect class="box-src" x="14" y="98" width="150" height="46" rx="3"/>
         <text class="name" x="28" y="118">Wikipedia</text>
-        <text class="meta" x="28" y="134">scraping &middot; 2026</text>
+        <text class="meta" x="28" y="134">14 pages &middot; 104 matches</text>
 
         <rect class="box-hollow" x="14" y="156" width="150" height="46" rx="3"/>
         <text class="name-m" x="28" y="176">Kaggle</text>
@@ -482,12 +500,37 @@
             <li class="ok"><span class="en">16 Fjelstul tables in <code>data/raw/fjelstul/</code> &mdash; 1.9&nbsp;MB</span><span class="pt">16 tabelas do Fjelstul em <code>data/raw/fjelstul/</code> &mdash; 1,9&nbsp;MB</span></li>
             <li class="ok"><span class="en">SHA-256, timestamp, URL and licence for every file</span><span class="pt">SHA-256, timestamp, URL e licen&ccedil;a de cada arquivo</span></li>
             <li class="ok"><span class="en">Atomic writes &mdash; a dropped download can't leave a half-file behind</span><span class="pt">Escrita at&ocirc;mica &mdash; um download interrompido n&atilde;o deixa arquivo pela metade</span></li>
-            <li class="todo"><span class="en">Scrape the 2026 tournament from Wikipedia</span><span class="pt">Raspar o torneio de 2026 da Wikip&eacute;dia</span></li>
           </ul>
           <div class="tools"><span class="tool">requests</span><span class="tool">hashlib</span><span class="tool">etl/extract.py</span><span class="tool">etl/provenance.py</span></div>
           <div class="say">
             <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
             <q><span class="en">I download the raw data once and never edit it. Every file gets a fingerprint and a timestamp, so I can prove which version I used &mdash; and detect it if the source changes underneath me.</span><span class="pt">Eu baixo o dado bruto uma vez e nunca edito. Cada arquivo ganha uma impress&atilde;o digital e um timestamp, ent&atilde;o eu consigo provar qual vers&atilde;o usei &mdash; e detectar se a fonte mudou por baixo.</span></q>
+          </div>
+        </div>
+      </article>
+
+      <!-- 1b -->
+      <article class="stage done">
+        <div class="stage-num">01b</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Scrape 2026</span><span class="pt">Raspar 2026</span></h3>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
+          </div>
+          <p>
+            <span class="en">No published dataset covers the 2026 tournament, so it comes from Wikipedia. Fetching and interpreting are two separate programs, on purpose.</span>
+            <span class="pt">Nenhuma base publicada cobre o torneio de 2026, ent&atilde;o ele vem da Wikip&eacute;dia. Baixar e interpretar s&atilde;o dois programas separados, de prop&oacute;sito.</span>
+          </p>
+          <ul class="ticks">
+            <li class="ok"><span class="en"><code>robots.txt</code> checked: articles under <code>/wiki/</code> allowed, <code>/w/</code> and <code>/api/</code> not &mdash; which ruled out the REST API</span><span class="pt"><code>robots.txt</code> conferido: artigos em <code>/wiki/</code> permitidos, <code>/w/</code> e <code>/api/</code> n&atilde;o &mdash; o que descartou a API REST</span></li>
+            <li class="ok"><span class="en">104 matches across 14 pages &mdash; 12 group pages plus the knockout stage</span><span class="pt">104 partidas em 14 p&aacute;ginas &mdash; 12 de grupo mais o mata-mata</span></li>
+            <li class="ok"><span class="en">Revision ID of every page recorded &mdash; Wikipedia changes daily, so naming the article isn't enough</span><span class="pt">ID da revis&atilde;o de cada p&aacute;gina registrado &mdash; a Wikip&eacute;dia muda todo dia, citar o artigo n&atilde;o basta</span></li>
+            <li class="ok"><span class="en">Parser self-checks against the article's own totals and <strong>fails if they disagree</strong>: 104 matches, 308 goals, 16 venues</span><span class="pt">O parser se confere contra os totais do pr&oacute;prio artigo e <strong>falha se divergirem</strong>: 104 partidas, 308 gols, 16 sedes</span></li>
+          </ul>
+          <div class="tools"><span class="tool">BeautifulSoup4</span><span class="tool">pandas.read_html</span><span class="tool">etl/scrape_2026.py</span><span class="tool">etl/parse_2026.py</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">I save the raw HTML first, then parse it in a second program that never touches the network. So fixing a parsing bug costs nothing and doesn't hammer their servers &mdash; and the cached page is my evidence of what it said the day I collected it.</span><span class="pt">Eu salvo o HTML bruto primeiro, e s&oacute; depois interpreto num segundo programa que nunca acessa a rede. Ent&atilde;o corrigir um bug de parsing n&atilde;o custa nada e n&atilde;o martela o servidor deles &mdash; e a p&aacute;gina em cache &eacute; minha prova do que ela dizia no dia da coleta.</span></q>
           </div>
         </div>
       </article>
@@ -594,13 +637,35 @@
     </div>
   </section>
 
+  <!-- ============ 2026 VERIFIED ============ -->
+  <section>
+    <div class="sec-head">
+      <h2><span class="en">2026, verified</span><span class="pt">2026, verificado</span></h2>
+      <p>
+        <span class="en">The plan had recorded this result from outside the project, with no source. The scraper has now confirmed it against Wikipedia &mdash; and that distinction is the whole point of the pipeline.</span>
+        <span class="pt">O plano registrava este resultado de fora do projeto, sem fonte. O scraping agora confirmou contra a Wikip&eacute;dia &mdash; e essa distin&ccedil;&atilde;o &eacute; justamente o sentido do pipeline.</span>
+      </p>
+    </div>
+    <div class="verified">
+      <div><b>Spain 1&ndash;0 Argentina</b><span class="en">final &middot; 19 Jul 2026</span><span class="pt">final &middot; 19 jul 2026</span></div>
+      <div><b>80,663</b><span class="en">at MetLife Stadium</span><span class="pt">no MetLife Stadium</span></div>
+      <div><b>104</b><span class="en">matches &middot; 308 goals</span><span class="pt">partidas &middot; 308 gols</span></div>
+      <div><b>48</b><span class="en">teams &middot; 3 host countries</span><span class="pt">sele&ccedil;&otilde;es &middot; 3 pa&iacute;ses-sede</span></div>
+      <div><b>Mbapp&eacute;</b><span class="en">top scorer &middot; 10 goals</span><span class="pt">artilheiro &middot; 10 gols</span></div>
+    </div>
+    <p>
+      <span class="en">2026 also breaks two assumptions that held for every previous edition: the host is no longer a single country, and there is one knockout round more than in 2022. Both land on stage 3.</span>
+      <span class="pt">2026 tamb&eacute;m quebra duas premissas que valiam em todas as edi&ccedil;&otilde;es anteriores: a sede deixou de ser um pa&iacute;s s&oacute;, e h&aacute; uma fase de mata-mata a mais que em 2022. As duas caem na etapa 3.</span>
+    </p>
+  </section>
+
   <!-- ============ FINDINGS ============ -->
   <section>
     <div class="sec-head">
-      <h2><span class="en">What the data told us on day one</span><span class="pt">O que o dado nos contou no primeiro dia</span></h2>
+      <h2><span class="en">What the data told us</span><span class="pt">O que o dado nos contou</span></h2>
       <p>
-        <span class="en">Four things that changed the plan the moment we actually opened the files. This is the part worth talking about &mdash; it shows you looked.</span>
-        <span class="pt">Quatro coisas que mudaram o plano no momento em que abrimos os arquivos de verdade. Essa &eacute; a parte que vale contar &mdash; mostra que voc&ecirc; olhou.</span>
+        <span class="en">Five things that changed the plan the moment we actually opened the files. This is the part worth talking about &mdash; it shows you looked.</span>
+        <span class="pt">Cinco coisas que mudaram o plano no momento em que abrimos os arquivos de verdade. Essa &eacute; a parte que vale contar &mdash; mostra que voc&ecirc; olhou.</span>
       </p>
     </div>
 
@@ -614,19 +679,27 @@
         </p>
       </div>
       <div class="finding">
-        <div class="tag"><span class="en">Missing field</span><span class="pt">Campo ausente</span></div>
-        <h3><span class="en">No attendance anywhere</span><span class="pt">P&uacute;blico n&atilde;o existe</span></h3>
+        <div class="tag"><span class="en">Half a field</span><span class="pt">Meio campo</span></div>
+        <h3><span class="en">Attendance exists &mdash; but only for 2026</span><span class="pt">P&uacute;blico existe &mdash; s&oacute; que s&oacute; em 2026</span></h3>
         <p>
-          <span class="en">The plan promised attendance in the map popups. The source has 36 columns and none of them is attendance. Either pull it from Kaggle &mdash; which only reaches 2018 &mdash; or use stadium capacity, which is complete across all 240 stadiums.</span>
-          <span class="pt">O plano prometia p&uacute;blico nos popups do mapa. A fonte tem 36 colunas e nenhuma &eacute; p&uacute;blico. Ou buscar no Kaggle &mdash; que s&oacute; vai at&eacute; 2018 &mdash; ou usar a capacidade do est&aacute;dio, que est&aacute; completa nos 240 est&aacute;dios.</span>
+          <span class="en">The plan promised attendance in the map popups. Fjelstul has 36 columns and none is attendance. Wikipedia has it per match, so 2026 came with 6,810,966 &mdash; and 1930&ndash;2022 still has none. One column, two different worlds.</span>
+          <span class="pt">O plano prometia p&uacute;blico nos popups do mapa. O Fjelstul tem 36 colunas e nenhuma &eacute; p&uacute;blico. A Wikip&eacute;dia tem, por partida, ent&atilde;o 2026 veio com 6.810.966 &mdash; e 1930&ndash;2022 continua sem nada. Uma coluna, dois mundos diferentes.</span>
         </p>
       </div>
       <div class="finding">
         <div class="tag"><span class="en">Bad estimate</span><span class="pt">Estimativa errada</span></div>
-        <h3><span class="en">202 cities, not &ldquo;a few&rdquo;</span><span class="pt">202 cidades, n&atilde;o &ldquo;poucas&rdquo;</span></h3>
+        <h3><span class="en">213 cities, not &ldquo;a few&rdquo;</span><span class="pt">213 cidades, n&atilde;o &ldquo;poucas&rdquo;</span></h3>
         <p>
-          <span class="en">The plan assumed venues could be geocoded by hand. It's 240 stadiums across 202 cities. At one Nominatim request per second that's about three minutes of automation &mdash; or several evenings of copying coordinates.</span>
-          <span class="pt">O plano assumia que dava pra geocodificar as sedes &agrave; m&atilde;o. S&atilde;o 240 est&aacute;dios em 202 cidades. A uma requisi&ccedil;&atilde;o Nominatim por segundo, s&atilde;o uns tr&ecirc;s minutos de automa&ccedil;&atilde;o &mdash; ou v&aacute;rias noites copiando coordenadas.</span>
+          <span class="en">The plan assumed venues could be geocoded by hand. Across both sources it's 247 stadiums in 213 cities &mdash; four venues recur, the Azteca among them, having also hosted 1970 and 1986. At one Nominatim request per second that's minutes of automation, or several evenings of copying coordinates.</span>
+          <span class="pt">O plano assumia que dava pra geocodificar as sedes &agrave; m&atilde;o. Somando as duas fontes s&atilde;o 247 est&aacute;dios em 213 cidades &mdash; quatro sedes se repetem, entre elas o Azteca, que j&aacute; recebeu 1970 e 1986. A uma requisi&ccedil;&atilde;o Nominatim por segundo, s&atilde;o alguns minutos de automa&ccedil;&atilde;o, ou v&aacute;rias noites copiando coordenadas.</span>
+        </p>
+      </div>
+      <div class="finding">
+        <div class="tag"><span class="en">Wrong key</span><span class="pt">Chave errada</span></div>
+        <h3><span class="en">City names don't join</span><span class="pt">Nome de cidade n&atilde;o casa</span></h3>
+        <p>
+          <span class="en">In the 2026 data, a match says <em>Inglewood</em> and the venue table says <em>Los Angeles</em>. Same stadium, different question answered. Joining on city matches 8 of 16; joining on stadium name matches 16 of 16 &mdash; and the map marker belongs on the stadium anyway, not a metro centroid.</span>
+          <span class="pt">No dado de 2026, a partida diz <em>Inglewood</em> e a tabela de sedes diz <em>Los Angeles</em>. Mesmo est&aacute;dio, perguntas diferentes. Casar por cidade acerta 8 de 16; casar por nome do est&aacute;dio acerta 16 de 16 &mdash; e o marcador do mapa pertence ao est&aacute;dio, n&atilde;o ao centro da regi&atilde;o metropolitana.</span>
         </p>
       </div>
       <div class="finding">
@@ -695,7 +768,7 @@
       <div class="decision open">
         <span class="pill now" style="align-self:flex-start"><span class="en">Open &mdash; blocks stage 4</span><span class="pt">Aberta &mdash; trava a etapa 4</span></span>
         <h3><span class="en">Attendance or capacity?</span><span class="pt">P&uacute;blico ou capacidade?</span></h3>
-        <p><span class="en">Real attendance means adding a Kaggle source that stops at 2018 and leaves 2022 and 2026 blank. Capacity is complete and consistent, but it's a different number and you'd have to label it honestly.</span><span class="pt">P&uacute;blico real significa somar uma fonte do Kaggle que para em 2018 e deixa 2022 e 2026 vazios. Capacidade est&aacute; completa e consistente, mas &eacute; outro n&uacute;mero e voc&ecirc; teria que rotular com honestidade.</span></p>
+        <p><span class="en">2026 now has real per-match attendance; 1930&ndash;2022 has none. Kaggle would cover through 2018 and leave 2022 blank. So: attendance everywhere except 2022, capacity everywhere, or both columns with the gap shown honestly.</span><span class="pt">2026 agora tem p&uacute;blico real por partida; 1930&ndash;2022 n&atilde;o tem nenhum. O Kaggle cobriria at&eacute; 2018 e deixaria 2022 vazio. Ent&atilde;o: p&uacute;blico em tudo menos 2022, capacidade em tudo, ou as duas colunas com a lacuna &agrave; mostra.</span></p>
       </div>
       <div class="decision open">
         <span class="pill now" style="align-self:flex-start"><span class="en">Open &mdash; blocks stage 2</span><span class="pt">Aberta &mdash; trava a etapa 2</span></span>
@@ -743,8 +816,8 @@
   </section>
 
   <footer>
-    <div><span class="en">Companion to</span><span class="pt">Complemento de</span> <code>plano-atlas-copa-mundo.md</code> / <code>plan-atlas-world-cup.md</code> &middot; <span class="en">last updated</span><span class="pt">atualizado em</span> 2026-08-07.</div>
-    <div><span class="en">Data: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) &mdash; 2026 tournament figures not yet verified from any source inside the project.</span><span class="pt">Dados: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) &mdash; n&uacute;meros do torneio de 2026 ainda n&atilde;o verificados por nenhuma fonte dentro do projeto.</span></div>
+    <div><span class="en">Companion to</span><span class="pt">Complemento de</span> <code>plano-atlas-copa-mundo.md</code> / <code>plan-atlas-world-cup.md</code> &middot; <span class="en">last updated</span><span class="pt">atualizado em</span> 2026-08-08 &middot; <a href="https://github.com/alaindelon96/atlas-copa-mundo">github.com/alaindelon96/atlas-copa-mundo</a></div>
+    <div><span class="en">Data: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) for 1930&ndash;2022, English Wikipedia (CC&nbsp;BY-SA&nbsp;4.0) for 2026 &mdash; 14 article revisions, listed in <code>LICENSE-DATA.md</code>.</span><span class="pt">Dados: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) para 1930&ndash;2022, Wikip&eacute;dia em ingl&ecirc;s (CC&nbsp;BY-SA&nbsp;4.0) para 2026 &mdash; 14 revis&otilde;es de artigo, listadas em <code>LICENSE-DATA.md</code>.</span></div>
   </footer>
 </div>
 
