@@ -110,15 +110,28 @@ python -m etl.extract
 python -m etl.extract --check
 ```
 
-### Etapa 2 — Limpeza ⏳ PRÓXIMO PASSO
+### Etapa 2 — Limpeza ✅ CONCLUÍDA
 
-- [ ] Criar a coluna `competition` (`mens`/`womens`) a partir de `tournament_name` — **fazer isso primeiro** (ver 2.1)
-- [ ] Padronizar nomes de seleções via mapa de sucessão explícito + `rapidfuzz` para variações ortográficas
-- [ ] Tratar valores nulos — **escopo bem menor que o previsto**, os dados vieram limpos
-- [ ] Remover duplicatas entre as fontes (incluindo os dados raspados de 2026)
-- [ ] Validar tipos de dados (datas, números de gols, IDs)
-- [ ] Cruzar (join) as fontes e resolver conflitos de informação
-- [ ] Salvar resultado em `data/processed/matches_clean.csv`
+- [x] Criar a coluna `competition` (`mens`/`womens`) a partir de `tournament_name`
+- [x] Padronizar nomes de seleções via mapa de sucessão explícito + `rapidfuzz` para sinalizar candidatos
+- [x] Tratar valores nulos — **escopo bem menor que o previsto**, os dados vieram limpos
+- [x] Remover duplicatas entre as fontes — resolvido na origem, dando papel fixo a cada página
+- [x] Normalizar nomes de fase (o Fjelstul tinha `quarter-final` E `quarter-finals`)
+- [x] Cruzar (join) as fontes e resolver conflitos de informação
+- [x] Salvar resultado em `data/processed/matches_clean.csv` — 1.352 partidas, 1930–2026
+- [x] Escrever testes (`tests/test_transform.py` — 14 testes, todos offline)
+
+**A decisão editorial, tomada em 08/08/2026:** a **Alemanha Ocidental conta como Alemanha**. A Alemanha passa a ter **4 títulos**, que é a contagem oficial da FIFA.
+
+Foi a **única** pergunta de sucessão que muda um número de manchete: URSS, Iugoslávia, Tchecoslováquia, Alemanha Oriental e Zaire nunca venceram uma Copa. O tratamento delas afeta contagem de participações e rótulos no mapa, mas nenhum título.
+
+**Três ideias sustentam esta etapa:**
+
+1. **Rótulo e registro são perguntas diferentes.** O `reference/team_succession.csv` tem duas colunas separadas: `display_name` (como a seleção aparece hoje) e `merge_records` (se o histórico dela é creditado ao sucessor). A Alemanha Ocidental tem as duas. A URSS tem só a primeira — aparece como Rússia no mapa, mas mantém o registro próprio, porque atribuir a história de quinze países a um deles seria uma afirmação, não uma limpeza.
+
+2. **Fuzzy matching sugere, nunca decide.** O `rapidfuzz` só reporta nomes de 2026 sem correspondente histórico, para uma pessoa classificar. Resultado: quatro estreantes legítimos (Cabo Verde, Curaçao, Jordânia, Uzbequistão) — e **DR Congo não aparece na lista**, porque o mapa curado já resolveu para Zaire, de 1974. `fuzz.WRatio("Zaire", "DR Congo")` dá menos de 50.
+
+3. **Campeão não sai da final.** A Copa de 1950 **não teve final** — foi decidida por um quadrangular. Contar campeões filtrando `stage == "final"` devolve 22 títulos para 23 edições e não dá erro nenhum. Por isso os campeões vêm de `tournament_standings.csv`, e o pipeline confere que a soma dos títulos bate com o número de edições.
 
 **Ferramentas:** `pandas` para as transformações; `rapidfuzz` (fuzzy string matching) para as variações ortográficas. **Atenção:** fuzzy matching não resolve sucessão histórica (Zaire → DR Congo não têm similaridade textual) — o mapa curado é obrigatório.
 
@@ -264,7 +277,7 @@ atlas-copa-mundo/
 ### Em aberto
 
 - [ ] **Público (attendance):** buscar no `wcmatches` do Kaggle (só até 2018) ou trocar por capacidade do estádio no v1? — *bloqueia o conteúdo dos popups do mapa*
-- [ ] **Sucessão de seleções:** Alemanha Ocidental conta como Alemanha na contagem de títulos? URSS conta como Rússia? — *bloqueia a Etapa 2; é decisão editorial, não técnica*
+- [x] ~~**Sucessão de seleções**~~ → **RESOLVIDO em 08/08/2026: a Alemanha Ocidental conta como Alemanha (4 títulos).** As dissoluções (URSS, Iugoslávia, Tchecoslováquia) recebem rótulo moderno mas mantêm registros separados. Regras em `reference/team_succession.csv`.
 - [ ] Confirmar licença do "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *só importa se ele for realmente usado*
 - [ ] Decidir entre `pandas.read_html`, `BeautifulSoup4` ou `Scrapy` para o scraping de 2026 (recomendação: começar pelo `read_html`)
 - [x] ~~Criar o repositório remoto no GitHub e dar `git push`~~ → publicado em https://github.com/alaindelon96/atlas-copa-mundo

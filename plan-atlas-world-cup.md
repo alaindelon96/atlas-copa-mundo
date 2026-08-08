@@ -110,15 +110,28 @@ python -m etl.extract
 python -m etl.extract --check
 ```
 
-### Stage 2 — Clean ⏳ NEXT STEP
+### Stage 2 — Clean ✅ COMPLETE
 
-- [ ] Create the `competition` column (`mens`/`womens`) from `tournament_name` — **do this first** (see 2.1)
-- [ ] Standardise team names via an explicit succession map + `rapidfuzz` for spelling variants
-- [ ] Handle null values — **much smaller scope than expected**, the data arrived clean
-- [ ] Remove duplicates across sources (including the scraped 2026 data)
-- [ ] Validate data types (dates, goal counts, IDs)
-- [ ] Join the sources and resolve information conflicts
-- [ ] Save the result to `data/processed/matches_clean.csv`
+- [x] Create the `competition` column (`mens`/`womens`) from `tournament_name`
+- [x] Standardise team names via an explicit succession map + `rapidfuzz` to flag candidates
+- [x] Handle null values — **much smaller scope than expected**, the data arrived clean
+- [x] Remove duplicates across sources — solved at the source, by giving each page a fixed role
+- [x] Normalise stage names (Fjelstul had both `quarter-final` and `quarter-finals`)
+- [x] Join the sources and resolve information conflicts
+- [x] Save the result to `data/processed/matches_clean.csv` — 1,352 matches, 1930–2026
+- [x] Write tests (`tests/test_transform.py` — 14 tests, all offline)
+
+**The editorial decision, taken 2026-08-08:** **West Germany counts as Germany.** Germany therefore has **4 titles**, which is FIFA's official count.
+
+It was the **only** succession question that changes a headline number: the USSR, Yugoslavia, Czechoslovakia, East Germany and Zaire never won a World Cup. How they are treated affects appearance counts and map labels, but no title.
+
+**Three ideas carry this stage:**
+
+1. **Label and record are different questions.** `reference/team_succession.csv` has two separate columns: `display_name` (how the team is shown today) and `merge_records` (whether its history is credited to the successor). West Germany gets both. The USSR gets only the first — it appears as Russia on the map but keeps its own record, because attributing fifteen countries' history to one of them would be a claim, not a cleanup.
+
+2. **Fuzzy matching suggests; it never decides.** `rapidfuzz` only reports 2026 names with no historical counterpart, for a human to classify. Result: four genuine debutants (Cape Verde, Curaçao, Jordan, Uzbekistan) — and **DR Congo is absent from that list**, because the curated map already resolved it to Zaire, of 1974. `fuzz.WRatio("Zaire", "DR Congo")` scores under 50.
+
+3. **Champions do not come from finals.** The 1950 World Cup had **no final** — it was decided by a final round-robin group. Counting champions by filtering `stage == "final"` returns 22 titles for 23 editions and raises no error at all. So champions come from `tournament_standings.csv`, and the pipeline asserts that titles sum to the number of editions.
 
 **Tools:** `pandas` for the transformations; `rapidfuzz` (fuzzy string matching) for spelling variants. **Careful:** fuzzy matching does not solve historical succession (Zaire → DR Congo have no textual similarity) — the curated map is mandatory.
 
@@ -264,7 +277,7 @@ atlas-copa-mundo/
 ### Open
 
 - [ ] **Attendance:** source it from Kaggle's `wcmatches` (only through 2018), or swap it for stadium capacity in v1? — *blocks the map popup content*
-- [ ] **Team succession:** does West Germany count as Germany in the title count? Does the USSR count as Russia? — *blocks Stage 2; this is an editorial call, not a technical one*
+- [x] ~~**Team succession**~~ → **SETTLED 2026-08-08: West Germany counts as Germany (4 titles).** The dissolutions (USSR, Yugoslavia, Czechoslovakia) get a modern label but keep separate records. Rules in `reference/team_succession.csv`.
 - [ ] Confirm the licence of the "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *only matters if it is actually used*
 - [ ] Decide between `pandas.read_html`, `BeautifulSoup4` and `Scrapy` for the 2026 scraping (recommendation: start with `read_html`)
 - [x] ~~Create the remote repository on GitHub and `git push`~~ → published at https://github.com/alaindelon96/atlas-copa-mundo

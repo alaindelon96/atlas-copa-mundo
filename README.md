@@ -17,10 +17,10 @@ inconsistent records, relational modelling, validation, and publication.
 
 | | |
 |---|---|
-| **Working** | A reproducible extraction pipeline with cryptographic provenance, plus a Wikipedia scraper for 2026 |
-| **Data on hand** | 1,352 matches across 31 tournaments — 1,248 from 1930–2022 (22 men's, 8 women's) and 104 from 2026 |
-| **Not built yet** | Cleaning, modelling, geocoding, the map itself |
-| **Not yet reconciled** | The 2026 data sits in `data/interim/`; merging it with the 1930–2022 tables is stage 2 |
+| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, and a reconciled match table |
+| **Data on hand** | `data/processed/matches_clean.csv` — 1,352 matches, 31 tournaments, 1930–2026, both competitions |
+| **Not built yet** | Modelling, geocoding, the map itself |
+| **Known gap** | Attendance exists only for 2026; `country_name` is blank for 2026 until stage 3 geocodes it |
 
 ---
 
@@ -149,10 +149,63 @@ OK  sedes      extraído=16     infobox=16
 Attendance independently sums to 6,810,966 across 104 matches — matching the
 infobox exactly, average included.
 
-### Stages 2–5 — not yet built
+### Stage 2 — Clean and reconcile ✅
 
-Cleaning, modelling/validation/geocoding, the Leaflet map, and publication. See
+Merges both sources into `data/processed/matches_clean.csv` — 1,352 matches, 1930–2026.
+
+```bash
+python -m etl.transform
+```
+
+Three ideas carry this stage:
+
+**Label and record are different questions.** [`reference/team_succession.csv`](reference/team_succession.csv)
+has two separate columns: `display_name` (how the team is shown today) and
+`merge_records` (whether its history is credited to the successor). West Germany gets
+both — it becomes Germany *and* its titles count. The USSR gets only the first: it
+appears as Russia on the map but keeps its own record, because attributing fifteen
+countries' history to one of them would be a claim, not a cleanup.
+
+**Fuzzy matching suggests; it never decides.** `rapidfuzz` reports names in 2026 that
+have no historical counterpart, for a human to classify. It is deliberately not allowed
+to merge anything, and the data shows why:
+
+```
+Cape Verde       closest: Cuba    60.0   debut?
+Curaçao          closest: Cuba    67.5   debut?
+Jordan           closest: Iran    67.5   debut?
+Uzbekistan       closest: Iran    60.0   debut?
+```
+
+Four genuine World Cup debutants — and **DR Congo is absent from that list**, because
+the curated map already resolved it to Zaire, which played in 1974. `fuzz.WRatio("Zaire",
+"DR Congo")` scores under 50. The only real succession between the two sources is
+precisely the one string similarity could never find.
+
+**Champions do not come from finals.** The 1950 World Cup had no final — it was decided
+by a final round-robin group. Deriving champions by filtering `stage == "final"` returns
+22 titles for 23 tournaments and raises no error. So champions come from the source's own
+standings table instead, and the pipeline asserts that titles sum to the number of
+editions.
+
+Stage 2 also normalises stage names, which were inconsistent *within* Fjelstul itself —
+`quarter-final` (32 rows) alongside `quarter-finals` (70).
+
+### Stages 3–5 — not yet built
+
+Modelling/validation/geocoding, the Leaflet map, and publication. See
 [Roadmap](#roadmap).
+
+## Tests
+
+```bash
+pytest
+```
+
+14 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+men's/women's split, stage normalisation, the 1950 case, and the fact that fuzzy matching
+scores Zaire against DR Congo below 50. If someone edits the succession map without
+realising the consequence, a test fails with the reason attached.
 
 ---
 
@@ -229,14 +282,18 @@ tests/                   pytest suite for transformation logic
 
 ## Open decisions
 
-Both are judgement calls, not technical blockers, and each gates a stage:
-
 - **Attendance or capacity?** 2026 now has real per-match attendance from Wikipedia,
   but 1930–2022 still has none. A Kaggle source would cover through 2018 and leave 2022
   blank. So the options are: attendance everywhere except 2022, capacity everywhere, or
   both columns with the gap shown honestly. *Gates the map popups.*
-- **Does Germany have 4 titles or 1?** Whether West Germany folds into Germany. Both
-  answers are defensible; not documenting the choice is not. *Gates stage 2.*
+
+**Settled — West Germany counts as Germany** (2026-08-08). Germany therefore has **4
+titles**, matching FIFA's official count. This was the only succession question that
+changes a headline number: the USSR, Yugoslavia, Czechoslovakia, East Germany and Zaire
+never won a World Cup, so their treatment affects appearance counts and map labels but
+no title. The full ruling is in
+[`reference/team_succession.csv`](reference/team_succession.csv), one row per case with
+the reasoning.
 
 ---
 
@@ -246,8 +303,8 @@ Both are judgement calls, not technical blockers, and each gates a stage:
 |---|---|
 | 1 · Extract ready-made datasets | ✅ Done |
 | 1b · Scrape the 2026 tournament | ✅ Done |
-| 2 · Clean and reconcile names | ⬜ Blocked on the succession decision |
-| 3 · Model, validate, geocode | ⬜ Not started |
+| 2 · Clean and reconcile names | ✅ Done |
+| 3 · Model, validate, geocode | ⬜ Next |
 | 4 · Build the Leaflet map | ⬜ Not started |
 | 5 · Publish to GitHub Pages | ⬜ Not started |
 
