@@ -158,8 +158,10 @@ Schema proposto (formato tabular relacional):
 - [ ] Testar localmente
 - [ ] Publicar via GitHub Pages
 - [ ] (Opcional) configurar GitHub Actions para rodar o pipeline de ETL automaticamente
-- [ ] Escrever README do repositório explicando o processo de ETL (bom para portfólio)
-- [ ] **Incluir atribuição CC-BY-SA ao Fjelstul e à Wikipédia** (obrigação de licença, não é opcional)
+- [x] Escrever README do repositório explicando o processo de ETL (bom para portfólio)
+- [x] **Incluir atribuição CC-BY-SA ao Fjelstul** (obrigação de licença, não é opcional) — atribuição da Wikipédia fica pendente até o scraping existir
+
+**Licenciamento (feito em 07/08/2026):** o repositório tem **duas** licenças, porque código e dados têm origens diferentes. Código sob MIT (`LICENSE`); dados sob CC-BY-SA 4.0 (`LICENSE-DATA.md`), porque a cláusula ShareAlike da fonte obriga. O `LICENSE-DATA.md` também mantém o **registro de modificações** exigido pela licença — hoje: nenhuma alteração nos dados brutos, apenas seleção de 16 das 29 tabelas.
 
 ## 4. Web scraping — complemento da Copa de 2026
 
@@ -253,7 +255,7 @@ atlas-copa-mundo/
 - [ ] **Sucessão de seleções:** Alemanha Ocidental conta como Alemanha na contagem de títulos? URSS conta como Rússia? — *bloqueia a Etapa 2; é decisão editorial, não técnica*
 - [ ] Confirmar licença do "FIFA World Cup 1930-2022 All Match Dataset" (Kaggle) — *só importa se ele for realmente usado*
 - [ ] Decidir entre `pandas.read_html`, `BeautifulSoup4` ou `Scrapy` para o scraping de 2026 (recomendação: começar pelo `read_html`)
-- [ ] Criar o repositório remoto no GitHub e dar `git push` — o repositório local já existe
+- [x] ~~Criar o repositório remoto no GitHub e dar `git push`~~ → publicado em https://github.com/alaindelon96/atlas-copa-mundo
 
 ## 8. Notas de progresso
 
