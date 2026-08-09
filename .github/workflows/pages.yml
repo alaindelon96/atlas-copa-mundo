@@ -1,0 +1,66 @@
+# Publicação do Atlas no GitHub Pages.
+#
+# Duas decisões que valem explicação, porque não são o padrão do template:
+#
+# 1) O teste vem ANTES do deploy, e o deploy depende dele. As 82 provas existem
+#    para impedir que um número errado chegue ao leitor — se elas rodassem em
+#    paralelo, o número errado já estaria no ar quando a falha aparecesse.
+#
+# 2) O workflow publica web/ COMO ESTÁ no repositório; ele não re-roda o ETL.
+#    Os payloads de web/data/ são versionados, então o que vai ao ar é
+#    exatamente o que um clone renderiza na máquina de quem clonou. Refazer os
+#    números continua sendo um ato deliberado (`python -m etl.metrics`), não
+#    efeito colateral de um push.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permissões mínimas para o deploy-pages assinar o artefato.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy por vez; pushes em sequência não disputam o mesmo site.
+# `cancel-in-progress: false` porque cancelar um deploy pela metade é pior
+# do que esperar o anterior terminar.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Offline: a suíte lê data/processed/ e web/data/, ambos versionados.
+      - run: pytest -q
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

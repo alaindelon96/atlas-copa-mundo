@@ -380,8 +380,10 @@
       <div class="stat is-done"><b>1,352</b><span class="en">matches on hand</span><span class="pt">partidas em m&atilde;os</span></div>
       <div class="stat is-done"><b>31</b><span class="en">tournaments, 1930&ndash;2026</span><span class="pt">torneios, 1930&ndash;2026</span></div>
       <div class="stat is-done"><b>0</b><span class="en">tournaments missing</span><span class="pt">torneios faltando</span></div>
-      <div class="stat"><b>213</b><span class="en">cities to geocode</span><span class="pt">cidades a geocodificar</span></div>
-      <div class="stat is-now"><b>1</b><span class="en">decision blocking stage 2</span><span class="pt">decis&atilde;o travando a etapa 2</span></div>
+      <div class="stat is-done"><b>252</b><span class="en">venues geocoded</span><span class="pt">sedes geocodificadas</span></div>
+      <div class="stat is-done"><b>3,028</b><span class="en">goals with scorer and minute</span><span class="pt">gols com autor e minuto</span></div>
+      <div class="stat is-done"><b>82</b><span class="en">tests gating the deploy</span><span class="pt">testes travando o deploy</span></div>
+      <div class="stat is-done"><b>0</b><span class="en">decisions still open</span><span class="pt">decis&otilde;es ainda abertas</span></div>
     </div>
   </header>
 
@@ -452,10 +454,10 @@
 
         <!-- web -->
         <text class="lbl" x="828" y="26">PUBLISH</text>
-        <rect class="box-hollow" x="852" y="88" width="74" height="68" rx="3"/>
+        <rect class="box" x="852" y="88" width="74" height="68" rx="3"/>
         <text class="path" x="864" y="112">web/</text>
         <text class="note" x="864" y="129">Leaflet</text>
-        <text class="note" x="864" y="145">Pages</text>
+        <text class="note" x="864" y="145">Pages &middot; live</text>
 
         <!-- provenance callout -->
         <path class="flow-done" d="M 298 156 L 298 190" marker-end="url(#ar)"/>
@@ -475,7 +477,7 @@
   <!-- ============ STAGES ============ -->
   <section>
     <div class="sec-head">
-      <h2><span class="en">The five stages</span><span class="pt">As cinco etapas</span></h2>
+      <h2><span class="en">The stages</span><span class="pt">As etapas</span></h2>
       <p>
         <span class="en">Each one has a job, a reason it exists, and a sentence you can say out loud in an interview.</span>
         <span class="pt">Cada uma tem uma fun&ccedil;&atilde;o, um motivo para existir e uma frase que voc&ecirc; pode dizer em voz alta numa entrevista.</span>
@@ -616,26 +618,83 @@
         </div>
       </article>
 
+      <!-- 4b -->
+      <article class="stage done">
+        <div class="stage-num">04b</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Four features, no new source</span><span class="pt">Quatro funcionalidades, nenhuma fonte nova</span></h3>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
+          </div>
+          <p>
+            <span class="en">The map said <em>how many</em> and never <em>which</em>. All four of these came out of data already on disk &mdash; the design reference was SofaScore, whose team page is built on a match list with a W/D/L marker per row and a compare button.</span>
+            <span class="pt">O mapa dizia <em>quanto</em> e nunca <em>quais</em>. As quatro sa&iacute;ram de dado que j&aacute; estava no disco &mdash; a refer&ecirc;ncia de desenho foi o SofaScore, cuja p&aacute;gina de sele&ccedil;&atilde;o &eacute; constru&iacute;da sobre uma lista de partidas com marcador V/E/D por linha e um bot&atilde;o de compara&ccedil;&atilde;o.</span>
+          </p>
+          <ul class="ticks">
+            <li class="ok"><span class="en">State in the URL &mdash; the view becomes a link, and the back button finally means something</span><span class="pt">Estado na URL &mdash; a vis&atilde;o vira link, e o bot&atilde;o voltar enfim significa alguma coisa</span></li>
+            <li class="ok"><span class="en">Match detail &mdash; click a fixture and the 1,068 matches behind the number open up</span><span class="pt">Detalhamento &mdash; clique num confronto e as 1.068 partidas por tr&aacute;s do n&uacute;mero se abrem</span></li>
+            <li class="ok"><span class="en">Side-by-side comparison &mdash; works for two teams that never met, and says so instead of showing zeros</span><span class="pt">Compara&ccedil;&atilde;o lado a lado &mdash; funciona para quem nunca se cruzou, e diz isso em vez de mostrar zeros</span></li>
+            <li class="ok"><span class="en">Venue layer &mdash; the 252 geocoded venues the map had never used, sized by matches held</span><span class="pt">Camada de sedes &mdash; as 252 sedes geocodificadas que o mapa nunca usou, com raio por partidas recebidas</span></li>
+            <li class="ok"><span class="en">Shootouts stay wins and losses in the detail list, exactly as <code>etl.model</code> resolved them</span><span class="pt">Disputa de p&ecirc;naltis continua vit&oacute;ria e derrota no detalhamento, como o <code>etl.model</code> resolveu</span></li>
+          </ul>
+          <div class="tools"><span class="tool">History API</span><span class="tool">matches.json</span><span class="tool">venues.json</span><span class="tool">Leaflet.circleMarker</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">The venue layer broke silently the first time: the front-end looks a coordinate up by index, and I had sorted one of the two lists by match count. Both lists stayed the same length, so nothing errored &mdash; the map just put matches in the wrong cities. It's a contract checked in the ETL and in a test now.</span><span class="pt">A camada de sedes quebrou em sil&ecirc;ncio na primeira vers&atilde;o: o front-end acha a coordenada pelo &iacute;ndice, e eu tinha ordenado uma das duas listas por n&uacute;mero de partidas. As duas continuaram do mesmo tamanho, ent&atilde;o nada deu erro &mdash; o mapa s&oacute; p&ocirc;s partidas na cidade errada. Virou contrato conferido no ETL e em teste.</span></q>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4c -->
+      <article class="stage done">
+        <div class="stage-num">04c</div>
+        <div class="stage-body">
+          <div class="stage-head">
+            <h3><span class="en">Top scorers, and an assumption that fell</span><span class="pt">Artilheiros, e uma suposi&ccedil;&atilde;o que caiu</span></h3>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
+          </div>
+          <p>
+            <span class="en">Stage 3 had ruled player data out, because 2026 would leave a hole in it. Right about Fjelstul, which stops at 2022 &mdash; wrong about what was already on disk: the scraped pages carry the scorers, with minutes. The hole never existed; a parser was missing.</span>
+            <span class="pt">A Etapa 3 tinha cortado dado de jogador porque 2026 deixaria um buraco. Certo sobre o Fjelstul, que termina em 2022 &mdash; errado sobre o que j&aacute; estava no disco: as p&aacute;ginas raspadas trazem os artilheiros, com minuto. O buraco nunca existiu; faltava um parser.</span>
+          </p>
+          <ul class="ticks">
+            <li class="ok"><span class="en">3,028 goals &mdash; 2,720 from Fjelstul plus 308 from 2026, the same total the scorelines already gave</span><span class="pt">3.028 gols &mdash; 2.720 do Fjelstul mais 308 de 2026, o mesmo total que os placares j&aacute; davam</span></li>
+            <li class="ok"><span class="en">Reconciled <em>per match</em>, not just on the total &mdash; that is what makes it checkable rather than plausible</span><span class="pt">Conferido <em>por partida</em>, n&atilde;o s&oacute; no total &mdash; &eacute; isso que torna a tabela conferível em vez de plaus&iacute;vel</span></li>
+            <li class="ok"><span class="en">Own goals are credited to the team that gained them, as in the scoreline; <code>player_team</code> keeps who kicked it</span><span class="pt">Gol contra &eacute; creditado a quem ganhou o gol, como no placar; <code>player_team</code> guarda quem chutou</span></li>
+            <li class="ok"><span class="en">Reading by list item lost 6 goals in 302 &mdash; the check against the declared total caught it, not the parser</span><span class="pt">Ler pela lista perdia 6 gols em 302 &mdash; quem pegou foi a confer&ecirc;ncia contra o total declarado, n&atilde;o o parser</span></li>
+            <li class="ok"><span class="en">A play button walks the slider edition by edition &mdash; which is why it skips 1942 and 1946</span><span class="pt">Um bot&atilde;o percorre o slider edi&ccedil;&atilde;o por edi&ccedil;&atilde;o &mdash; por isso pula 1942 e 1946</span></li>
+          </ul>
+          <div class="tools"><span class="tool">BeautifulSoup</span><span class="tool">etl/parse_2026.py</span><span class="tool">goals.csv</span><span class="tool">goals.json</span></div>
+          <div class="say">
+            <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
+            <q><span class="en">I had cut a feature based on an assumption about my own data, and the assumption was wrong. What I'd never do is bolt the scorers on and trust them: they only shipped because 3,028 goals reconcile match by match against scorelines the model derived by a completely different route.</span><span class="pt">Eu tinha cortado uma funcionalidade por uma suposi&ccedil;&atilde;o sobre o meu pr&oacute;prio dado, e a suposi&ccedil;&atilde;o estava errada. O que eu n&atilde;o faria &eacute; pendurar os artilheiros e confiar: eles s&oacute; entraram porque 3.028 gols batem partida a partida com placares que o modelo derivou por um caminho completamente diferente.</span></q>
+          </div>
+        </div>
+      </article>
+
       <!-- 5 -->
-      <article class="stage now">
+      <article class="stage done">
         <div class="stage-num">05</div>
         <div class="stage-body">
           <div class="stage-head">
             <h3><span class="en">Publish</span><span class="pt">Publica&ccedil;&atilde;o</span></h3>
-            <span class="pill now"><span class="en">Next</span><span class="pt">Pr&oacute;ximo</span></span>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
           </div>
           <p>
-            <span class="en">A static site on GitHub Pages, plus the README that turns the repository into the portfolio piece.</span>
-            <span class="pt">Um site est&aacute;tico no GitHub Pages, mais o README que transforma o reposit&oacute;rio na pe&ccedil;a de portf&oacute;lio.</span>
+            <span class="en">A static site on GitHub Pages, deployed by a workflow that runs the test suite first &mdash; plus the README that turns the repository into the portfolio piece.</span>
+            <span class="pt">Um site est&aacute;tico no GitHub Pages, publicado por um workflow que roda a su&iacute;te de testes antes &mdash; mais o README que transforma o reposit&oacute;rio na pe&ccedil;a de portf&oacute;lio.</span>
           </p>
           <ul class="ticks">
-            <li class="todo"><span class="en">CC-BY-SA attribution to Fjelstul and Wikipedia &mdash; a licence obligation, not a courtesy</span><span class="pt">Atribui&ccedil;&atilde;o CC-BY-SA ao Fjelstul e &agrave; Wikip&eacute;dia &mdash; obriga&ccedil;&atilde;o de licen&ccedil;a, n&atilde;o cortesia</span></li>
-            <li class="todo"><span class="en">GitHub Actions to re-run the pipeline &mdash; deferred to v2</span><span class="pt">GitHub Actions para re-rodar o pipeline &mdash; adiado para a v2</span></li>
+            <li class="ok"><span class="en">Live at <a href="https://alaindelon96.github.io/atlas-copa-mundo/">alaindelon96.github.io/atlas-copa-mundo</a></span><span class="pt">No ar em <a href="https://alaindelon96.github.io/atlas-copa-mundo/">alaindelon96.github.io/atlas-copa-mundo</a></span></li>
+            <li class="ok"><span class="en">82 tests gate the deploy &mdash; a failing suite means nothing ships</span><span class="pt">82 testes travam o deploy &mdash; su&iacute;te vermelha n&atilde;o publica</span></li>
+            <li class="ok"><span class="en"><code>web/</code> ships as committed; the workflow does not re-run the ETL, so the live site is exactly what a clone renders</span><span class="pt"><code>web/</code> vai ao ar como est&aacute; versionado; o workflow n&atilde;o re-roda o ETL, ent&atilde;o o site &eacute; exatamente o que um clone renderiza</span></li>
+            <li class="ok"><span class="en">CC-BY-SA attribution to Fjelstul and Wikipedia, in the page itself &mdash; a licence obligation, not a courtesy</span><span class="pt">Atribui&ccedil;&atilde;o CC-BY-SA ao Fjelstul e &agrave; Wikip&eacute;dia, na pr&oacute;pria p&aacute;gina &mdash; obriga&ccedil;&atilde;o de licen&ccedil;a, n&atilde;o cortesia</span></li>
+            <li class="todo"><span class="en">GitHub Actions to re-run the pipeline on a schedule &mdash; deferred to v2, and <code>etl.extract --check</code> is already the hook for it</span><span class="pt">GitHub Actions para re-rodar o pipeline periodicamente &mdash; adiado para a v2, e o <code>etl.extract --check</code> j&aacute; &eacute; o gancho</span></li>
           </ul>
-          <div class="tools"><span class="tool">GitHub Pages</span><span class="tool">GitHub Actions</span><span class="tool">README.md</span></div>
+          <div class="tools"><span class="tool">GitHub Pages</span><span class="tool">GitHub Actions</span><span class="tool">pytest</span><span class="tool">README.md</span></div>
           <div class="say">
             <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
-            <q><span class="en">It's a static site, so there's no server to break and hosting is free. Anyone can clone the repo and rebuild every number on that map from the original sources with one command.</span><span class="pt">&Eacute; um site est&aacute;tico, ent&atilde;o n&atilde;o tem servidor pra quebrar e a hospedagem &eacute; gr&aacute;tis. Qualquer pessoa clona o reposit&oacute;rio e reconstr&oacute;i cada n&uacute;mero daquele mapa a partir das fontes originais com um comando.</span></q>
+            <q><span class="en">It's a static site, so there's no server to break and hosting is free. The tests run before the deploy and block it &mdash; they exist to keep a wrong number away from a reader, so it would be backwards to publish first and find out after. And anyone can clone the repo and rebuild every number on that map from the original sources with one command.</span><span class="pt">&Eacute; um site est&aacute;tico, ent&atilde;o n&atilde;o tem servidor pra quebrar e a hospedagem &eacute; gr&aacute;tis. Os testes rodam antes do deploy e travam ele &mdash; eles existem para manter um n&uacute;mero errado longe de quem l&ecirc;, ent&atilde;o publicar primeiro e descobrir depois seria o contr&aacute;rio do ponto. E qualquer pessoa clona o reposit&oacute;rio e reconstr&oacute;i cada n&uacute;mero daquele mapa a partir das fontes originais com um comando.</span></q>
           </div>
         </div>
       </article>
@@ -660,8 +719,8 @@
       <div><b>Mbapp&eacute;</b><span class="en">top scorer &middot; 10 goals</span><span class="pt">artilheiro &middot; 10 gols</span></div>
     </div>
     <p>
-      <span class="en">2026 also breaks two assumptions that held for every previous edition: the host is no longer a single country, and there is one knockout round more than in 2022. Both land on stage 3.</span>
-      <span class="pt">2026 tamb&eacute;m quebra duas premissas que valiam em todas as edi&ccedil;&otilde;es anteriores: a sede deixou de ser um pa&iacute;s s&oacute;, e h&aacute; uma fase de mata-mata a mais que em 2022. As duas caem na etapa 3.</span>
+      <span class="en">2026 also breaks two assumptions that held for every previous edition: the host is no longer a single country, and there is one knockout round more than in 2022. Stage 3 handled both &mdash; hosts became their own table, <code>tournament_hosts</code>.</span>
+      <span class="pt">2026 tamb&eacute;m quebra duas premissas que valiam em todas as edi&ccedil;&otilde;es anteriores: a sede deixou de ser um pa&iacute;s s&oacute;, e h&aacute; uma fase de mata-mata a mais que em 2022. A etapa 3 resolveu as duas &mdash; a sede virou tabela pr&oacute;pria, <code>tournament_hosts</code>.</span>
     </p>
   </section>
 
@@ -756,8 +815,8 @@
     <div class="sec-head">
       <h2><span class="en">Decisions</span><span class="pt">Decis&otilde;es</span></h2>
       <p>
-        <span class="en">Solid ones on the left of your reasoning, open ones still waiting on you. The dashed cards are yours to call.</span>
-        <span class="pt">As firmes de um lado, as abertas ainda esperando por voc&ecirc;. Os cart&otilde;es tracejados s&atilde;o seus para decidir.</span>
+        <span class="en">All settled now &mdash; and one of them had to be reopened and amended, which is the card worth reading.</span>
+        <span class="pt">Todas resolvidas &mdash; e uma delas precisou ser reaberta e corrigida, que &eacute; justamente o cart&atilde;o que vale ler.</span>
       </p>
     </div>
     <div class="decisions">
@@ -773,8 +832,9 @@
       </div>
       <div class="decision">
         <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>
-        <h3><span class="en">Match statistics only</span><span class="pt">S&oacute; estat&iacute;stica de jogo</span></h3>
-        <p><span class="en">Attendance and capacity are both out. Attendance covers 104 of 1,068 matches; capacity is complete but drifts &mdash; the Azteca held 115,000 in 1970 and holds 80,824 in 2026. Goals, wins, titles and participations are complete across every match and mean the same thing in 1930 and 2026. Narrowing the scope closed the project's longest-running open question without having to pick a side.</span><span class="pt">P&uacute;blico e capacidade ficam de fora. P&uacute;blico cobre 104 de 1.068 partidas; capacidade &eacute; completa mas muda com o tempo &mdash; o Azteca tinha 115.000 em 1970 e tem 80.824 em 2026. Gols, vit&oacute;rias, t&iacute;tulos e participa&ccedil;&otilde;es s&atilde;o completos em todas as partidas e significam a mesma coisa em 1930 e em 2026. Reduzir o escopo fechou a pergunta mais antiga do projeto sem precisar escolher um lado.</span></p>
+        <h3><span class="en">Match statistics &mdash; plus who scored</span><span class="pt">Estat&iacute;stica de jogo &mdash; e quem fez o gol</span></h3>
+        <p><span class="en">Attendance and capacity are both out. Attendance covers 104 of 1,068 matches; capacity is complete but drifts &mdash; the Azteca held 115,000 in 1970 and holds 80,824 in 2026. Goals, wins, titles and participations are complete across every match and mean the same thing in 1930 and 2026.</span><span class="pt">P&uacute;blico e capacidade ficam de fora. P&uacute;blico cobre 104 de 1.068 partidas; capacidade &eacute; completa mas muda com o tempo &mdash; o Azteca tinha 115.000 em 1970 e tem 80.824 em 2026. Gols, vit&oacute;rias, t&iacute;tulos e participa&ccedil;&otilde;es s&atilde;o completos em todas as partidas e significam a mesma coisa em 1930 e em 2026.</span></p>
+        <p><span class="en"><b>Amended in stage 4c.</b> The same ruling had also cut player data, on the grounds that 2026 would leave a hole in it. That part was wrong: the scorers were already in the scraped HTML. Scorers ship &mdash; not because the hole turned out to be smaller, but because 3,028 goals reconcile match by match against scorelines the model derived another way.</span><span class="pt"><b>Corrigido na etapa 4c.</b> A mesma decis&atilde;o tinha cortado tamb&eacute;m dado de jogador, por supor um buraco em 2026. Essa parte estava errada: os artilheiros j&aacute; estavam no HTML raspado. Artilheiro entra &mdash; n&atilde;o porque o buraco era menor, mas porque 3.028 gols batem partida a partida com placares que o modelo derivou por outro caminho.</span></p>
       </div>
       <div class="decision">
         <span class="pill done" style="align-self:flex-start"><span class="en">Settled</span><span class="pt">Resolvido</span></span>
