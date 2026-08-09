@@ -62,7 +62,10 @@
     { key: "wins",             label: "Vitórias",          kind: "sequential", rate: true,  h2h: true },
     { key: "win_pct",          label: "Aproveitamento",    kind: "sequential", rate: false, h2h: true, pct: true },
     { key: "matches_played",   label: "Partidas jogadas",  kind: "sequential", rate: false, h2h: true },
-    { key: "matches_received", label: "Partidas recebidas",kind: "sequential", rate: false, h2h: false },
+    // `place`: descreve o LUGAR, não a seleção. Uma sede não joga — o Catar
+    // recebeu 64 partidas e disputou 6 —, então tudo que fala do desempenho da
+    // seleção sai de cena quando esta métrica está escolhida.
+    { key: "matches_received", label: "Partidas recebidas",kind: "sequential", rate: false, h2h: false, place: true },
     { key: "titles",           label: "Títulos",           kind: "sequential", rate: false, h2h: false },
     { key: "participations",   label: "Participações",     kind: "sequential", rate: false, h2h: false }
   ];
@@ -344,7 +347,10 @@
       lines += " (menos de " + TIMELINE.per_match_floor + " partidas)";
     }
     lines += "</em>";
-    if (def.key !== "matches_played") {
+    // "Partidas jogadas" é o contexto de todas as métricas de desempenho — menos
+    // das que descrevem o lugar. Numa sede, o número de jogos da seleção não
+    // explica nada e ainda sugere uma relação que não existe.
+    if (def.key !== "matches_played" && !def.place) {
       lines += "<em>" + NUM.format(rec.matches_played) + " partidas</em>";
     }
     return lines;
@@ -944,13 +950,15 @@
       '<div><div class="sub">Ranking · ' + def.label +
       (state.mode === "rate" && def.rate ? " por partida" : "") + '</div>' +
       '<div class="h2h-scroll"><table><thead><tr><th>#</th><th>Seleção</th><th>' +
-      def.label + '</th><th>J</th></tr></thead><tbody>';
+      def.label + "</th>" + (def.place ? "" : "<th>J</th>") + "</tr></thead><tbody>";
     rows.slice(0, 30).forEach(function (entry, index) {
       var rec = entry[1], value = valueOf(rec, def, state.mode);
       html += '<tr><td>' + (index + 1) + '</td>' +
         '<td>' + badge(entry[0], value) + entry[0] + '</td>' +
-        '<td>' + format(value, def, state.mode) + '</td>' +
-        '<td>' + NUM.format(rec.matches_played) + '</td></tr>';
+        '<td>' + format(value, def, state.mode) + "</td>" +
+        // A coluna de jogos sai junto com a linha do tooltip, e pelo mesmo
+        // motivo: em "partidas recebidas" ela fala de outra coisa.
+        (def.place ? "" : "<td>" + NUM.format(rec.matches_played) + "</td>") + "</tr>";
     });
     html += '</tbody></table></div><p class="muted" style="margin-top:.5rem">' +
       'Clique num país do mapa para ver os confrontos diretos dele.</p></div>';

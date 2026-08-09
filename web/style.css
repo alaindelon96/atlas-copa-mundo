@@ -402,7 +402,10 @@ table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15
 }
 .leaflet-tooltip.atlas-tip::before { display:none; }
 .atlas-tip b { display:block; font-weight:700; font-size:.88rem; margin-bottom:.1rem; }
-.atlas-tip em { font-style:normal; font-family:var(--mono);
+/* `display:block` não é cosmético: sem ele as linhas do tooltip encostam uma na
+   outra e os números se fundem — "130" seguido de "42 partidas" era lido como
+   "13042 partidas", um total maior que todas as Copas somadas. */
+.atlas-tip em { display:block; font-style:normal; font-family:var(--mono);
   font-variant-numeric:tabular-nums; font-size:.74rem; color:var(--ink-2); }
 
 /* O zoom fica no rodapé, deslocado para a direita do cartão da legenda — que é
