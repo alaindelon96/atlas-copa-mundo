@@ -12,11 +12,22 @@
  * A implementação de referência é `etl.metrics.aggregate_timeline` — as duas
  * têm que casar, e um teste em Python trava o lado de lá.
  *
- * CLASSIFICA — quantis, não intervalos iguais. O dado é muito torto: o Brasil
- * tem 247 gols e a metade das seleções tem menos de 10. Com intervalos iguais o
- * mapa vira "quatro países escuros e o resto branco" e não se lê mais nada.
- * Quantil distribui as seleções pelas classes; o preço é que a distância entre
- * classes não é constante, e por isso a legenda mostra os cortes.
+ * CLASSIFICA — escala CONTÍNUA, com raiz quadrada no valor, e a rampa é a cor da
+ * seleção escolhida. Duas coisas se apoiam uma na outra aqui:
+ *
+ *   A raiz existe porque o dado é muito torto — o Brasil tem 247 gols e metade
+ *   das seleções tem menos de 10. Numa escala linear contínua quase todo mundo
+ *   se amontoa no primeiro décimo da rampa e o mapa devolve três países escuros
+ *   num mundo pálido. A raiz abre o pé da distribuição sem inverter nenhuma
+ *   ordem; o que ela distorce é a proporção, e a legenda assume isso marcando os
+ *   valores na barra (as marcas se apertam à direita — a compressão é visível).
+ *
+ *   A cor vem do `colors.json`, gerado por `etl/color.py` a partir da cor curada
+ *   de cada seleção em `reference/team_colors.csv`. Escolher o Brasil pinta o
+ *   mapa de amarelo, a Itália de azzurro, a Holanda de laranja. A visão global
+ *   NÃO faz isso: sem país escolhido a rampa é uma só, porque o olho lê
+ *   escuridão como quantidade — dar a cada país a sua própria escala faria uma
+ *   Itália azul-escura parecer "mais" que um Brasil amarelo com número maior.
  *
  * PINTA — casando pela propriedade `team` do GeoJSON, nunca pelo `gu_a3`. O
  * mapa seleção→unidade é um-para-muitos (a Bélgica são três unidades no Natural
@@ -61,9 +72,9 @@
 
   var state = { metric: "goals", mode: "total", team: null, from: 0, to: 0 };
 
-  var TIMELINE = null, GOLDEN = null, GEO = null;
+  var TIMELINE = null, GOLDEN = null, GEO = null, COLORS = null;
   var map = null, layer = null, byTeam = {};
-  var current = { records: null, classes: null, metric: null };
+  var current = { records: null, scale: null, metric: null };
 
   // ---------------------------------------------------------------- utilidades
 
@@ -169,60 +180,83 @@
 
   // ------------------------------------------------------------ classificação
 
-  function quantileBreaks(values, count) {
-    var sorted = values.slice().sort(function (a, b) { return a - b; });
-    var breaks = [], i, at;
-    for (i = 1; i < count; i++) {
-      at = (sorted.length - 1) * (i / count);
-      breaks.push(sorted[Math.round(at)]);
-    }
-    // Empates são a regra num dado de contagem (dezenas de seleções com 1 gol).
-    // Cortes repetidos criariam classes vazias, que a legenda mostraria como
-    // faixas idênticas — some com elas.
-    return breaks.filter(function (value, index, all) {
-      return all.indexOf(value) === index;
-    });
+  /* Qual modo de cor está valendo. As rampas vêm prontas do `colors.json` nos
+   * dois modos, e a página escolhe uma — não há conversão de cor no navegador. */
+  function darkMode() {
+    var stamped = document.documentElement.getAttribute("data-theme");
+    if (stamped) return stamped === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
   }
 
-  function classify(records, def, mode) {
+  /* A rampa da métrica atual: a cor da seleção escolhida, ou o azul da visão
+   * global. É aqui que "o mapa fica da cor do time" acontece. */
+  function rampFor() {
+    var mode = darkMode() ? "dark" : "light";
+    if (state.team && COLORS.teams[state.team]) return COLORS.teams[state.team][mode];
+    return COLORS.default[mode];
+  }
+
+  function mix(from, to, ratio) {
+    var out = "#";
+    for (var i = 1; i < 7; i += 2) {
+      var a = parseInt(from.substr(i, 2), 16), b = parseInt(to.substr(i, 2), 16);
+      var value = Math.round(a + (b - a) * ratio);
+      out += (value < 16 ? "0" : "") + value.toString(16);
+    }
+    return out.toUpperCase();
+  }
+
+  /* Amostra contínua da rampa. Os passos vizinhos estão perto o bastante para
+   * interpolar em sRGB sem sujar o matiz — o trabalho perceptual (OKLab) já foi
+   * feito em `etl/color.py`, que é quem posicionou os passos. */
+  function sample(stops, position) {
+    position = Math.max(0, Math.min(1, position));
+    var exact = position * (stops.length - 1), index = Math.floor(exact);
+    if (index >= stops.length - 1) return stops[stops.length - 1];
+    return mix(stops[index], stops[index + 1], exact - index);
+  }
+
+  /* Escala CONTÍNUA, com raiz quadrada no valor.
+   *
+   * A raiz não é enfeite: sem ela o mapa some. A distribuição é muito torta — o
+   * Brasil tem 247 gols e metade das seleções tem menos de 10 —, então uma
+   * escala linear empurra quase todo mundo para o primeiro décimo da rampa e
+   * devolve três países escuros num mundo pálido. A raiz abre o pé da
+   * distribuição sem inverter nenhuma ordem: se A > B, a cor de A continua mais
+   * forte que a de B. O que ela distorce é a *proporção* — o dobro da cor não é
+   * o dobro do valor —, e é por isso que a legenda traz os números marcados na
+   * barra em vez de deixar a escala implícita.
+   */
+  function scaleFor(records, def, mode) {
     var values = [], name, v;
     for (name in records) {
       v = valueOf(records[name], def, mode);
       if (v !== null && v !== undefined) values.push(v);
     }
+    var theme = darkMode() ? "dark" : "light";
 
     if (def.kind === "diverging") {
-      var magnitudes = values.filter(function (x) { return x !== 0; })
-                             .map(function (x) { return Math.abs(x); });
-      // Arcos simétricos: |−15| e |+15| recebem a mesma intensidade, um de cada
-      // cor. É o que faz o mapa ler polaridade em vez de só magnitude.
-      var arm = magnitudes.length ? quantileBreaks(magnitudes, 3) : [];
-      return { kind: "diverging", arm: arm,
-               colors: { neg: [css("--neg-1"), css("--neg-2"), css("--neg-3")],
-                         pos: [css("--pos-1"), css("--pos-2"), css("--pos-3")],
-                         mid: css("--mid") } };
+      var extent = 0;
+      values.forEach(function (x) { extent = Math.max(extent, Math.abs(x)); });
+      return { kind: "diverging", extent: extent,
+               negative: COLORS.diverging[theme].negative,
+               positive: COLORS.diverging[theme].positive };
     }
 
-    var positive = values.filter(function (x) { return x > 0; });
-    return { kind: "sequential", breaks: quantileBreaks(positive, 5),
-             colors: [css("--ramp-2"), css("--ramp-3"), css("--ramp-4"),
-                      css("--ramp-5"), css("--ramp-6")],
-             zero: css("--ramp-1") };
+    var max = 0;
+    values.forEach(function (x) { max = Math.max(max, x); });
+    return { kind: "sequential", max: max, stops: rampFor() };
   }
 
-  function colorFor(value, classes) {
+  function colorFor(value, scale) {
     if (value === null || value === undefined) return null;
-    var i;
-    if (classes.kind === "diverging") {
-      if (value === 0) return classes.colors.mid;
-      var side = value < 0 ? classes.colors.neg : classes.colors.pos;
-      var magnitude = Math.abs(value);
-      for (i = 0; i < classes.arm.length; i++) if (magnitude <= classes.arm[i]) return side[i];
-      return side[Math.min(side.length - 1, classes.arm.length)];
+    if (scale.kind === "diverging") {
+      if (!scale.extent) return sample(scale.positive, 0);
+      var arm = value < 0 ? scale.negative : scale.positive;
+      return sample(arm, Math.sqrt(Math.abs(value) / scale.extent));
     }
-    if (value <= 0) return classes.zero;
-    for (i = 0; i < classes.breaks.length; i++) if (value <= classes.breaks[i]) return classes.colors[i];
-    return classes.colors[Math.min(classes.colors.length - 1, classes.breaks.length)];
+    if (!scale.max) return sample(scale.stops, 0);
+    return sample(scale.stops, Math.sqrt(Math.max(0, value) / scale.max));
   }
 
   // ------------------------------------------------------------------- mapa
@@ -241,7 +275,7 @@
     }
 
     var value = valueOf(current.records[team], metricDef(state.metric), state.mode);
-    var fill = colorFor(value, current.classes);
+    var fill = colorFor(value, current.scale);
     if (fill === null) return absent;
     return { fillColor: fill, fillOpacity: 1, color: css("--coast"), weight: 0.6, opacity: 1 };
   }
@@ -274,7 +308,7 @@
     var def = metricDef(state.metric);
     current.records = state.team ? headToHead(state.team, state.from, state.to)
                                  : aggregate(state.from, state.to);
-    current.classes = classify(current.records, def, state.mode);
+    current.scale = scaleFor(current.records, def, state.mode);
     current.metric = def;
 
     if (layer) {
@@ -329,47 +363,99 @@
 
   // ---------------------------------------------------------------- legenda
 
+  /* Valores "redondos" dentro de um intervalo, para marcar a barra da legenda.
+   * Sem isso as marcas cairiam em 61,75 ou 0,3625 — números que ninguém procura. */
+  function niceTicks(max, count) {
+    if (!(max > 0)) return [0];
+    var rough = max / count;
+    var magnitude = Math.pow(10, Math.floor(Math.log(rough) / Math.LN10));
+    var step = magnitude;
+    [2, 5, 10].forEach(function (factor) {
+      if (step < rough) step = magnitude * factor;
+    });
+    var ticks = [];
+    for (var value = 0; value <= max + 1e-9; value += step) ticks.push(value);
+    return ticks;
+  }
+
+  /* A legenda de uma escala contínua é uma barra, não uma fileira de quadrados.
+   *
+   * A barra é o degradê da rampa, e as marcas são posicionadas onde o valor de
+   * fato cai — ou seja, em `sqrt(v/máx)`, a mesma transformação que pinta o
+   * mapa. É isso que impede a raiz de virar mentira: as marcas ficam apertadas
+   * do lado direito, e essa compressão visível *é* o aviso de que a escala não
+   * é linear. */
   function drawScale() {
-    var def = current.metric, classes = current.classes;
+    var def = current.metric, scale = current.scale;
     var box = document.getElementById("scale");
     var title = document.getElementById("scale-title");
     var note = document.getElementById("scale-note");
-    var parts = [];
 
     title.textContent = def.label + (state.mode === "rate" && def.rate ? " por partida" : "");
 
-    function swatch(color, label) {
-      parts.push('<span class="swatch"><i style="background:' + color + '"></i>' +
-                 '<span>' + label + '</span></span>');
-    }
-
     var edge = function (v) { return format(v, def, state.mode); };
+    var marks = [], gradient;
 
-    if (classes.kind === "diverging") {
-      // Os arcos têm um degrau a mais que os cortes: `arm` guarda as fronteiras,
-      // e a classe do outro lado da última fronteira também precisa de cor.
-      var arm = classes.arm, outer = arm.length ? edge(arm[arm.length - 1]) : "0";
-      for (var i = arm.length; i >= 0; i--) {
-        swatch(classes.colors.neg[Math.min(i, classes.colors.neg.length - 1)],
-               i === arm.length ? "≤ −" + outer : "");
-      }
-      swatch(classes.colors.mid, "0");
-      for (var j = 0; j <= arm.length; j++) {
-        swatch(classes.colors.pos[Math.min(j, classes.colors.pos.length - 1)],
-               j === arm.length ? "≥ +" + outer : "");
-      }
-    } else {
-      swatch(classes.zero, "0");
-      for (var k = 0; k < classes.colors.length; k++) {
-        if (k > classes.breaks.length) break;
-        swatch(classes.colors[k], k < classes.breaks.length ? "≤" + edge(classes.breaks[k]) : "máx");
-      }
+    // A raiz aperta as marcas contra a ponta direita da barra, então marcas
+    // vizinhas demais viram um borrão de números sobrepostos. Guardo posição e
+    // rótulo, e descarto no fim o que não couber — melhor uma marca a menos que
+    // dois números empilhados.
+    var placed = [];
+    function mark(position, label) { placed.push([position, label]); }
+
+    function flush() {
+      placed.sort(function (a, b) { return a[0] - b[0]; });
+      var last = -1;
+      placed.forEach(function (entry) {
+        if (entry[0] - last < 0.11) return;
+        last = entry[0];
+        marks.push('<span class="tick" style="left:' + (100 * entry[0]).toFixed(2) + '%">' +
+                   '<i></i><em>' + entry[1] + '</em></span>');
+      });
     }
-    swatch(css("--absent"), "sem dado");
-    box.innerHTML = parts.join("");
 
-    var messages = ["Classes por quantil — os cortes acompanham a distribuição, " +
-                    "que é torta demais para intervalos iguais."];
+    function gradientOf(stops, from, to) {
+      return stops.map(function (color, index) {
+        var at = from + (to - from) * (index / (stops.length - 1));
+        return color + " " + (100 * at).toFixed(2) + "%";
+      }).join(", ");
+    }
+
+    if (scale.kind === "diverging") {
+      // Barra espelhada: o zero fica no meio e cada braço cresce para fora, de
+      // modo que −15 e +15 ficam à mesma distância do centro.
+      gradient = gradientOf(scale.negative.slice().reverse(), 0, 0.5) + ", " +
+                 gradientOf(scale.positive, 0.5, 1);
+      mark(0.5, "0");
+      niceTicks(scale.extent, 3).slice(1).forEach(function (value) {
+        var offset = 0.5 * Math.sqrt(value / scale.extent);
+        mark(0.5 - offset, "−" + edge(value));
+        mark(0.5 + offset, "+" + edge(value));
+      });
+    } else {
+      gradient = gradientOf(scale.stops, 0, 1);
+      niceTicks(scale.max, 6).forEach(function (value) {
+        mark(scale.max ? Math.sqrt(value / scale.max) : 0, edge(value));
+      });
+    }
+    flush();
+
+    box.innerHTML =
+      '<div class="bar" style="background:linear-gradient(to right, ' + gradient + ')"></div>' +
+      '<div class="ticks">' + marks.join("") + '</div>' +
+      '<div class="absent-key"><i style="background:' + css("--absent") + '"></i>' +
+      '<span>sem dado</span></div>';
+
+    var messages = ["Escala contínua, com raiz quadrada — o pé da distribuição " +
+                    "abre sem que nenhuma ordem se inverta. As marcas se apertam " +
+                    "à direita justamente por isso."];
+    if (scale.kind === "diverging") {
+      messages.push("O saldo mantém os dois polos fixos mesmo com uma seleção escolhida: " +
+                    "se o lado positivo mudasse de cor a cada país, “negativo” deixaria " +
+                    "de ter cor.");
+    } else if (state.team) {
+      messages.push("A rampa é a cor de " + state.team + ".");
+    }
     if (state.mode === "rate" && def.rate) {
       messages.push("Seleções com menos de " + TIMELINE.per_match_floor +
                     " partidas na faixa saem do mapa: a média não seria comparável.");
@@ -429,7 +515,7 @@
       rows.forEach(function (entry) {
         var rec = entry[1], value = valueOf(rec, def, state.mode);
         html += '<tr><td><span class="chip" style="background:' +
-          (colorFor(value, current.classes) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
+          (colorFor(value, current.scale) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
           '<td>' + format(value, def, state.mode) + '</td>' +
           '<td>' + NUM.format(rec.matches_played) + '</td>' +
           '<td>' + rec.wins + '–' + rec.draws + '–' + rec.losses + '</td></tr>';
@@ -468,7 +554,7 @@
       var rec = entry[1], value = valueOf(rec, def, state.mode);
       html += '<tr><td>' + (index + 1) + '</td>' +
         '<td><span class="chip" style="background:' +
-        (colorFor(value, current.classes) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
+        (colorFor(value, current.scale) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
         '<td>' + format(value, def, state.mode) + '</td>' +
         '<td>' + NUM.format(rec.matches_played) + '</td></tr>';
     });
@@ -654,11 +740,13 @@
   Promise.all([
     load("data/timeline.json"),
     load("data/metrics.json"),
-    load("data/countries.geojson")
+    load("data/countries.geojson"),
+    load("data/colors.json")
   ]).then(function (loaded) {
     TIMELINE = loaded[0];
     GOLDEN = loaded[1];
     GEO = loaded[2];
+    COLORS = loaded[3];
 
     state.to = TIMELINE.years.length - 1;
     wire();
@@ -667,7 +755,7 @@
     syncMetricOptions();
 
     current.records = aggregate(state.from, state.to);
-    current.classes = classify(current.records, metricDef(state.metric), state.mode);
+    current.scale = scaleFor(current.records, metricDef(state.metric), state.mode);
     current.metric = metricDef(state.metric);
 
     buildMap();

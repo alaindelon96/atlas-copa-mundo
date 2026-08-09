@@ -28,7 +28,7 @@
 | Visualisation | Leaflet.js | Mapbox GL JS | Lightweight, free, no API key | ✅ implemented (`web/map.js`, 9 metrics) |
 | Publication | GitHub Pages | Netlify/Vercel | Free, integrated with the repository | ⏳ not started |
 | Automation/CI | GitHub Actions | — | Run the ETL pipeline automatically (optional, but adds portfolio value) | ⏳ deferred to v2 |
-| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 44 tests, all offline |
+| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 58 tests, all offline |
 
 **Verified environment:** Python 3.11.9, git 2.55.0, Windows 11. All dependencies installed and pinned in `requirements.txt`.
 
@@ -214,7 +214,7 @@ Not a map of venue markers — a map that **shades countries** by a chosen metri
 - [x] ~~Map design~~ → **choropleth with a metric selector and a country selector**
 - [x] ~~United Kingdom~~ → **separate subunits.** England, Scotland, Wales and Northern Ireland are four distinct teams and stay four distinct regions. Merging them would invent a "UK national team" that has never existed, credited with 168 goals nobody scored.
 - [x] ~~Raw counts or per-match~~ → **both, behind a toggle.** Raw counts alone just reproduce "who qualified most often": Germany has 248 goals and Brazil 247 because both played ~120 matches. Per match, **Hungary leads at 2.72** and vanishes from the raw top 10. Switching between the two readings *is* the insight.
-- [x] Single-hue sequential scale for the metric (never a rainbow)
+- [x] Single-hue sequential scale for the metric (never a rainbow) — **continuous**, in the selected team's colour
 - [x] A 10-match floor in per-match mode, so a 3-match team can't outrank Brazil
 - [x] ~~Filter by decade/era~~ → **a year-range slider** across the 23 editions
 - [x] Side panel with the selected team's summary and its head-to-head table
@@ -228,6 +228,9 @@ Not a map of venue markers — a map that **shades countries** by a chosen metri
 | `web/style.css` | Cartographic chrome inherited from `panorama.html` + the two data ramps |
 | `web/vendor/leaflet.*` | Leaflet 1.9.4 vendored into the repo, not loaded from a CDN |
 | `web/data/timeline.json` | The long table in compact form (37 KB) — what the slider aggregates |
+| `etl/color.py` | Shirt colour → sequential ramp, in OKLab |
+| `reference/team_colors.csv` | The curated colour of each of the 83 teams, with the exceptions reasoned |
+| `web/data/colors.json` | The 83 ramps, ready, in both modes |
 
 **Four decisions from this stage:**
 
@@ -235,13 +238,21 @@ Not a map of venue markers — a map that **shades countries** by a chosen metri
 
    The rule was not abandoned, it **became a check**: `etl.metrics.aggregate_timeline` is the reference implementation in Python, `map.js` mirrors it, and the page **re-runs the full range on load and compares it to `metrics.json`, team by team**. On a divergence a red warning appears at the top saying the numbers cannot be trusted. The duplicated logic exists — what does not exist is it being silent. A Python test locks the other side.
 
-2. **Two ramps, because they do two different jobs.** Single-hue sequential (blue, light→dark) for magnitude — goals, wins, matches, titles. **Diverging** (red ↔ grey ↔ blue) only for **goal difference**, the one metric with a negative side: painting polarity with a sequential ramp would put −20 and +20 at the two ends of a scale that has no sides. In dark mode both ramps invert the direction of lightness, so "almost nothing" recedes instead of jumping out.
+2. **The ramp is the selected team's colour.** Pick Brazil and the map turns yellow; Italy, azzurro; the Netherlands, orange. The colours are curated by hand in [`reference/team_colors.csv`](reference/team_colors.csv), on the same logic as `team_succession.csv`: it is an editorial decision, so it is versioned with its reasoning. The rule is *the home shirt colour*; and where that is white or black — neither of which has the hue to carry a ramp, and whose grey would collide with the "no data" grey — the chromatic colour that identifies the side. Twelve cases (Germany, England, Poland, New Zealand…), each marked `identity` and reasoned row by row.
 
-3. **Quantile classes, not equal intervals.** Brazil has 247 goals and half the teams have fewer than 10. Equal intervals turn the map into four dark countries and a white rest. Quantiles spread it out (classes land at 18/16/15/15/18); the price is that the distance between classes is not constant, which is why the legend shows the cuts.
+   **The global view does not do this**, and the difference matters: with no country selected there is one ramp. Giving every country its own colour would make the map handsome and unreadable, because the eye reads darkness as quantity — a dark-blue Italy would look like "more" than a bright-yellow Brazil with a bigger number.
 
-4. **Zero and "no data" are different colours.** Three teams have never scored a World Cup goal — China, Trinidad and Tobago, and Zaire in 1974 — and that is a fact, not an absence. They get the lightest ramp step; teams that did not play in the chosen range get the out-of-data grey.
+3. **A shirt colour is not a ramp — `etl/color.py` turns one into the other.** The work happens in **OKLab/OKLCH**, a perceptually uniform space: interpolating from Brazil's `#FFDF00` to white in sRGB detours through dirty beige. Lightness walks the mode's band linearly (it is what carries the data, and what keeps the ramp readable for someone who cannot separate hues); chroma rises with it, never past the team colour's own. When a step will not fit in sRGB — dark saturated yellow does not exist — what gives is the **chroma**, never the RGB channels: clamping a channel moves the hue, and the yellow would arrive orange at the dark end.
 
-**What the map shows today:** 9 metrics, 85 of 264 polygons painted, a country selector with head-to-head mode, a total/per-match toggle, a 1930–2026 year range, and a panel that doubles as the *table view* the accessibility rule demands (the information is never carried by colour alone).
+   This runs in **Python**, not the browser: the ramps ship ready in `web/data/colors.json` (19 KB, 83 teams × 2 modes × 9 steps) and the JavaScript only interpolates between neighbouring steps. Porting OKLab into `map.js` would be a second implementation to keep in sync.
+
+4. **A continuous scale, with a square root.** There are no classes any more. The root is not decoration — without it the map disappears: the distribution is badly skewed (Brazil 247 goals, half the teams under 10), and a linear continuous scale crushes almost everyone into the first tenth of the ramp. The root opens up the bottom of the distribution **without inverting any ordering**; what it distorts is proportion, which is why the legend became a bar with values marked at `sqrt(v/max)`. The marks bunch up on the right — that visible compression *is* the warning that the scale is not linear.
+
+5. **Goal difference keeps two fixed poles.** It is the only metric with a negative side, so it uses a diverging ramp (red ↔ blue) — and that ramp does **not** follow the selected team's colour. If the positive side turned yellow for Brazil and red for Spain, "negative" would change colour with every country and the map would stop having a side.
+
+6. **Zero and "no data" are different colours.** Three teams have never scored a World Cup goal — China, Trinidad and Tobago, and Zaire in 1974 — and that is a fact, not an absence. So the weakest step of every ramp carries a trace of the hue instead of being achromatic: were it grey, it would be the same grey as never having played.
+
+**What the map shows today:** 9 metrics on a continuous scale in the selected team's colour, 85 of 264 polygons painted, a country selector with head-to-head mode, a total/per-match toggle, a 1930–2026 year range, and a panel that doubles as the *table view* the accessibility rule demands (the information is never carried by colour alone).
 
 **Tools:** Leaflet.js with a GeoJSON country layer; `pandas` to pre-compute the metrics.
 
@@ -398,3 +409,5 @@ atlas-copa-mundo/
 - **2026-08-08** — **Stage 4 complete: the map exists.** `web/index.html`, `web/map.js` and `web/style.css`, with Leaflet 1.9.4 vendored into the repo instead of a CDN. Nine metrics, a country selector with head-to-head mode, a total/per-match toggle, a year-range slider and a side panel. Every figure documented in this plan reproduces on screen: Germany 248 goals and Brazil 247 in raw counts, Hungary 2.72 per match, Brazil 247 goals in 119 matches at 82W–15D–22L, and Brazil × Sweden 21 goals in 7. 44 tests passing.
 - **2026-08-08** — **choosing the year slider cost the "the front-end aggregates nothing" rule — and the trade was documented, not hidden.** A decade filter would be pre-computable; a free range is not (276 possible ranges). So aggregation moved into the browser, with a counterpart: `timeline.json` (the long table in columnar form, 37 KB), a reference implementation in Python (`aggregate_timeline`), `map.js` mirroring it, and the **page re-running the full range on load to compare against `metrics.json` team by team** — with an on-screen warning if they diverge. A Python test locks the other side. It is the same idea as `pandera` in Stage 3: the check that catches a wrong row, not just a wrong total.
 - **2026-08-08** — **three colour decisions the data forced.** (1) **Goal difference** got a diverging ramp (red ↔ grey ↔ blue) while the other eight metrics use the single-hue sequential one: goal difference is the only metric with a negative side, and a sequential ramp would put −20 and +20 at the two ends of a scale with no sides. (2) Classes are by **quantile** — Brazil has 247 goals and half the teams have fewer than 10, so equal intervals would give four dark countries and a white rest. (3) **Zero and "no data" are different colours**: China, Trinidad and Tobago and Zaire in 1974 never scored a World Cup goal, and that is a fact, not an absence.
+- **2026-08-08** — **two improvements to the choropleth: a continuous scale and the team's colour.** The quantile classes are gone: the scale is now **continuous**, with a square root on the value — without the root, a linear scale would crush nearly every team into the first tenth of the ramp, because Brazil has 247 goals and half of them have fewer than 10. The root opens up the bottom of the distribution without inverting any ordering, and the legend became a bar with values marked at `sqrt(v/max)`: the marks bunch up on the right, and that visible compression is the warning that the scale is not linear. And the ramp is now **the selected team's colour** — Brazil yellow, Italy azzurro, the Netherlands orange — generated in OKLab by `etl/color.py` from `reference/team_colors.csv`. The global view deliberately keeps a single ramp: the eye reads darkness as quantity, so giving each country its own colour would make a dark-blue Italy look like 'more' than a bright-yellow Brazil with a bigger number. 58 tests.
+- **2026-08-08** — **curating the colours hit a problem the data never had.** Twelve teams play in white or black — Germany, England, Poland, New Zealand, Senegal… — and neither works as a hue: white has no chroma to carry a ramp, and black becomes a grey that collides with the 'no data' grey. The rule settled as: the home shirt colour; where that is achromatic, the chromatic colour that identifies the side, marked `identity` and reasoned row by row. For the same reason the weakest step of every ramp carries a trace of the hue rather than being grey — otherwise 'played and never scored' would look identical to 'never played'.

@@ -6,10 +6,11 @@ inconsistent records, relational modelling, validation, and publication.
 
 *Documentação de planejamento em português: [`plano-atlas-copa-mundo.md`](plano-atlas-copa-mundo.md)*
 
-> ### Status: stage 1 of 5
-> Extraction works and is reproducible, and the 2026 tournament has been scraped.
-> **The map does not exist yet.** This README describes what is built, not what is
-> planned — see [Roadmap](#roadmap) for the gap.
+> ### Status: stage 4 of 5
+> The pipeline runs end to end and **the map works** — run it with
+> `python -m http.server 8000 --directory web`. What is left is publishing it to
+> GitHub Pages. This README describes what is built, not what is planned — see
+> [Roadmap](#roadmap).
 
 ---
 
@@ -96,7 +97,8 @@ flowchart LR
     N[Nominatim<br/>venue coordinates]:::done --> I
     I[("data/interim/<br/>names reconciled · geocode cache")]:::done --> P
     P[("data/processed/<br/>6 tables · validated")]:::done --> W
-    W[web/<br/>Leaflet · GitHub Pages]:::todo
+    W[web/<br/>Leaflet choropleth]:::done --> G
+    G[GitHub Pages]:::todo
     R -.provenance.-> M[metadata.json<br/>SHA-256 · when · licence]:::done
 
     classDef done fill:#DBEDE8,stroke:#0F7A6B,color:#16202B
@@ -177,9 +179,16 @@ Three ideas carry this stage:
 **Label and record are different questions.** [`reference/team_succession.csv`](reference/team_succession.csv)
 has two separate columns: `display_name` (how the team is shown today) and
 `merge_records` (whether its history is credited to the successor). West Germany gets
-both — it becomes Germany *and* its titles count. The USSR gets only the first: it
-appears as Russia on the map but keeps its own record, because attributing fifteen
-countries' history to one of them would be a claim, not a cleanup.
+both — it becomes Germany *and* its titles count. The USSR gets only the first.
+
+> **Corrected in stage 3.** That last sentence used to end "…and keeps its own record."
+> `pandera` showed it was not true: `apply_succession` applies `display_name` to
+> everyone, so **match** records always followed the label — only the **title** count
+> respects `merge_records`. No headline number was wrong, because no entity treated this
+> way ever won a World Cup; the description was. Faced with the choice, the project
+> reaffirmed the behaviour — the label governs — and made the consequence visible instead
+> of hiding it. See [Stage 3](#stage-3--model-geocode-and-validate-) and
+> [`docs/schema.md`](docs/schema.md).
 
 **Fuzzy matching suggests; it never decides.** `rapidfuzz` reports names in 2026 that
 have no historical counterpart, for a human to classify. It is deliberately not allowed
@@ -284,6 +293,8 @@ page tells you so if it happens.
 | `web/map.js` | Aggregates, classifies, paints — and checks itself against the pipeline |
 | `web/style.css` | Chrome inherited from `docs/panorama.html` + the two colour ramps |
 | `web/vendor/` | Leaflet 1.9.4, vendored rather than pulled from a CDN |
+| `etl/color.py` | Turns a shirt colour into a sequential ramp, in OKLab |
+| `reference/team_colors.csv` | Each team's curated colour, with the exceptions reasoned |
 
 **The year slider cost a rule, so the rule became a check.** Every other number on the
 map is pre-computed in Python, on the principle that a wrong number is always an ETL
@@ -294,18 +305,37 @@ is the reference implementation, `web/map.js` mirrors it, and **the page re-runs
 full 1930–2026 range on load and compares it to `metrics.json` team by team**. Diverge,
 and a red banner says the numbers cannot be trusted. A Python test locks the other side.
 
-**Three colour decisions the data forced:**
+**The map is painted in the selected team's colour.** Pick Brazil and the world turns
+yellow; Italy, azzurro; the Netherlands, orange. The colours are curated by hand in
+[`reference/team_colors.csv`](reference/team_colors.csv) — the home shirt colour, or,
+for the twelve sides who play in white or black, the chromatic colour that identifies
+them, marked `identity` and reasoned row by row. Neither white nor black can carry a
+ramp: white has no hue, and black becomes the same grey that means "no data".
 
-- **Goal difference gets a diverging ramp** (red ↔ grey ↔ blue); the other eight metrics
-  use a single-hue sequential one. Goal difference is the only metric with a negative
-  side, and a sequential ramp would put −20 and +20 at the two ends of a scale that has
-  no sides.
-- **Classes are quantiles, not equal intervals.** Brazil has 247 goals and half the
-  teams have fewer than ten. Equal intervals give four dark countries and a white rest;
-  quantiles spread the field, at the cost of uneven class widths — which is why the
-  legend prints the cuts.
+`etl/color.py` turns each of those colours into a nine-step ramp in **OKLab**, a
+perceptually uniform space — interpolating yellow to white in sRGB detours through dirty
+beige. Lightness carries the data and moves monotonically, which is what keeps the ramp
+readable without colour vision; when a step falls outside sRGB, chroma gives way rather
+than the RGB channels, because clamping a channel would drag the hue and land the yellow
+on orange. The **global view keeps one ramp on purpose**: the eye reads darkness as
+quantity, so giving every country its own colour would make a dark-blue Italy look like
+more than a brighter Brazil with a bigger number.
+
+**Three further colour decisions the data forced:**
+
+- **The scale is continuous, with a square root.** Brazil has 247 goals and half the
+  teams have fewer than ten; a linear continuous scale crushes almost everyone into the
+  first tenth of the ramp. The root opens the bottom out without inverting any ordering.
+  What it distorts is proportion — so the legend marks real values at `sqrt(v/max)`, and
+  the marks visibly bunch up on the right.
+- **Goal difference gets a diverging ramp** (red ↔ blue) with two *fixed* poles, even
+  when a team is selected. It is the only metric with a negative side, and if the
+  positive pole followed the team's colour, "negative" would change colour with every
+  country.
 - **Zero and "no data" are different colours.** China, Trinidad and Tobago, and Zaire in
-  1974 have never scored a World Cup goal. That is a fact worth showing, not an absence.
+  1974 have never scored a World Cup goal. That is a fact worth showing, not an absence
+  — which is why the weakest step of every ramp keeps a trace of the hue instead of
+  fading to the no-data grey.
 
 ### Stage 5 — not yet built
 
@@ -317,7 +347,7 @@ Publication. See [Roadmap](#roadmap).
 pytest
 ```
 
-44 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+58 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
 two sentinel nulls, and a hand-checked sample of coordinates (a valid schema cannot tell

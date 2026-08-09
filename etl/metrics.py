@@ -5,6 +5,7 @@ Transforma as tabelas modeladas (`etl.model`) no que o front-end consome:
     web/data/metrics.json    uma entrada por seleção, com as 6 métricas
     web/data/head2head.json  matriz de confrontos diretos
     web/data/timeline.json   a tabela longa em forma compacta (Etapa 4)
+    web/data/colors.json     a rampa de cor de cada seleção (Etapa 4)
 
 **Escopo: Copa masculina**, herdado de `etl.model` — este módulo não filtra
 nada, ele lê as tabelas do modelo. Por isso nenhum dos dois JSONs tem dimensão
@@ -56,6 +57,7 @@ import sys
 
 import pandas as pd
 
+from etl.color import MIN_CHROMA, hex_to_oklch, ramp
 from etl.model import COMPETITION
 from etl.paths import (INTERIM, PROCESSED, RAW_FJELSTUL, REFERENCE, ROOT,
                        WEB_DATA, ensure_dirs)
@@ -249,6 +251,64 @@ def build_timeline(long: pd.DataFrame, matches: pd.DataFrame) -> dict:
     }
 
 
+# A rampa da visão global. Não é a cor de nenhuma seleção — é o azul da paleta
+# validada do skill `dataviz`, usado quando nenhum país está escolhido. Pintar a
+# visão global com a cor de cada seleção deixaria o mapa bonito e ilegível: o
+# olho lê escuridão como quantidade, e cada país passaria a ter a sua própria
+# escala, então uma Itália azul-escura pareceria "mais" que um Brasil amarelo
+# vivo mesmo com o número menor.
+DEFAULT_HUE = "#2A78D6"
+
+# Os dois polos do saldo de gols. Eles NÃO seguem a cor da seleção escolhida, e
+# isso é decisão, não esquecimento: polaridade precisa de dois polos fixos. Se o
+# lado positivo virasse amarelo com o Brasil e vermelho com a Espanha, "negativo"
+# mudaria de cor a cada troca de país e o mapa deixaria de ter um lado.
+DIVERGING = {"negative": "#C8102E", "positive": DEFAULT_HUE}
+
+
+def build_colors(teams: list[str]) -> dict:
+    """A rampa de cada seleção, nos dois modos, pronta para o navegador.
+
+    A cor de cada seleção é curada à mão em `reference/team_colors.csv`, na mesma
+    lógica do `team_succession.csv`: é decisão editorial, não dado da fonte, e
+    por isso fica versionada com o porquê de cada linha não óbvia.
+
+    A regra da curadoria: **a cor da camisa principal**; e quando ela é branca ou
+    preta — que não têm matiz para sustentar uma rampa, e cujo cinza colidiria
+    com o cinza de "sem dado" —, a cor cromática que identifica a seleção. São 12
+    casos (Alemanha, Inglaterra, Polônia, Senegal…), todos marcados como
+    `identity` e justificados linha a linha.
+    """
+    table = pd.read_csv(REFERENCE / "team_colors.csv")
+    base = dict(zip(table.team_name, table.hex))
+
+    missing = sorted(set(teams) - set(base))
+    if missing:
+        raise ValueError(f"sem cor em reference/team_colors.csv: {', '.join(missing)}")
+
+    faint = sorted(name for name in teams if hex_to_oklch(base[name])[1] < MIN_CHROMA)
+    if faint:
+        raise ValueError(
+            f"cor acromática demais para virar rampa (lê como cinza, que é 'sem dado'): "
+            f"{', '.join(faint)}")
+
+    return {
+        "default": {mode: ramp(DEFAULT_HUE, mode) for mode in ("light", "dark")},
+        "diverging": {
+            mode: {arm: ramp(hue, mode) for arm, hue in DIVERGING.items()}
+            for mode in ("light", "dark")
+        },
+        "teams": {
+            name: {
+                "hex": base[name],
+                "light": ramp(base[name], "light"),
+                "dark": ramp(base[name], "dark"),
+            }
+            for name in teams
+        },
+    }
+
+
 def aggregate_timeline(timeline: dict, first: int, last: int) -> dict[str, dict]:
     """Agrega o `timeline.json` numa faixa de anos — a referência do JavaScript.
 
@@ -312,6 +372,11 @@ def main() -> int:
     metrics = build_metrics(long, matches)
     head2head = build_head_to_head(long)
     timeline = build_timeline(long, matches)
+    try:
+        colors = build_colors(timeline["teams"])
+    except ValueError as error:
+        print(f"ERRO: {error}")
+        return 1
 
     for name, payload in (("metrics.json", {
         "generated_from": "data/processed/team_matches.csv",
@@ -320,7 +385,8 @@ def main() -> int:
         "per_match_floor": PER_MATCH_FLOOR,
         "matches_received_complete": bool(matches.country_name.notna().all()),
         "teams": metrics,
-    }), ("head2head.json", head2head), ("timeline.json", timeline)):
+    }), ("head2head.json", head2head), ("timeline.json", timeline),
+            ("colors.json", colors)):
         path = WEB_DATA / name
         with path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
@@ -360,6 +426,24 @@ def main() -> int:
         print(f"  seleções divergentes: {', '.join(divergent[:8])}")
     checks.append(("timeline reproduz metrics", len(divergent), 0))
     checks.append(("linhas do timeline", len(timeline["rows"]), 2 * len(matches)))
+    checks.append(("seleções com rampa", len(colors["teams"]), len(timeline["teams"])))
+
+    # A claridade tem que ser monótona em toda rampa: é ela que carrega o dado, e
+    # é ela que mantém a rampa legível para quem não distingue matizes. Uma cor
+    # cujo passo escuro saísse mais claro que o anterior inverteria a leitura em
+    # silêncio, num país só.
+    broken = [
+        name for name, entry in colors["teams"].items()
+        for mode in ("light", "dark")
+        if not all(
+            (hex_to_oklch(entry[mode][i])[0] < hex_to_oklch(entry[mode][i + 1])[0])
+            == (mode == "dark")
+            for i in range(len(entry[mode]) - 1)
+        )
+    ]
+    if broken:
+        print(f"  rampas não monótonas: {', '.join(sorted(set(broken))[:8])}")
+    checks.append(("rampas monótonas", len(broken), 0))
 
     # Uma seleção sem `gu_a3` existe nas métricas mas não pinta nada no mapa —
     # some da visualização sem gerar erro. Por isso é conferência, não aviso.

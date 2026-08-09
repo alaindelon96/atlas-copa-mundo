@@ -28,7 +28,7 @@
 | Visualização | Leaflet.js | Mapbox GL JS | Leve, gratuito, sem chave de API | ✅ implementado (`web/map.js`, 9 métricas) |
 | Publicação | GitHub Pages | Netlify/Vercel | Grátis, integrado ao repositório | ⏳ não iniciado |
 | Automação/CI | GitHub Actions | — | Rodar pipeline de ETL automaticamente (opcional, mas valoriza o portfólio) | ⏳ adiado para v2 |
-| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 44 testes, todos offline |
+| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 58 testes, todos offline |
 
 **Ambiente verificado:** Python 3.11.9, git 2.55.0, Windows 11. Todas as dependências instaladas e fixadas em `requirements.txt`.
 
@@ -214,7 +214,7 @@ Não é um mapa de marcadores em sedes — é um mapa que **pinta países** segu
 - [x] ~~Desenho do mapa~~ → **coroplético com seletor de métrica e de país**
 - [x] ~~Reino Unido~~ → **sub-regiões separadas.** Inglaterra, Escócia, País de Gales e Irlanda do Norte são quatro seleções distintas e continuam quatro regiões distintas no mapa. Somar as quatro criaria uma "seleção do Reino Unido" que nunca existiu, com 168 gols que ninguém marcou.
 - [x] ~~Contagem bruta ou por jogo~~ → **as duas, com alternância.** Contagem bruta sozinha reproduz "quem se classificou mais vezes": a Alemanha tem 248 gols e o Brasil 247 porque os dois jogaram ~120 partidas. Por jogo, a **Hungria lidera com 2,72** e some do top 10 bruto. A alternância entre as duas leituras *é* o insight.
-- [x] Escala sequencial de uma cor só para a métrica (nunca arco-íris)
+- [x] Escala sequencial de uma cor só para a métrica (nunca arco-íris) — **contínua**, e na cor da seleção escolhida
 - [x] Piso de 10 partidas no modo "por jogo", para uma seleção de 3 jogos não ultrapassar o Brasil
 - [x] ~~Filtro por década/era~~ → **slider de faixa de anos**, sobre as 23 edições
 - [x] Painel lateral com o resumo da seleção escolhida e a tabela de confrontos
@@ -228,6 +228,9 @@ Não é um mapa de marcadores em sedes — é um mapa que **pinta países** segu
 | `web/style.css` | Cromo cartográfico herdado do `panorama.html` + as duas rampas de cor do dado |
 | `web/vendor/leaflet.*` | Leaflet 1.9.4 versionado no repositório, não via CDN |
 | `web/data/timeline.json` | A tabela longa em forma compacta (37 KB) — o que o slider agrega |
+| `etl/color.py` | Cor de camisa → rampa sequencial, em OKLab |
+| `reference/team_colors.csv` | A cor curada de cada uma das 83 seleções, com o porquê das exceções |
+| `web/data/colors.json` | As 83 rampas prontas, nos dois modos |
 
 **Quatro decisões desta etapa:**
 
@@ -235,13 +238,21 @@ Não é um mapa de marcadores em sedes — é um mapa que **pinta países** segu
 
    A regra não foi abandonada, **virou conferência**: `etl.metrics.aggregate_timeline` é a implementação de referência em Python, o `map.js` a espelha, e a página **refaz a faixa completa ao carregar e compara com o `metrics.json`, seleção por seleção**. Divergiu, aparece um aviso vermelho no topo dizendo que os números não são confiáveis. A duplicação de lógica existe — o que não existe é ela ser silenciosa. Um teste em Python trava o outro lado.
 
-2. **Duas rampas, porque são dois trabalhos.** Sequencial de um matiz só (azul, claro→escuro) para magnitude — gols, vitórias, partidas, títulos. **Divergente** (vermelho ↔ cinza ↔ azul) só para o **saldo de gols**, que é a única métrica com lado negativo: pintar polaridade com rampa sequencial colocaria −20 e +20 nos dois extremos de uma escala que não tem lado. No modo escuro as duas invertem a direção da luz, para o "quase nada" recuar em vez de saltar.
+2. **A rampa é a cor da seleção escolhida.** Escolher o Brasil pinta o mapa de amarelo, a Itália de azzurro, a Holanda de laranja. As cores são curadas à mão em [`reference/team_colors.csv`](reference/team_colors.csv), na mesma lógica do `team_succession.csv`: é decisão editorial, então fica versionada com o porquê. A regra é *a cor da camisa principal*; e quando ela é branca ou preta — que não têm matiz para sustentar uma rampa, e cujo cinza colidiria com o cinza de "sem dado" —, a cor cromática que identifica a seleção. São 12 casos (Alemanha, Inglaterra, Polônia, Nova Zelândia…), todos marcados `identity` e justificados linha a linha.
 
-3. **Classes por quantil, não por intervalos iguais.** O Brasil tem 247 gols e metade das seleções tem menos de 10. Com intervalos iguais o mapa vira quatro países escuros e o resto branco. Quantil distribui (as classes saem em 18/16/15/15/18); o preço é a distância entre classes não ser constante, e por isso a legenda mostra os cortes.
+   **A visão global não faz isso**, e a diferença importa: sem país escolhido, a rampa é uma só. Dar a cada país a sua própria cor deixaria o mapa bonito e ilegível, porque o olho lê escuridão como quantidade — uma Itália azul-escura pareceria "mais" que um Brasil amarelo vivo com número maior.
 
-4. **Zero e "sem dado" são cores diferentes.** Três seleções nunca marcaram um gol em Copa — China, Trinidad e Tobago e o Zaire de 1974 — e isso é um fato, não uma ausência. Elas recebem o passo mais claro da rampa; quem não jogou na faixa escolhida recebe o cinza de fora do dado.
+3. **Uma cor de camisa não é uma rampa — `etl/color.py` transforma uma na outra.** O trabalho acontece em **OKLab/OKLCH**, espaço perceptualmente uniforme: interpolar do amarelo `#FFDF00` até o branco em sRGB passa por bege sujo. A claridade percorre a banda do modo linearmente (é ela que carrega o dado, e é ela que mantém a rampa legível para quem não distingue matizes); o croma sobe junto sem passar do croma da própria cor. Quando um passo não cabe em sRGB — amarelo escuro e saturado não existe —, o que cede é o **croma**, nunca os canais RGB: clampar canal moveria o matiz e o amarelo chegaria laranja na ponta.
 
-**O que o mapa mostra hoje:** 9 métricas, 85 polígonos pintados de 264, seletor de país com modo de confronto direto, alternância total/por partida, faixa de anos de 1930 a 2026 e um painel que é também a *table view* exigida pela regra de acessibilidade (a informação nunca fica só na cor).
+   Isso roda no **Python**, não no navegador: as rampas saem prontas em `web/data/colors.json` (19 KB, 83 seleções × 2 modos × 9 passos) e o JavaScript só interpola entre passos vizinhos. Portar OKLab para o `map.js` seria uma segunda implementação para manter em sincronia.
+
+4. **Escala contínua, com raiz quadrada.** Não há mais classes. A raiz não é enfeite — sem ela o mapa some: a distribuição é muito torta (o Brasil tem 247 gols, metade das seleções tem menos de 10), e uma escala linear contínua empurra quase todo mundo para o primeiro décimo da rampa. A raiz abre o pé da distribuição **sem inverter nenhuma ordem**; o que ela distorce é a proporção, e por isso a legenda virou uma barra com os valores marcados em `sqrt(v/máx)`. As marcas se apertam à direita — essa compressão visível *é* o aviso de que a escala não é linear.
+
+5. **O saldo de gols mantém dois polos fixos.** Ele é a única métrica com lado negativo, então usa rampa divergente (vermelho ↔ azul) — e ela **não** segue a cor da seleção escolhida. Se o lado positivo virasse amarelo com o Brasil e vermelho com a Espanha, "negativo" mudaria de cor a cada troca de país e o mapa deixaria de ter um lado.
+
+6. **Zero e "sem dado" são cores diferentes.** Três seleções nunca marcaram um gol em Copa — China, Trinidad e Tobago e o Zaire de 1974 — e isso é um fato, não uma ausência. Por isso o passo mais fraco de cada rampa carrega um traço do matiz em vez de ser acromático: se fosse cinza, seria o mesmo cinza de quem nunca jogou.
+
+**O que o mapa mostra hoje:** 9 métricas em escala contínua na cor da seleção, 85 polígonos pintados de 264, seletor de país com modo de confronto direto, alternância total/por partida, faixa de anos de 1930 a 2026 e um painel que é também a *table view* exigida pela regra de acessibilidade (a informação nunca fica só na cor).
 
 **Ferramentas:** Leaflet.js com camada GeoJSON de países; `pandas` para pré-computar as métricas.
 
@@ -332,7 +343,7 @@ atlas-copa-mundo/
 │   ├── model.py          ✅ as 6 tabelas do modelo
 │   ├── validate.py       ✅ regras do pandera
 │   └── metrics.py        ✅ JSONs que o mapa consome
-├── reference/            ✅ tabelas curadas à mão (sucessão, seleção→polígono)
+├── reference/            ✅ tabelas curadas à mão (sucessão, seleção→polígono, cores)
 ├── notebooks/            ✅
 ├── tests/                ✅ 36 testes, todos offline
 ├── web/                  ✅
@@ -340,7 +351,7 @@ atlas-copa-mundo/
 │   ├── map.js            ✅ agrega, classifica, pinta e se autoconfere
 │   ├── style.css         ✅ cromo cartográfico + as duas rampas de cor
 │   ├── vendor/           ✅ Leaflet 1.9.4 versionado (sem CDN)
-│   └── data/             ✅ metrics.json, head2head.json, timeline.json, countries.geojson
+│   └── data/             ✅ metrics.json, head2head.json, timeline.json, colors.json, countries.geojson
 ├── docs/
 │   ├── schema.md         ✅ ERD do modelo (Mermaid)
 │   ├── panorama.html     ✅ panorama dos dados
@@ -405,3 +416,5 @@ atlas-copa-mundo/
 - **08/08/2026** — **Etapa 4 concluída: o mapa existe.** `web/index.html`, `web/map.js` e `web/style.css`, com Leaflet 1.9.4 versionado no repositório em vez de CDN. Nove métricas, seletor de país com modo de confronto direto, alternância total/por partida, slider de faixa de anos e painel lateral. Todos os números documentados no plano se reproduzem na tela: Alemanha 248 gols e Brasil 247 no total, Hungria 2,72 por partida, Brasil 247 gols em 119 partidas com 82–15–22, e Brasil × Suécia 21 gols em 7 jogos. 44 testes passando.
 - **08/08/2026** — **a escolha do slider de anos custou a regra "o front-end não agrega nada" — e a troca foi documentada, não escondida.** Filtro por década seria pré-computável; faixa livre não é (276 faixas possíveis). Então a agregação foi para o navegador, com uma contrapartida: `timeline.json` (a tabela longa em forma colunar, 37 KB), uma implementação de referência em Python (`aggregate_timeline`), o `map.js` espelhando-a, e a **página refazendo a faixa completa ao carregar para comparar com o `metrics.json` seleção por seleção** — com aviso na tela se divergir. Um teste em Python trava o lado de lá. É a mesma ideia do `pandera` na Etapa 3: a conferência que pega erro de linha, não só de total.
 - **08/08/2026** — **três decisões de cor que o dado impôs.** (1) O **saldo de gols** ganhou rampa divergente (vermelho ↔ cinza ↔ azul) enquanto as outras oito métricas usam a sequencial de um matiz: saldo é a única com lado negativo, e uma rampa sequencial colocaria −20 e +20 nos dois extremos de uma escala sem lado. (2) As classes são por **quantil** — o Brasil tem 247 gols e metade das seleções tem menos de 10, então intervalo igual daria quatro países escuros e o resto branco. (3) **Zero e "sem dado" são cores diferentes**: China, Trinidad e Tobago e o Zaire de 1974 nunca marcaram um gol em Copa, e isso é um fato, não uma ausência.
+- **08/08/2026** — **duas melhorias no coroplético: escala contínua e a cor da seleção.** As classes por quantil saíram: a escala virou **contínua**, com raiz quadrada no valor — sem a raiz, uma escala linear amontoaria quase todas as seleções no primeiro décimo da rampa, porque o Brasil tem 247 gols e metade delas tem menos de 10. A raiz abre o pé da distribuição sem inverter nenhuma ordem, e a legenda virou uma barra com os valores marcados em `sqrt(v/máx)`: as marcas se apertam à direita, e essa compressão visível é o aviso de que a escala não é linear. E a rampa passou a ser **a cor da seleção escolhida** — Brasil amarelo, Itália azzurro, Holanda laranja —, gerada em OKLab por `etl/color.py` a partir de `reference/team_colors.csv`. A visão global continua com uma rampa só, de propósito: o olho lê escuridão como quantidade, então dar a cada país a sua cor faria uma Itália azul-escura parecer 'mais' que um Brasil amarelo com número maior. 58 testes.
+- **08/08/2026** — **a curadoria das cores encostou num problema que o dado não tinha.** Doze seleções jogam de branco ou preto — Alemanha, Inglaterra, Polônia, Nova Zelândia, Senegal… — e nenhuma das duas serve de matiz: branco não tem croma para sustentar uma rampa, e preto vira um cinza que colide com o cinza de 'sem dado'. A regra ficou: a cor da camisa principal; quando ela é acromática, a cor cromática que identifica a seleção, marcada como `identity` e justificada linha a linha. Pelo mesmo motivo, o passo mais fraco de toda rampa carrega um traço do matiz em vez de ser cinza — senão 'jogou e não marcou' teria a mesma cor de 'nunca jogou'.

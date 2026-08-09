@@ -3,24 +3,18 @@
  * Cromo cartográfico herdado de `docs/panorama.html` e `docs/roadmap.html`, para
  * o mapa e as páginas de bastidores parecerem o mesmo projeto.
  *
- * As cores de DADO não são as da identidade: a paleta cartográfica reprovou nas
- * conferências computáveis do skill `dataviz` (croma do teal 0.091, abaixo do
- * piso 0.10 onde um matiz começa a ler como cinza). Então o dado usa as rampas
- * validadas do skill, e a identidade fica no cromo da página.
+ * **As rampas de cor do dado não estão aqui.** Elas dependem da seleção
+ * escolhida — o mapa de confronto direto é pintado na cor da própria seleção —,
+ * então são geradas em `etl/color.py` a partir de `reference/team_colors.csv` e
+ * chegam prontas em `web/data/colors.json`, nos dois modos. Uma variável CSS por
+ * passo daria 83 × 2 × 9 variáveis; o JSON faz o mesmo trabalho e o cálculo
+ * perceptual (OKLab) fica de um lado só.
  *
- * Duas rampas, porque são dois trabalhos diferentes:
- *
- *   --ramp-1..6   SEQUENCIAL, um matiz só (azul), claro -> escuro. Magnitude:
- *                 gols, vitórias, partidas, títulos. Nunca arco-íris.
- *   --neg-*/--pos-*  DIVERGENTE (vermelho <-> azul, cinza no meio). Só o saldo
- *                 de gols usa: ele tem polaridade, e pintar polaridade com uma
- *                 rampa sequencial esconderia o sinal — o -20 e o +20 sairiam
- *                 nos dois extremos de uma escala que não tem lado.
- *
- * No modo escuro as duas rampas INVERTEM a direção da luz: o passo que
- * significa "quase nada" é sempre o mais próximo da superfície, para o vazio
- * recuar em vez de saltar. Não é o mesmo azul virado de cabeça para baixo — são
- * passos escolhidos para a banda de cada superfície.
+ * O que sobra aqui é o cromo: superfícies, tinta, réguas — e `--absent`, o cinza
+ * de "não jogou nesta faixa". Esse cinza é a única cor de dado no CSS porque é a
+ * única que não depende de seleção nenhuma. Ele é deliberadamente acromático: as
+ * rampas geradas sempre carregam um traço do matiz da seleção, inclusive no
+ * passo mais fraco, exatamente para que "zero" nunca se confunda com "sem dado".
  */
 
 :root {
@@ -29,16 +23,8 @@
   --rule:#CFD9E1; --rule-strong:#AFBECB;
   --done:#0F7A6B; --done-soft:#DBEDE8;
   --now:#BE4A22; --now-soft:#F7E1D8;
-
-  /* sequencial — azul, claro (pouco) -> escuro (muito) */
-  --ramp-1:#CDE2FB; --ramp-2:#9EC5F4; --ramp-3:#6DA7EC;
-  --ramp-4:#3987E5; --ramp-5:#256ABF; --ramp-6:#104281;
-  /* divergente — vermelho (negativo) <-> cinza (zero) <-> azul (positivo) */
-  --neg-3:#B02A2A; --neg-2:#E07A79; --neg-1:#F6C9C8;
-  --mid:#EDF1F4;
-  --pos-1:#CDE2FB; --pos-2:#5598E7; --pos-3:#1C5CAB;
   /* fora do dado: nunca disputou uma partida na faixa escolhida */
-  --absent:#E3E9ED;
+  --absent:#DCE3E9;
   --ocean:#F3F6F8; --coast:#FFFFFF;
 
   --shadow:0 1px 2px rgba(22,32,43,.06), 0 8px 24px -12px rgba(22,32,43,.18);
@@ -54,12 +40,7 @@
     --rule:#2A3A4A; --rule-strong:#3D5165;
     --done:#3FB6A0; --done-soft:#103831;
     --now:#E8794D; --now-soft:#3A1F14;
-    --ramp-1:#0D366B; --ramp-2:#184F95; --ramp-3:#256ABF;
-    --ramp-4:#3987E5; --ramp-5:#6DA7EC; --ramp-6:#B7D3F6;
-    --neg-3:#E66767; --neg-2:#B34747; --neg-1:#6E2A2A;
-    --mid:#22303E;
-    --pos-1:#1C5CAB; --pos-2:#3987E5; --pos-3:#86B6EF;
-    --absent:#1E2B38;
+    --absent:#233140;
     --ocean:#101A24; --coast:#15212C;
     --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
   }
@@ -71,12 +52,7 @@
   --rule:#2A3A4A; --rule-strong:#3D5165;
   --done:#3FB6A0; --done-soft:#103831;
   --now:#E8794D; --now-soft:#3A1F14;
-  --ramp-1:#0D366B; --ramp-2:#184F95; --ramp-3:#256ABF;
-  --ramp-4:#3987E5; --ramp-5:#6DA7EC; --ramp-6:#B7D3F6;
-  --neg-3:#E66767; --neg-2:#B34747; --neg-1:#6E2A2A;
-  --mid:#22303E;
-  --pos-1:#1C5CAB; --pos-2:#3987E5; --pos-3:#86B6EF;
-  --absent:#1E2B38;
+  --absent:#233140;
   --ocean:#101A24; --coast:#15212C;
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
 }
@@ -87,12 +63,7 @@
   --rule:#CFD9E1; --rule-strong:#AFBECB;
   --done:#0F7A6B; --done-soft:#DBEDE8;
   --now:#BE4A22; --now-soft:#F7E1D8;
-  --ramp-1:#CDE2FB; --ramp-2:#9EC5F4; --ramp-3:#6DA7EC;
-  --ramp-4:#3987E5; --ramp-5:#256ABF; --ramp-6:#104281;
-  --neg-3:#B02A2A; --neg-2:#E07A79; --neg-1:#F6C9C8;
-  --mid:#EDF1F4;
-  --pos-1:#CDE2FB; --pos-2:#5598E7; --pos-3:#1C5CAB;
-  --absent:#E3E9ED;
+  --absent:#DCE3E9;
   --ocean:#F3F6F8; --coast:#FFFFFF;
 }
 
@@ -205,21 +176,30 @@ select option:disabled { color:var(--ink-3); }
   display:flex; flex-wrap:wrap; gap:1rem 1.6rem; align-items:flex-start;
   padding:.85rem 1.1rem; border-top:1px solid var(--rule);
 }
-.scale { display:flex; flex-direction:column; gap:.3rem; }
+.scale { display:flex; flex-direction:column; gap:.3rem; flex:1 1 18rem; min-width:14rem; }
 .scale-title { font-family:var(--mono); font-size:.66rem; letter-spacing:.12em;
   text-transform:uppercase; color:var(--ink-3); }
-.swatches { display:flex; align-items:flex-end; }
-.swatch { display:flex; flex-direction:column; gap:.2rem; align-items:flex-start; }
-.swatch i {
-  display:block; width:2.6rem; height:.7rem; border:1px solid var(--rule);
-  border-right:0;
+
+/* Legenda de escala contínua: uma barra com o degradê da rampa e marcas
+   posicionadas onde o valor cai de verdade — em sqrt(v/máx), a mesma
+   transformação que pinta o mapa. */
+#scale { display:flex; flex-direction:column; gap:0; }
+#scale .bar {
+  height:.72rem; border:1px solid var(--rule); border-radius:2px;
 }
-.swatch:last-child i { border-right:1px solid var(--rule); }
-.swatch span {
-  font-family:var(--mono); font-variant-numeric:tabular-nums;
-  font-size:.66rem; color:var(--ink-3);
+#scale .ticks { position:relative; height:1.5rem; }
+#scale .tick { position:absolute; top:0; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:.1rem; }
+#scale .tick i { display:block; width:1px; height:.28rem; background:var(--rule-strong); }
+#scale .tick em {
+  font-style:normal; font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:.64rem; color:var(--ink-3); white-space:nowrap;
 }
-.scale-note { font-size:.78rem; color:var(--ink-3); max-width:34ch; }
+#scale .absent-key { display:flex; align-items:center; gap:.35rem; margin-top:.15rem; }
+#scale .absent-key i { width:.8rem; height:.8rem; border:1px solid var(--rule); border-radius:2px; }
+#scale .absent-key span { font-family:var(--mono); font-size:.64rem; color:var(--ink-3); }
+
+.scale-note { font-size:.78rem; color:var(--ink-3); max-width:44ch; flex:1 1 16rem; }
 
 /* ---- painel lateral ---- */
 

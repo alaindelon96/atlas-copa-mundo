@@ -121,6 +121,21 @@ discarded rather than changed.
 
 ---
 
+## Original work in this repository
+
+Two files are **not** derived from any source above — they are curated by hand for this
+project and are covered by the repository's own licences:
+
+- [`reference/team_colors.csv`](reference/team_colors.csv) — each national team's map
+  colour. The rule is the home shirt colour; where that is white or black (neither can
+  carry a sequential ramp), the chromatic colour that identifies the side, marked
+  `identity` with the reasoning in the row. These are editorial judgements, not facts
+  from a dataset.
+- [`web/data/colors.json`](web/data/colors.json) — the ramps generated from that table by
+  [`etl/color.py`](etl/color.py).
+
+---
+
 ## Third-party code bundled in this repository
 
 The map depends on Leaflet, and this repository **vendors** it at
