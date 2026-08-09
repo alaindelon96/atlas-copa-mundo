@@ -4,6 +4,7 @@ Transforma as tabelas modeladas (`etl.model`) no que o front-end consome:
 
     web/data/metrics.json    uma entrada por seleção, com as 6 métricas
     web/data/head2head.json  matriz de confrontos diretos
+    web/data/timeline.json   a tabela longa em forma compacta (Etapa 4)
 
 **Escopo: Copa masculina**, herdado de `etl.model` — este módulo não filtra
 nada, ele lê as tabelas do modelo. Por isso nenhum dos dois JSONs tem dimensão
@@ -12,9 +13,17 @@ de competição: `head2head` é `{seleção: {adversário: {...}}}`, e não
 `matches_clean.csv`.
 
 O desenho do mapa (decidido em 08/08/2026) tem dois seletores — métrica e país
-— e o modo de país repinta o mapa por confronto direto. Ambos os arquivos são
-pré-computados aqui porque o front-end não faz nenhuma agregação: se um número
-estiver errado no mapa, o bug está neste arquivo, não no JavaScript.
+— e o modo de país repinta o mapa por confronto direto.
+
+**A Etapa 4 abriu uma exceção à regra "o front-end não agrega nada".** O filtro
+temporal escolhido foi um *slider de faixa de anos*, e não um seletor de década:
+com 23 edições são 276 faixas possíveis, então pré-computar todas é inviável.
+Por isso existe o `timeline.json` — a tabela longa em forma compacta — e o
+JavaScript soma. A regra não foi simplesmente abandonada; ela virou uma
+conferência: `metrics.json` continua sendo gerado aqui e o front-end **refaz a
+faixa completa (1930–2026) e compara com ele, seleção por seleção**, avisando na
+tela se divergir. Ou seja, a duplicação de lógica existe, mas não é silenciosa —
+se o JS descolar do Python, a página denuncia.
 
 Duas decisões do projeto estão implementadas aqui:
 
@@ -28,10 +37,12 @@ Duas decisões do projeto estão implementadas aqui:
    Irlanda do Norte entram separadas, como estão no dado. A junção viraria uma
    "seleção do Reino Unido" que nunca existiu.
 
-3. **A chave do mapa é `gu_a3`, não o nome.** Cada entrada carrega o código da
-   unidade de mapa vinda de `reference/team_country.csv`; o Leaflet casa o
-   GeoJSON por esse código. Casar por nome faria o front-end repetir — e
-   divergir de — as decisões de nomenclatura tomadas no ETL.
+3. **A chave do join é a propriedade `team` do GeoJSON.** Cada polígono de
+   `countries.geojson` já carrega o nome da seleção que o ocupa, resolvido aqui
+   no ETL — o front-end nunca reinterpreta nomenclatura. O campo `gu_a3` das
+   métricas é **informativo, não chave**: o mapa seleção→unidade é um-para-muitos
+   (a Bélgica são três unidades no Natural Earth) e `gu_a3` guarda só uma delas.
+   Casar por ele deixaria dois terços da Bélgica sem pintura.
 
 Uso:
     python -m etl.model && python -m etl.metrics
@@ -78,8 +89,8 @@ def map_units() -> dict[str, str]:
     return dict(zip(mapping.team_name, mapping.gu_a3))
 
 
-def titles_by_team(editions: set[str]) -> dict[str, int]:
-    """Títulos por seleção, com o mapa de sucessão aplicado.
+def champion_by_edition(editions: set[str]) -> dict[str, str]:
+    """Campeão de cada edição, com o mapa de sucessão aplicado.
 
     Vem de `tournament_standings.csv`, não das finais: a Copa de 1950 não teve
     final, e derivar campeão do `stage == "final"` perderia aquela edição em
@@ -88,21 +99,32 @@ def titles_by_team(editions: set[str]) -> dict[str, int]:
     O recorte não é uma regex sobre `tournament_name`: são os `tournament_id`
     que o modelo de fato contém. Assim o escopo é decidido em um lugar só
     (`etl.model.COMPETITION`) em vez de ser reinterpretado aqui.
+
+    Devolve *por edição*, e não já contado, porque o filtro de anos da Etapa 4
+    precisa saber **quando** cada título foi ganho. A contagem é uma linha
+    depois, em `titles_by_team`.
     """
     succession = pd.read_csv(ROOT / "reference" / "team_succession.csv")
     merges = dict(zip(succession.historic_name, succession.merge_records))
     labels = dict(zip(succession.historic_name, succession.display_name))
 
     standings = pd.read_csv(RAW_FJELSTUL / "tournament_standings.csv")
-    champions = standings[(standings.position == 1)
-                          & standings.tournament_id.isin(editions)].team_name.tolist()
+    winners = standings[(standings.position == 1)
+                        & standings.tournament_id.isin(editions)]
+    champions = dict(zip(winners.tournament_id, winners.team_name))
 
     modern = pd.read_csv(INTERIM / "tournament_2026.csv")
-    champions.extend(modern.loc[modern.tournament_id.isin(editions), "winner"])
+    modern = modern[modern.tournament_id.isin(editions)]
+    champions.update(zip(modern.tournament_id, modern.winner))
 
+    return {edition: (labels[raw] if merges.get(raw, 0) == 1 else raw)
+            for edition, raw in champions.items()}
+
+
+def titles_by_team(editions: set[str]) -> dict[str, int]:
+    """Títulos por seleção — a contagem de `champion_by_edition`."""
     counts: dict[str, int] = {}
-    for raw in champions:
-        name = labels[raw] if merges.get(raw, 0) == 1 else raw
+    for name in champion_by_edition(editions).values():
         counts[name] = counts.get(name, 0) + 1
     return counts
 
@@ -166,6 +188,111 @@ def build_head_to_head(long: pd.DataFrame) -> dict:
     return matrix
 
 
+def build_timeline(long: pd.DataFrame, matches: pd.DataFrame) -> dict:
+    """A tabela longa em forma compacta — o que o slider de anos agrega.
+
+    Formato colunar com dicionários de índices, e não uma lista de objetos: os
+    mesmos 2.136 registros saem de ~400 KB para ~60 KB, porque `"team"`,
+    `"opponent"` e os nomes das seleções deixam de ser repetidos linha a linha.
+    O arquivo é lido inteiro no `load` e nunca mais; o custo é de rede, uma vez.
+
+    Cada linha é `[ano, seleção, adversário, gols pró, gols contra, resultado]`,
+    tudo como índice inteiro nas listas `years`, `teams` e na string `results`.
+
+    Três agregados que não saem da tabela longa vão junto, porque o front-end
+    precisa deles recortados pelo mesmo intervalo:
+
+    - `titles`  — campeão de cada edição (a Copa de 1950 não teve final, então
+      isto vem de `titles_by_team`, não de `stage == "final"`).
+    - `hosted`  — partidas por país-sede, por edição. É a única métrica que
+      descreve um **lugar** e não uma seleção; sai indexada em `teams` porque as
+      19 sedes históricas são todas países que também jogaram, o que mantém um
+      único espaço de nomes para o mapa casar.
+    - `units`   — o `gu_a3` de cada seleção, paralelo a `teams`, só para rótulo.
+    """
+    teams = sorted(set(long.team) | set(matches.country_name.dropna()))
+    # `int()` explícito: os anos vêm do pandas como `int64`, que o `json` não
+    # serializa — e o erro só apareceria na escrita, depois de tudo pronto.
+    years = sorted(int(year) for year in long.year.unique())
+    team_ix = {name: i for i, name in enumerate(teams)}
+    year_ix = {year: i for i, year in enumerate(years)}
+    result_ix = {"W": 0, "D": 1, "L": 2}
+
+    rows = [
+        [year_ix[r.year], team_ix[r.team], team_ix[r.opponent],
+         int(r.goals_for), int(r.goals_against), result_ix[r.result]]
+        for r in long.itertuples()
+    ]
+
+    year_of = {edition: int(year) for edition, year in zip(matches.tournament_id, matches.year)}
+    titles = [[year_ix[year_of[edition]], team_ix[champion]]
+              for edition, champion in champion_by_edition(set(matches.tournament_id)).items()]
+
+    hosted = [
+        [year_ix[year], team_ix[country], int(count)]
+        for (year, country), count in
+        matches.dropna(subset=["country_name"]).groupby(["year", "country_name"]).size().items()
+    ]
+
+    units = map_units()
+    return {
+        "generated_from": "data/processed/team_matches.csv",
+        "competition": COMPETITION,
+        "per_match_floor": PER_MATCH_FLOOR,
+        "years": years,
+        "teams": teams,
+        "units": [units.get(name) for name in teams],
+        "results": "WDL",
+        "rows": rows,
+        "titles": titles,
+        "hosted": hosted,
+    }
+
+
+def aggregate_timeline(timeline: dict, first: int, last: int) -> dict[str, dict]:
+    """Agrega o `timeline.json` numa faixa de anos — a referência do JavaScript.
+
+    Existe para que a conferência da Etapa 4 seja executável dos dois lados: o
+    `map.js` implementa exatamente estas somas, e o teste em Python confere que,
+    na faixa completa, elas reproduzem o `metrics.json` linha a linha. Se as duas
+    implementações divergirem, alguém quebrou uma das duas — e não fica escondido.
+    """
+    teams, years = timeline["teams"], timeline["years"]
+    inside = {i for i, year in enumerate(years) if first <= year <= last}
+
+    totals: dict[str, dict] = {}
+
+    def slot(name: str) -> dict:
+        return totals.setdefault(name, {
+            "goals": 0, "conceded": 0, "wins": 0, "draws": 0, "losses": 0,
+            "matches_played": 0, "matches_received": 0, "titles": 0,
+            "_years": set(),
+        })
+
+    for year_i, team_i, _opponent, goals_for, goals_against, result in timeline["rows"]:
+        if year_i not in inside:
+            continue
+        row = slot(teams[team_i])
+        row["goals"] += goals_for
+        row["conceded"] += goals_against
+        row["matches_played"] += 1
+        row["wins" if result == 0 else "draws" if result == 1 else "losses"] += 1
+        row["_years"].add(year_i)
+
+    for year_i, team_i in timeline["titles"]:
+        if year_i in inside:
+            slot(teams[team_i])["titles"] += 1
+
+    for year_i, team_i, count in timeline["hosted"]:
+        if year_i in inside:
+            slot(teams[team_i])["matches_received"] += count
+
+    for row in totals.values():
+        row["participations"] = len(row.pop("_years"))
+        row["goal_difference"] = row["goals"] - row["conceded"]
+    return totals
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.parse_args()
@@ -184,6 +311,7 @@ def main() -> int:
 
     metrics = build_metrics(long, matches)
     head2head = build_head_to_head(long)
+    timeline = build_timeline(long, matches)
 
     for name, payload in (("metrics.json", {
         "generated_from": "data/processed/team_matches.csv",
@@ -192,7 +320,7 @@ def main() -> int:
         "per_match_floor": PER_MATCH_FLOOR,
         "matches_received_complete": bool(matches.country_name.notna().all()),
         "teams": metrics,
-    }), ("head2head.json", head2head)):
+    }), ("head2head.json", head2head), ("timeline.json", timeline)):
         path = WEB_DATA / name
         with path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
@@ -216,6 +344,22 @@ def main() -> int:
     # V + E + D tem que fechar com as partidas jogadas
     wdl = sum(r["wins"] + r["draws"] + r["losses"] for r in metrics)
     checks.append(("V+E+D", wdl, 2 * len(matches)))
+
+    # O `timeline.json` tem que ser uma reescrita sem perda da tabela longa: se
+    # agregá-lo na faixa completa não devolver o `metrics.json`, o payload que o
+    # slider consome está mentindo, e o mapa mentiria junto em toda faixa.
+    full = aggregate_timeline(timeline, min(timeline["years"]), max(timeline["years"]))
+    divergent = [
+        team["team"] for team in metrics
+        if any(full.get(team["team"], {}).get(field) != team[field]
+               for field in ("goals", "conceded", "goal_difference", "wins", "draws",
+                             "losses", "matches_played", "matches_received", "titles",
+                             "participations"))
+    ]
+    if divergent:
+        print(f"  seleções divergentes: {', '.join(divergent[:8])}")
+    checks.append(("timeline reproduz metrics", len(divergent), 0))
+    checks.append(("linhas do timeline", len(timeline["rows"]), 2 * len(matches)))
 
     # Uma seleção sem `gu_a3` existe nas métricas mas não pinta nada no mapa —
     # some da visualização sem gerar erro. Por isso é conferência, não aviso.

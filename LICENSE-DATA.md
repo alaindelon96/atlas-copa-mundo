@@ -55,7 +55,7 @@ column or a table, and the original values are preserved alongside:
 | Host country as a table | `tournaments.host_country` (a single column, holding `"Korea, Japan"` for 2002) was replaced by a `tournament_hosts` table derived from the venues where matches took place. |
 | Venue coordinates added | Latitude/longitude from Nominatim (OpenStreetMap, ODbL). This is added data, not altered data — see the note on mixed licensing below. |
 | Country polygons added | `web/data/countries.geojson` is Natural Earth (public domain) with a `team` property joined on. It contains no Fjelstul data. |
-| Aggregation | `web/data/metrics.json` and `head2head.json` are statistics computed from the match table. |
+| Aggregation | `web/data/metrics.json` and `head2head.json` are statistics computed from the match table. `web/data/timeline.json` is the same match table rewritten losslessly in columnar form (names replaced by indices) so the map's year-range slider can re-aggregate it in the browser. |
 
 **Editorial decision, stated because it is a choice and not a cleanup:** where a
 historic team resolves to a modern label, the **label governs the records**. West
@@ -118,6 +118,28 @@ The article HTML in `data/raw/scraped/` is stored unmodified. Data was extracted
 from it — match results, venues and tournament totals restructured into tabular
 form — but no source text was altered. Prose, references and formatting were
 discarded rather than changed.
+
+---
+
+## Third-party code bundled in this repository
+
+The map depends on Leaflet, and this repository **vendors** it at
+`web/vendor/leaflet.js` and `web/vendor/leaflet.css` instead of loading it from a
+CDN. That is a deliberate choice — a clone keeps working offline, and the version
+that renders the map is the version recorded in git — but it means redistributing
+someone else's code, which carries its own obligation:
+
+- **Leaflet 1.9.4** — © 2010–2023 Volodymyr Agafonkin, © 2010–2011 CloudMade
+- **Licence:** BSD 2-Clause, reproduced in full at
+  [`web/vendor/LEAFLET-LICENSE.txt`](web/vendor/LEAFLET-LICENSE.txt)
+- **Source:** https://github.com/Leaflet/Leaflet
+
+The files are byte-for-byte as published on unpkg; neither was modified. Leaflet is
+**not** covered by this repository's MIT licence or by the CC BY-SA 4.0 data
+licence — it keeps its own.
+
+Country outlines come from **Natural Earth**, which is public domain; the map
+credits it in the attribution control, as its terms request rather than require.
 
 ---
 

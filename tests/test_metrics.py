@@ -12,6 +12,7 @@ import json
 
 import pytest
 
+from etl.metrics import aggregate_timeline
 from etl.paths import WEB_DATA
 
 
@@ -26,6 +27,14 @@ def metrics() -> dict:
 @pytest.fixture(scope="module")
 def head2head() -> dict:
     path = WEB_DATA / "head2head.json"
+    if not path.exists():
+        pytest.skip("Rode `python -m etl.metrics` primeiro.")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def timeline() -> dict:
+    path = WEB_DATA / "timeline.json"
     if not path.exists():
         pytest.skip("Rode `python -m etl.metrics` primeiro.")
     return json.loads(path.read_text(encoding="utf-8"))
@@ -160,6 +169,89 @@ def test_metrica_esparsa_continua_existindo(men):
     assert sum(1 for t in men.values() if t["matches_received"] > 0) == 19
     assert men["Canada"]["matches_received"] > 0
     assert len(men) == 83
+
+
+# --- o payload do slider (Etapa 4) ---------------------------------------
+
+
+def test_timeline_reproduz_o_metrics_na_faixa_completa(timeline, men):
+    """A conferência que sustenta a decisão de agregar no navegador.
+
+    O filtro temporal virou um slider de faixa de anos, então o JavaScript
+    precisa somar — não dá para pré-computar 276 faixas. O risco é a soma do JS
+    descolar da do Python e o mapa mostrar número errado sem erro nenhum.
+
+    A defesa é esta: na faixa completa, agregar o `timeline.json` tem que
+    devolver exatamente o `metrics.json`. `etl.metrics.aggregate_timeline` é a
+    implementação de referência, o `map.js` a espelha, e a página refaz esta
+    mesma comparação ao carregar. Se este teste falhar, o payload que o slider
+    consome está mentindo em *toda* faixa, não só na completa.
+    """
+    todos = aggregate_timeline(timeline, min(timeline["years"]), max(timeline["years"]))
+    assert set(todos) >= set(men)
+    for nome, esperado in men.items():
+        obtido = todos[nome]
+        for campo in ("goals", "conceded", "goal_difference", "wins", "draws", "losses",
+                      "matches_played", "matches_received", "titles", "participations"):
+            assert obtido[campo] == esperado[campo], f"{nome}.{campo}"
+
+
+def test_timeline_e_uma_reescrita_sem_perda(timeline):
+    """Uma linha por seleção por partida — o mesmo que a tabela longa."""
+    assert len(timeline["rows"]) == 2136
+    assert len(timeline["years"]) == 23
+    assert timeline["results"] == "WDL"
+    assert timeline["competition"] == "mens"
+
+
+def test_o_recorte_por_ano_muda_o_que_o_mapa_mostra(timeline):
+    """O filtro precisa recortar de verdade, e não devolver sempre o total.
+
+    2022–2026 são as duas últimas edições: 32 seleções em 2022 e 48 em 2026,
+    54 distintas somando as duas. Se este número virar 83, o recorte não está
+    sendo aplicado; se virar 48, ele está pegando uma edição só.
+    """
+    recente = aggregate_timeline(timeline, 2022, 2026)
+    assert len(recente) == 54
+    assert recente["Spain"]["titles"] == 1
+    assert recente["Argentina"]["titles"] == 1
+    assert recente["Brazil"]["titles"] == 0, "o Brasil não ganhou nenhuma das duas"
+    assert "Hungary" not in recente, "a Hungria não disputa uma Copa desde 1986"
+
+
+def test_a_copa_de_1950_tem_campeao_no_recorte(timeline):
+    """A edição sem final não pode sumir quando o slider passa por ela.
+
+    Era o buraco clássico do projeto: contar campeão por `stage == "final"`
+    devolve 22 títulos para 23 edições, em silêncio. Aqui o risco volta em outra
+    forma — uma faixa que contém 1950 e não mostra o Uruguai campeão.
+    """
+    faixa = aggregate_timeline(timeline, 1950, 1950)
+    campeoes = {nome: rec["titles"] for nome, rec in faixa.items() if rec["titles"]}
+    assert campeoes == {"Uruguay": 1}
+
+
+def test_titulos_somados_ano_a_ano_batem_com_o_total(timeline, men):
+    """Somar os títulos de cada edição isolada tem que dar os 23."""
+    total = sum(
+        rec["titles"]
+        for ano in timeline["years"]
+        for rec in aggregate_timeline(timeline, ano, ano).values()
+    )
+    assert total == 23 == sum(t["titles"] for t in men.values())
+
+
+def test_partidas_recebidas_seguem_o_pais_e_nao_a_selecao(timeline):
+    """A única métrica que descreve um lugar.
+
+    O Catar recebeu as 64 partidas de 2022 sem que isso tenha relação com o
+    desempenho da seleção — e o Brasil, que não sediou nada nessa faixa, tem que
+    aparecer com zero recebidas mesmo tendo jogado.
+    """
+    faixa = aggregate_timeline(timeline, 2022, 2022)
+    assert faixa["Qatar"]["matches_received"] == 64
+    assert faixa["Brazil"]["matches_received"] == 0
+    assert faixa["Brazil"]["matches_played"] > 0
 
 
 def test_partidas_recebidas_esta_completa(metrics):

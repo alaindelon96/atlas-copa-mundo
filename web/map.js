@@ -1,0 +1,681 @@
+/* Atlas da Copa do Mundo — Etapa 4, o mapa.
+ *
+ * Este arquivo faz três coisas: agrega, classifica e pinta.
+ *
+ * AGREGA — e essa é a única exceção à regra do projeto de que o front-end não
+ * agrega nada. O filtro temporal é um slider de faixa de anos: com 23 edições
+ * são 276 faixas possíveis, e pré-computar todas seria absurdo. Então
+ * `timeline.json` traz a tabela longa em forma compacta e as somas acontecem
+ * aqui. A regra não sumiu, virou conferência: `selfCheck()` refaz a faixa
+ * completa e compara com o `metrics.json` gerado pelo Python, seleção por
+ * seleção. Se o JavaScript descolar do ETL, a página avisa em vez de mentir.
+ * A implementação de referência é `etl.metrics.aggregate_timeline` — as duas
+ * têm que casar, e um teste em Python trava o lado de lá.
+ *
+ * CLASSIFICA — quantis, não intervalos iguais. O dado é muito torto: o Brasil
+ * tem 247 gols e a metade das seleções tem menos de 10. Com intervalos iguais o
+ * mapa vira "quatro países escuros e o resto branco" e não se lê mais nada.
+ * Quantil distribui as seleções pelas classes; o preço é que a distância entre
+ * classes não é constante, e por isso a legenda mostra os cortes.
+ *
+ * PINTA — casando pela propriedade `team` do GeoJSON, nunca pelo `gu_a3`. O
+ * mapa seleção→unidade é um-para-muitos (a Bélgica são três unidades no Natural
+ * Earth, o Reino Unido são quatro seleções), e o ETL já resolveu isso ao gravar
+ * `team` em cada polígono. Casar por código deixaria dois terços da Bélgica sem
+ * cor; casar por nome faria o front-end reinterpretar decisões do ETL.
+ */
+
+(function () {
+  "use strict";
+
+  var NUM = new Intl.NumberFormat("pt-BR");
+  var RATE = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var PCT = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  /* As métricas do mapa. Cada uma declara três coisas que mudam o comportamento:
+   *
+   *   kind  'sequential' (magnitude, um matiz) ou 'diverging' (polaridade, dois
+   *         matizes com cinza no meio). Só o saldo é divergente — é a única com
+   *         lado negativo, e uma rampa sequencial esconderia o sinal.
+   *   rate  se a leitura "por partida" faz sentido. Aproveitamento já é uma
+   *         taxa; partidas jogadas por partida seria 1; título por partida não
+   *         significa nada. Nesses casos o botão desliga em vez de mentir.
+   *   h2h   se a métrica existe em confronto direto. "Títulos", "participações"
+   *         e "partidas recebidas" não existem: um título não é ganho *contra*
+   *         alguém, e uma sede não joga.
+   */
+  var METRICS = [
+    { key: "goals",            label: "Gols marcados",     kind: "sequential", rate: true,  h2h: true },
+    { key: "conceded",         label: "Gols sofridos",     kind: "sequential", rate: true,  h2h: true },
+    { key: "goal_difference",  label: "Saldo de gols",     kind: "diverging",  rate: true,  h2h: true },
+    { key: "wins",             label: "Vitórias",          kind: "sequential", rate: true,  h2h: true },
+    { key: "win_pct",          label: "Aproveitamento",    kind: "sequential", rate: false, h2h: true, pct: true },
+    { key: "matches_played",   label: "Partidas jogadas",  kind: "sequential", rate: false, h2h: true },
+    { key: "matches_received", label: "Partidas recebidas",kind: "sequential", rate: false, h2h: false },
+    { key: "titles",           label: "Títulos",           kind: "sequential", rate: false, h2h: false },
+    { key: "participations",   label: "Participações",     kind: "sequential", rate: false, h2h: false }
+  ];
+
+  var FIELDS = ["goals", "conceded", "goal_difference", "wins", "draws", "losses",
+                "matches_played", "matches_received", "titles", "participations"];
+
+  var state = { metric: "goals", mode: "total", team: null, from: 0, to: 0 };
+
+  var TIMELINE = null, GOLDEN = null, GEO = null;
+  var map = null, layer = null, byTeam = {};
+  var current = { records: null, classes: null, metric: null };
+
+  // ---------------------------------------------------------------- utilidades
+
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function metricDef(key) {
+    for (var i = 0; i < METRICS.length; i++) if (METRICS[i].key === key) return METRICS[i];
+    return METRICS[0];
+  }
+
+  function blank() {
+    return { goals: 0, conceded: 0, wins: 0, draws: 0, losses: 0,
+             matches_played: 0, matches_received: 0, titles: 0, years: {} };
+  }
+
+  function finish(rec) {
+    rec.goal_difference = rec.goals - rec.conceded;
+    rec.participations = Object.keys(rec.years).length;
+    return rec;
+  }
+
+  // ------------------------------------------------------------- agregação
+
+  /* Espelho de `etl.metrics.aggregate_timeline`. Se você mudar uma soma aqui,
+   * mude lá — e é justamente isso que a autoconferência vigia. */
+  function aggregate(from, to) {
+    var teams = TIMELINE.teams, out = {}, i, row;
+
+    function slot(index) {
+      var name = teams[index];
+      if (!out[name]) out[name] = blank();
+      return out[name];
+    }
+
+    for (i = 0; i < TIMELINE.rows.length; i++) {
+      row = TIMELINE.rows[i];
+      if (row[0] < from || row[0] > to) continue;
+      var rec = slot(row[1]);
+      rec.goals += row[3];
+      rec.conceded += row[4];
+      rec.matches_played += 1;
+      rec[row[5] === 0 ? "wins" : row[5] === 1 ? "draws" : "losses"] += 1;
+      rec.years[row[0]] = 1;
+    }
+    for (i = 0; i < TIMELINE.titles.length; i++) {
+      row = TIMELINE.titles[i];
+      if (row[0] >= from && row[0] <= to) slot(row[1]).titles += 1;
+    }
+    for (i = 0; i < TIMELINE.hosted.length; i++) {
+      row = TIMELINE.hosted[i];
+      if (row[0] >= from && row[0] <= to) slot(row[1]).matches_received += row[2];
+    }
+    for (var name in out) finish(out[name]);
+    return out;
+  }
+
+  /* Confronto direto: as mesmas somas, restritas às linhas da seleção escolhida
+   * e agrupadas pelo adversário. `titles` e `matches_received` ficam em zero de
+   * propósito — não existem em confronto, e a lista de métricas já impede
+   * escolhê-las neste modo. */
+  function headToHead(team, from, to) {
+    var teams = TIMELINE.teams, index = teams.indexOf(team), out = {};
+    if (index < 0) return out;
+    for (var i = 0; i < TIMELINE.rows.length; i++) {
+      var row = TIMELINE.rows[i];
+      if (row[0] < from || row[0] > to || row[1] !== index) continue;
+      var name = teams[row[2]];
+      if (!out[name]) out[name] = blank();
+      var rec = out[name];
+      rec.goals += row[3];
+      rec.conceded += row[4];
+      rec.matches_played += 1;
+      rec[row[5] === 0 ? "wins" : row[5] === 1 ? "draws" : "losses"] += 1;
+      rec.years[row[0]] = 1;
+    }
+    for (var key in out) finish(out[key]);
+    return out;
+  }
+
+  /* O valor que o mapa pinta. Devolve `null` para "não pinta" — que é diferente
+   * de zero: zero é um fato (jogou e não marcou), null é ausência de base. */
+  function valueOf(rec, def, mode) {
+    if (!rec) return null;
+    if (def.key === "win_pct") {
+      return rec.matches_played ? (100 * rec.wins) / rec.matches_played : null;
+    }
+    var raw = rec[def.key];
+    if (mode !== "rate" || !def.rate) return raw;
+    // O piso existe para uma seleção de 3 jogos não passar o Brasil por acidente
+    // amostral. Abaixo dele a média não é comparável, então ela não é mostrada.
+    if (rec.matches_played < TIMELINE.per_match_floor) return null;
+    return raw / rec.matches_played;
+  }
+
+  function format(value, def, mode) {
+    if (value === null || value === undefined) return "—";
+    if (def.pct) return PCT.format(value) + "%";
+    if (mode === "rate" && def.rate) return RATE.format(value);
+    return NUM.format(value);
+  }
+
+  // ------------------------------------------------------------ classificação
+
+  function quantileBreaks(values, count) {
+    var sorted = values.slice().sort(function (a, b) { return a - b; });
+    var breaks = [], i, at;
+    for (i = 1; i < count; i++) {
+      at = (sorted.length - 1) * (i / count);
+      breaks.push(sorted[Math.round(at)]);
+    }
+    // Empates são a regra num dado de contagem (dezenas de seleções com 1 gol).
+    // Cortes repetidos criariam classes vazias, que a legenda mostraria como
+    // faixas idênticas — some com elas.
+    return breaks.filter(function (value, index, all) {
+      return all.indexOf(value) === index;
+    });
+  }
+
+  function classify(records, def, mode) {
+    var values = [], name, v;
+    for (name in records) {
+      v = valueOf(records[name], def, mode);
+      if (v !== null && v !== undefined) values.push(v);
+    }
+
+    if (def.kind === "diverging") {
+      var magnitudes = values.filter(function (x) { return x !== 0; })
+                             .map(function (x) { return Math.abs(x); });
+      // Arcos simétricos: |−15| e |+15| recebem a mesma intensidade, um de cada
+      // cor. É o que faz o mapa ler polaridade em vez de só magnitude.
+      var arm = magnitudes.length ? quantileBreaks(magnitudes, 3) : [];
+      return { kind: "diverging", arm: arm,
+               colors: { neg: [css("--neg-1"), css("--neg-2"), css("--neg-3")],
+                         pos: [css("--pos-1"), css("--pos-2"), css("--pos-3")],
+                         mid: css("--mid") } };
+    }
+
+    var positive = values.filter(function (x) { return x > 0; });
+    return { kind: "sequential", breaks: quantileBreaks(positive, 5),
+             colors: [css("--ramp-2"), css("--ramp-3"), css("--ramp-4"),
+                      css("--ramp-5"), css("--ramp-6")],
+             zero: css("--ramp-1") };
+  }
+
+  function colorFor(value, classes) {
+    if (value === null || value === undefined) return null;
+    var i;
+    if (classes.kind === "diverging") {
+      if (value === 0) return classes.colors.mid;
+      var side = value < 0 ? classes.colors.neg : classes.colors.pos;
+      var magnitude = Math.abs(value);
+      for (i = 0; i < classes.arm.length; i++) if (magnitude <= classes.arm[i]) return side[i];
+      return side[Math.min(side.length - 1, classes.arm.length)];
+    }
+    if (value <= 0) return classes.zero;
+    for (i = 0; i < classes.breaks.length; i++) if (value <= classes.breaks[i]) return classes.colors[i];
+    return classes.colors[Math.min(classes.colors.length - 1, classes.breaks.length)];
+  }
+
+  // ------------------------------------------------------------------- mapa
+
+  function styleFor(feature) {
+    var team = feature.properties.team;
+    var absent = { fillColor: css("--absent"), fillOpacity: 1, color: css("--coast"),
+                   weight: 0.6, opacity: 1 };
+    if (!team) return absent;
+
+    if (state.team && team === state.team) {
+      // A seleção escolhida não joga contra si mesma. Em vez de sumir do mapa,
+      // ela vira contorno: o olho precisa achar de onde os confrontos partem.
+      return { fillColor: css("--done-soft"), fillOpacity: 1,
+               color: css("--done"), weight: 2, opacity: 1 };
+    }
+
+    var value = valueOf(current.records[team], metricDef(state.metric), state.mode);
+    var fill = colorFor(value, current.classes);
+    if (fill === null) return absent;
+    return { fillColor: fill, fillOpacity: 1, color: css("--coast"), weight: 0.6, opacity: 1 };
+  }
+
+  function tooltipFor(team) {
+    var def = metricDef(state.metric);
+    var rec = state.team && team === state.team ? null : current.records[team];
+    var value = valueOf(rec, def, state.mode);
+    var lines = "<b>" + team + "</b>";
+
+    if (state.team && team === state.team) {
+      return lines + "<em>seleção escolhida</em>";
+    }
+    if (!rec) {
+      return lines + "<em>" + (state.team ? "nunca enfrentou " + state.team
+                                          : "sem partidas na faixa") + "</em>";
+    }
+    lines += "<em>" + def.label + ": " + format(value, def, state.mode);
+    if (state.mode === "rate" && def.rate && value === null) {
+      lines += " (menos de " + TIMELINE.per_match_floor + " partidas)";
+    }
+    lines += "</em>";
+    if (def.key !== "matches_played") {
+      lines += "<em>" + NUM.format(rec.matches_played) + " partidas</em>";
+    }
+    return lines;
+  }
+
+  function repaint() {
+    var def = metricDef(state.metric);
+    current.records = state.team ? headToHead(state.team, state.from, state.to)
+                                 : aggregate(state.from, state.to);
+    current.classes = classify(current.records, def, state.mode);
+    current.metric = def;
+
+    if (layer) {
+      layer.eachLayer(function (child) {
+        child.setStyle(styleFor(child.feature));
+        var team = child.feature.properties.team;
+        if (team) child.setTooltipContent(tooltipFor(team));
+      });
+    }
+    drawScale();
+    drawPanel();
+  }
+
+  function buildMap() {
+    map = L.map("map", {
+      // Equirretangular, e não a Mercator padrão: num coroplético a Mercator
+      // infla Rússia, Canadá e Groenlândia — justamente as áreas grandes cuja
+      // cor a gente quer comparar com a dos países pequenos.
+      crs: L.CRS.EPSG4326,
+      center: [20, 0], zoom: 1, minZoom: 1, maxZoom: 6,
+      zoomControl: true, attributionControl: true,
+      maxBounds: [[-90, -200], [90, 200]], maxBoundsViscosity: 0.8
+    });
+    map.attributionControl.setPrefix("");
+    map.attributionControl.addAttribution(
+      'Fronteiras: <a href="https://www.naturalearthdata.com/">Natural Earth</a>');
+
+    layer = L.geoJSON(GEO, {
+      // A Antártida ocupa um quinto da tela e nunca disputou nada — tirá-la é
+      // devolver esse espaço ao dado.
+      filter: function (feature) { return feature.properties.gu_a3 !== "ATA"; },
+      style: styleFor,
+      onEachFeature: function (feature, child) {
+        var team = feature.properties.team;
+        if (!team) return;
+        child.bindTooltip("", { sticky: true, className: "atlas-tip", direction: "top" });
+        child.on({
+          mouseover: function () {
+            child.setStyle({ weight: 2, color: css("--ink") });
+            child.bringToFront();
+          },
+          mouseout: function () { child.setStyle(styleFor(feature)); },
+          click: function () {
+            // Clicar no país já selecionado desfaz a seleção — é o caminho de
+            // volta óbvio, sem procurar "Nenhum" no seletor.
+            select(state.team === team ? "" : team);
+          }
+        });
+      }
+    }).addTo(map);
+  }
+
+  // ---------------------------------------------------------------- legenda
+
+  function drawScale() {
+    var def = current.metric, classes = current.classes;
+    var box = document.getElementById("scale");
+    var title = document.getElementById("scale-title");
+    var note = document.getElementById("scale-note");
+    var parts = [];
+
+    title.textContent = def.label + (state.mode === "rate" && def.rate ? " por partida" : "");
+
+    function swatch(color, label) {
+      parts.push('<span class="swatch"><i style="background:' + color + '"></i>' +
+                 '<span>' + label + '</span></span>');
+    }
+
+    var edge = function (v) { return format(v, def, state.mode); };
+
+    if (classes.kind === "diverging") {
+      // Os arcos têm um degrau a mais que os cortes: `arm` guarda as fronteiras,
+      // e a classe do outro lado da última fronteira também precisa de cor.
+      var arm = classes.arm, outer = arm.length ? edge(arm[arm.length - 1]) : "0";
+      for (var i = arm.length; i >= 0; i--) {
+        swatch(classes.colors.neg[Math.min(i, classes.colors.neg.length - 1)],
+               i === arm.length ? "≤ −" + outer : "");
+      }
+      swatch(classes.colors.mid, "0");
+      for (var j = 0; j <= arm.length; j++) {
+        swatch(classes.colors.pos[Math.min(j, classes.colors.pos.length - 1)],
+               j === arm.length ? "≥ +" + outer : "");
+      }
+    } else {
+      swatch(classes.zero, "0");
+      for (var k = 0; k < classes.colors.length; k++) {
+        if (k > classes.breaks.length) break;
+        swatch(classes.colors[k], k < classes.breaks.length ? "≤" + edge(classes.breaks[k]) : "máx");
+      }
+    }
+    swatch(css("--absent"), "sem dado");
+    box.innerHTML = parts.join("");
+
+    var messages = ["Classes por quantil — os cortes acompanham a distribuição, " +
+                    "que é torta demais para intervalos iguais."];
+    if (state.mode === "rate" && def.rate) {
+      messages.push("Seleções com menos de " + TIMELINE.per_match_floor +
+                    " partidas na faixa saem do mapa: a média não seria comparável.");
+    }
+    if (state.team) {
+      messages.push(state.team + " aparece contornada, não pintada — ninguém joga contra si mesmo.");
+    }
+    if (state.swapped) {
+      messages.push("“" + state.swapped + "” não existe em confronto direto; a métrica " +
+                    "voltou para gols.");
+    }
+    note.textContent = messages.join(" ");
+  }
+
+  // ----------------------------------------------------------------- painel
+
+  function tile(value, label) {
+    return '<div class="tile"><b>' + value + '</b><span>' + label + '</span></div>';
+  }
+
+  function drawPanel() {
+    var def = current.metric, panel = document.getElementById("panel");
+    var span = TIMELINE.years[state.from] + "–" + TIMELINE.years[state.to];
+    var rows = [], name, html;
+
+    if (state.team) {
+      var totals = aggregate(state.from, state.to)[state.team];
+      if (!totals) {
+        panel.innerHTML = '<div class="sub">' + span + '</div><h2>' + state.team + '</h2>' +
+          '<p class="empty">Não disputou nenhuma partida nesta faixa de edições.</p>';
+        return;
+      }
+      html = '<div class="sub">' + span + '</div><h2>' + state.team + '</h2>' +
+        '<div class="tiles">' +
+          tile(NUM.format(totals.goals), "Gols") +
+          tile(NUM.format(totals.conceded), "Sofridos") +
+          tile((totals.goal_difference > 0 ? "+" : "") + NUM.format(totals.goal_difference), "Saldo") +
+          tile(NUM.format(totals.wins) + "–" + NUM.format(totals.draws) + "–" + NUM.format(totals.losses), "V–E–D") +
+          tile(NUM.format(totals.matches_played), "Partidas") +
+          tile(NUM.format(totals.participations), "Participações") +
+          tile(NUM.format(totals.titles), "Títulos") +
+          tile(PCT.format(totals.matches_played ? 100 * totals.wins / totals.matches_played : 0) + "%", "Aproveit.") +
+          tile(NUM.format(totals.matches_received), "Recebidas") +
+        '</div>';
+
+      for (name in current.records) rows.push([name, current.records[name]]);
+      rows.sort(function (a, b) {
+        var x = valueOf(a[1], def, state.mode), y = valueOf(b[1], def, state.mode);
+        if (x === null) x = -Infinity;
+        if (y === null) y = -Infinity;
+        return y - x || a[0].localeCompare(b[0]);
+      });
+
+      html += '<div><div class="sub">Confrontos diretos · ' + rows.length + ' adversários</div>' +
+        '<div class="h2h-scroll"><table><thead><tr><th>Adversário</th><th>' +
+        def.label + '</th><th>J</th><th>V–E–D</th></tr></thead><tbody>';
+      rows.forEach(function (entry) {
+        var rec = entry[1], value = valueOf(rec, def, state.mode);
+        html += '<tr><td><span class="chip" style="background:' +
+          (colorFor(value, current.classes) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
+          '<td>' + format(value, def, state.mode) + '</td>' +
+          '<td>' + NUM.format(rec.matches_played) + '</td>' +
+          '<td>' + rec.wins + '–' + rec.draws + '–' + rec.losses + '</td></tr>';
+      });
+      html += '</tbody></table></div></div>';
+      panel.innerHTML = html;
+      return;
+    }
+
+    // Visão global: o ranking da métrica escolhida. Ele não é enfeite — é a
+    // "table view" que a regra de acessibilidade exige quando a informação está
+    // codificada em cor, e é onde os empates que o mapa achata ficam visíveis.
+    for (name in current.records) rows.push([name, current.records[name]]);
+    rows.sort(function (a, b) {
+      var x = valueOf(a[1], def, state.mode), y = valueOf(b[1], def, state.mode);
+      if (x === null) x = -Infinity;
+      if (y === null) y = -Infinity;
+      return y - x || a[0].localeCompare(b[0]);
+    });
+
+    var painted = rows.filter(function (entry) {
+      return valueOf(entry[1], def, state.mode) !== null;
+    });
+
+    html = '<div class="sub">' + span + '</div><h2>Visão global</h2>' +
+      '<div class="tiles">' +
+        tile(NUM.format(rows.length), "Seleções") +
+        tile(NUM.format(state.to - state.from + 1), "Edições") +
+        tile(NUM.format(painted.length), "No mapa") +
+      '</div>' +
+      '<div><div class="sub">Ranking · ' + def.label +
+      (state.mode === "rate" && def.rate ? " por partida" : "") + '</div>' +
+      '<div class="h2h-scroll"><table><thead><tr><th>#</th><th>Seleção</th><th>' +
+      def.label + '</th><th>J</th></tr></thead><tbody>';
+    rows.slice(0, 30).forEach(function (entry, index) {
+      var rec = entry[1], value = valueOf(rec, def, state.mode);
+      html += '<tr><td>' + (index + 1) + '</td>' +
+        '<td><span class="chip" style="background:' +
+        (colorFor(value, current.classes) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
+        '<td>' + format(value, def, state.mode) + '</td>' +
+        '<td>' + NUM.format(rec.matches_played) + '</td></tr>';
+    });
+    html += '</tbody></table></div><p class="muted" style="margin-top:.5rem">' +
+      'Clique num país do mapa para ver os confrontos diretos dele.</p></div>';
+    panel.innerHTML = html;
+  }
+
+  // ------------------------------------------------------------- conferência
+
+  /* A contrapartida de ter movido a agregação para o navegador.
+   *
+   * Refaz a faixa inteira aqui e compara com o `metrics.json` que o Python
+   * gerou. São as mesmas 83 seleções e os mesmos 10 campos; qualquer diferença
+   * significa que uma das duas implementações mudou sem a outra — e aparece na
+   * tela, em vez de virar um número errado bonito. */
+  function selfCheck() {
+    var mine = aggregate(0, TIMELINE.years.length - 1), bad = [];
+    GOLDEN.teams.forEach(function (golden) {
+      var rec = mine[golden.team];
+      if (!rec) { bad.push(golden.team + " (ausente)"); return; }
+      for (var i = 0; i < FIELDS.length; i++) {
+        var field = FIELDS[i];
+        if (rec[field] !== golden[field]) {
+          bad.push(golden.team + "/" + field + ": " + rec[field] + " ≠ " + golden[field]);
+          return;
+        }
+      }
+    });
+
+    var box = document.getElementById("alarm");
+    if (!bad.length) return true;
+    document.getElementById("alarm-text").innerHTML =
+      "A soma feita no navegador não bate com <code>metrics.json</code> em " + bad.length +
+      " seleção(ões): " + bad.slice(0, 4).join("; ") +
+      ". Os números do mapa não são confiáveis até isso ser resolvido — " +
+      "compare <code>map.js</code> com <code>etl/metrics.py</code>.";
+    box.setAttribute("data-on", "");
+    return false;
+  }
+
+  // ------------------------------------------------------------- controles
+
+  function select(team) {
+    var previous = metricDef(state.metric).label;
+    state.team = team || null;
+    document.getElementById("team").value = state.team || "";
+    if (syncMetricOptions()) {
+      state.swapped = previous;
+      syncMode();
+    } else {
+      state.swapped = null;
+    }
+    repaint();
+  }
+
+  /* No modo de país, três métricas deixam de existir. Em vez de deixá-las
+   * escolhíveis e mostrar um mapa vazio, elas ficam desabilitadas — e se uma
+   * delas estava escolhida, a troca é anunciada no lugar de acontecer calada. */
+  function syncMetricOptions() {
+    var picker = document.getElementById("team");
+    var chosen = state.team;
+    var options = document.getElementById("metric").options;
+    var swapped = false;
+
+    for (var i = 0; i < options.length; i++) {
+      var def = metricDef(options[i].value);
+      var blocked = Boolean(chosen) && !def.h2h;
+      options[i].disabled = blocked;
+      options[i].textContent = def.label + (blocked ? " — não existe em confronto" : "");
+      if (blocked && state.metric === def.key) swapped = true;
+    }
+    if (swapped) {
+      state.metric = "goals";
+      document.getElementById("metric").value = "goals";
+    }
+    picker.value = chosen || "";
+    return swapped;
+  }
+
+  function syncMode() {
+    var def = metricDef(state.metric);
+    var rate = document.getElementById("mode-rate");
+    rate.disabled = !def.rate;
+    if (!def.rate && state.mode === "rate") state.mode = "total";
+    document.getElementById("mode-total").setAttribute("aria-pressed", String(state.mode !== "rate"));
+    rate.setAttribute("aria-pressed", String(state.mode === "rate"));
+  }
+
+  function syncYears() {
+    var from = document.getElementById("year-from");
+    var to = document.getElementById("year-to");
+    var last = TIMELINE.years.length - 1;
+
+    state.from = Math.min(Number(from.value), Number(to.value));
+    state.to = Math.max(Number(from.value), Number(to.value));
+
+    document.getElementById("read-from").textContent = TIMELINE.years[state.from];
+    document.getElementById("read-to").textContent = TIMELINE.years[state.to];
+    var count = state.to - state.from + 1;
+    document.getElementById("read-count").textContent =
+      count + (count === 1 ? " edição" : " edições");
+
+    var fill = document.getElementById("range-fill");
+    fill.style.left = (100 * state.from / last) + "%";
+    fill.style.right = (100 * (last - state.to) / last) + "%";
+  }
+
+  function wire() {
+    var metric = document.getElementById("metric");
+    METRICS.forEach(function (def) {
+      var option = document.createElement("option");
+      option.value = def.key;
+      option.textContent = def.label;
+      metric.appendChild(option);
+    });
+    metric.value = state.metric;
+    metric.addEventListener("change", function () {
+      state.metric = metric.value;
+      state.swapped = null;  // escolha explícita apaga o aviso da troca automática
+      syncMode();
+      repaint();
+    });
+
+    var team = document.getElementById("team");
+    var none = document.createElement("option");
+    none.value = "";
+    none.textContent = "Nenhum — visão global";
+    team.appendChild(none);
+    // Só as seleções que de fato jogaram: `TIMELINE.teams` inclui países-sede,
+    // e no dado masculino todos jogaram, mas a conferência é barata.
+    var played = {};
+    TIMELINE.rows.forEach(function (row) { played[TIMELINE.teams[row[1]]] = 1; });
+    Object.keys(played).sort(function (a, b) { return a.localeCompare(b); })
+      .forEach(function (name) {
+        var option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        team.appendChild(option);
+      });
+    team.addEventListener("change", function () { select(team.value); });
+
+    document.getElementById("mode-total").addEventListener("click", function () {
+      state.mode = "total"; syncMode(); repaint();
+    });
+    document.getElementById("mode-rate").addEventListener("click", function () {
+      state.mode = "rate"; syncMode(); repaint();
+    });
+
+    var last = TIMELINE.years.length - 1;
+    ["year-from", "year-to"].forEach(function (id, index) {
+      var input = document.getElementById(id);
+      input.min = 0; input.max = last; input.step = 1;
+      input.value = index === 0 ? 0 : last;
+      input.addEventListener("input", function () { syncYears(); repaint(); });
+    });
+
+    document.getElementById("theme").addEventListener("click", function () {
+      var root = document.documentElement;
+      var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var currentTheme = root.getAttribute("data-theme") || (dark ? "dark" : "light");
+      root.setAttribute("data-theme", currentTheme === "dark" ? "light" : "dark");
+      // As cores vêm de variáveis CSS lidas na hora de pintar, então trocar o
+      // tema exige repintar — o Leaflet não reavalia estilo sozinho.
+      repaint();
+    });
+  }
+
+  // -------------------------------------------------------------------- boot
+
+  function fail(message) {
+    document.getElementById("alarm-text").textContent = message;
+    document.getElementById("alarm").setAttribute("data-on", "");
+  }
+
+  function load(path) {
+    return fetch(path).then(function (response) {
+      if (!response.ok) throw new Error(path + " → HTTP " + response.status);
+      return response.json();
+    });
+  }
+
+  Promise.all([
+    load("data/timeline.json"),
+    load("data/metrics.json"),
+    load("data/countries.geojson")
+  ]).then(function (loaded) {
+    TIMELINE = loaded[0];
+    GOLDEN = loaded[1];
+    GEO = loaded[2];
+
+    state.to = TIMELINE.years.length - 1;
+    wire();
+    syncYears();
+    syncMode();
+    syncMetricOptions();
+
+    current.records = aggregate(state.from, state.to);
+    current.classes = classify(current.records, metricDef(state.metric), state.mode);
+    current.metric = metricDef(state.metric);
+
+    buildMap();
+    selfCheck();
+    repaint();
+  }).catch(function (error) {
+    fail("Não consegui carregar os dados (" + error.message + "). Esta página precisa " +
+         "de um servidor HTTP — abrir o arquivo direto do disco esbarra na política " +
+         "de origem do navegador. Rode `python -m http.server` dentro de `web/`.");
+  });
+})();

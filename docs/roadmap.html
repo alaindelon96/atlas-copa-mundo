@@ -589,38 +589,39 @@
       </article>
 
       <!-- 4 -->
-      <article class="stage now">
+      <article class="stage done">
         <div class="stage-num">04</div>
         <div class="stage-body">
           <div class="stage-head">
             <h3><span class="en">Visualise</span><span class="pt">Visualiza&ccedil;&atilde;o</span></h3>
-            <span class="pill now"><span class="en">Next</span><span class="pt">Pr&oacute;ximo</span></span>
+            <span class="pill done"><span class="en">Done</span><span class="pt">Conclu&iacute;do</span></span>
           </div>
           <p>
             <span class="en">A Leaflet choropleth: pick a metric and the world shades by it. Pick a country too and the map repaints by head-to-head &mdash; Brazil + goals lights Sweden brightest, 21 goals in 7 meetings.</span>
             <span class="pt">Um coropl&eacute;tico em Leaflet: escolha uma m&eacute;trica e o mundo se pinta por ela. Escolha tamb&eacute;m um pa&iacute;s e o mapa repinta por confronto direto &mdash; Brasil + gols acende a Su&eacute;cia mais forte, 21 gols em 7 jogos.</span>
           </p>
           <ul class="ticks">
-            <li class="todo"><span class="en">Sequential single-hue scale &mdash; never a rainbow</span><span class="pt">Escala sequencial de uma cor s&oacute; &mdash; nunca arco-&iacute;ris</span></li>
-            <li class="todo"><span class="en">Toggle raw totals against per-match &mdash; the switch <em>is</em> the insight</span><span class="pt">Alternar contagem bruta e por partida &mdash; a altern&acirc;ncia <em>&eacute;</em> o insight</span></li>
-            <li class="todo"><span class="en">Filter by decade or era</span><span class="pt">Filtro por d&eacute;cada ou era</span></li>
-            <li class="todo"><span class="en">Side panel with the selected team's summary and head-to-head table</span><span class="pt">Painel lateral com o resumo da sele&ccedil;&atilde;o e a tabela de confrontos</span></li>
+            <li class="ok"><span class="en">Sequential single-hue scale &mdash; never a rainbow; diverging only for goal difference, the one metric with a negative side</span><span class="pt">Escala sequencial de uma cor s&oacute; &mdash; nunca arco-&iacute;ris; divergente s&oacute; para o saldo de gols, a &uacute;nica m&eacute;trica com lado negativo</span></li>
+            <li class="ok"><span class="en">Toggle raw totals against per-match &mdash; the switch <em>is</em> the insight</span><span class="pt">Alternar contagem bruta e por partida &mdash; a altern&acirc;ncia <em>&eacute;</em> o insight</span></li>
+            <li class="ok"><span class="en">A year-range slider across the 23 editions &mdash; chosen over decade buckets</span><span class="pt">Slider de faixa de anos sobre as 23 edi&ccedil;&otilde;es &mdash; escolhido no lugar de baldes por d&eacute;cada</span></li>
+            <li class="ok"><span class="en">Side panel with the selected team's summary and head-to-head table</span><span class="pt">Painel lateral com o resumo da sele&ccedil;&atilde;o e a tabela de confrontos</span></li>
+            <li class="ok"><span class="en">The page re-runs the full range on load and checks itself against the pipeline's numbers</span><span class="pt">A p&aacute;gina refaz a faixa completa ao carregar e se confere contra os n&uacute;meros do pipeline</span></li>
           </ul>
-          <div class="tools"><span class="tool">Leaflet.js</span><span class="tool">GeoJSON</span><span class="tool">web/map.js</span></div>
+          <div class="tools"><span class="tool">Leaflet.js</span><span class="tool">GeoJSON</span><span class="tool">web/map.js</span><span class="tool">timeline.json</span></div>
           <div class="say">
             <div class="label"><span class="en">Say it like this</span><span class="pt">Diga assim</span></div>
-            <q><span class="en">The front-end does no cleaning at all &mdash; it just reads the file the pipeline produced. So if the map shows something wrong, I know the bug is upstream, and I know which stage to open.</span><span class="pt">O front-end n&atilde;o faz limpeza nenhuma &mdash; ele s&oacute; l&ecirc; o arquivo que o pipeline produziu. Ent&atilde;o se o mapa mostra algo errado, eu sei que o bug est&aacute; antes, e sei qual etapa abrir.</span></q>
+            <q><span class="en">The year slider forced the front-end to do arithmetic, which I'd deliberately kept out of it. So I made the duplication loud instead of silent: the page recomputes the full 1930&ndash;2026 range on load and compares it to the file the pipeline wrote, team by team. If my JavaScript ever drifts from my Python, the page says so &mdash; it doesn't just show a wrong number confidently.</span><span class="pt">O slider de anos obrigou o front-end a fazer conta, que era justamente o que eu tinha mantido fora dele. Ent&atilde;o eu deixei a duplica&ccedil;&atilde;o barulhenta em vez de silenciosa: a p&aacute;gina refaz a faixa 1930&ndash;2026 inteira ao carregar e compara com o arquivo que o pipeline escreveu, sele&ccedil;&atilde;o por sele&ccedil;&atilde;o. Se o meu JavaScript descolar do meu Python, a p&aacute;gina avisa &mdash; ela n&atilde;o mostra um n&uacute;mero errado com confian&ccedil;a.</span></q>
           </div>
         </div>
       </article>
 
       <!-- 5 -->
-      <article class="stage">
+      <article class="stage now">
         <div class="stage-num">05</div>
         <div class="stage-body">
           <div class="stage-head">
             <h3><span class="en">Publish</span><span class="pt">Publica&ccedil;&atilde;o</span></h3>
-            <span class="pill ahead"><span class="en">Ahead</span><span class="pt">Pela frente</span></span>
+            <span class="pill now"><span class="en">Next</span><span class="pt">Pr&oacute;ximo</span></span>
           </div>
           <p>
             <span class="en">A static site on GitHub Pages, plus the README that turns the repository into the portfolio piece.</span>

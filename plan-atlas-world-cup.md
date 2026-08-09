@@ -2,7 +2,7 @@
 
 > Living document. Update as the project evolves. Last revised: 2026-08-08.
 >
-> **Current status:** Stages 1 to 3 complete — extract, scrape, clean, model, geocode and validate. Stage 4 (Visualise) is next: the map itself.
+> **Current status:** Stages 1 to 4 complete — extract, scrape, clean, model, geocode, validate and the map. Stage 5 (Publish) is next: shipping it to GitHub Pages.
 >
 > **Scope:** the men's World Cup — 23 editions, 1,068 matches, 1930–2026. The women's tournament is extracted and cleaned, but excluded from the model and the map (see Stage 3).
 >
@@ -25,10 +25,10 @@
 | Data validation | `pandera` | `great_expectations` | Guarantee quality before modelling (strong portfolio differentiator) | ✅ implemented (`etl/validate.py`) |
 | Modelling | `pandas`, schema documented as a Mermaid ERD | `dbdiagram.io` | Formalise the relational schema | ✅ implemented (6 tables, [`docs/schema.md`](docs/schema.md)) |
 | Geocoding | `geopy` (Nominatim) | Manual venue CSV | **See note below — manual is no longer viable** | ✅ implemented (252 venues, versioned cache) |
-| Visualisation | Leaflet.js | Mapbox GL JS | Lightweight, free, no API key | ✅ **decided: Leaflet** |
+| Visualisation | Leaflet.js | Mapbox GL JS | Lightweight, free, no API key | ✅ implemented (`web/map.js`, 9 metrics) |
 | Publication | GitHub Pages | Netlify/Vercel | Free, integrated with the repository | ⏳ not started |
 | Automation/CI | GitHub Actions | — | Run the ETL pipeline automatically (optional, but adds portfolio value) | ⏳ deferred to v2 |
-| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 36 tests, all offline |
+| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 44 tests, all offline |
 
 **Verified environment:** Python 3.11.9, git 2.55.0, Windows 11. All dependencies installed and pinned in `requirements.txt`.
 
@@ -214,19 +214,51 @@ Not a map of venue markers — a map that **shades countries** by a chosen metri
 - [x] ~~Map design~~ → **choropleth with a metric selector and a country selector**
 - [x] ~~United Kingdom~~ → **separate subunits.** England, Scotland, Wales and Northern Ireland are four distinct teams and stay four distinct regions. Merging them would invent a "UK national team" that has never existed, credited with 168 goals nobody scored.
 - [x] ~~Raw counts or per-match~~ → **both, behind a toggle.** Raw counts alone just reproduce "who qualified most often": Germany has 248 goals and Brazil 247 because both played ~120 matches. Per match, **Hungary leads at 2.72** and vanishes from the raw top 10. Switching between the two readings *is* the insight.
-- [ ] Single-hue sequential scale for the metric (never a rainbow)
-- [ ] A 10-match floor in per-match mode, so a 3-match team can't outrank Brazil
-- [ ] Filter by decade/era
-- [ ] Side panel with the selected team's summary and its head-to-head table
+- [x] Single-hue sequential scale for the metric (never a rainbow)
+- [x] A 10-match floor in per-match mode, so a 3-match team can't outrank Brazil
+- [x] ~~Filter by decade/era~~ → **a year-range slider** across the 23 editions
+- [x] Side panel with the selected team's summary and its head-to-head table
+
+**What was built:**
+
+| File | Role |
+|---|---|
+| `web/index.html` | The page: header, the four controls, map, legend, panel and licence credits |
+| `web/map.js` | Aggregates, classifies and paints — and self-checks against `metrics.json` |
+| `web/style.css` | Cartographic chrome inherited from `panorama.html` + the two data ramps |
+| `web/vendor/leaflet.*` | Leaflet 1.9.4 vendored into the repo, not loaded from a CDN |
+| `web/data/timeline.json` | The long table in compact form (37 KB) — what the slider aggregates |
+
+**Four decisions from this stage:**
+
+1. **The time filter is a range slider, and it broke the "the front-end aggregates nothing" rule.** A decade selector would be pre-computable; a free range is not — 23 editions give 276 possible ranges. So `timeline.json` carries the long table in columnar form (2,136 rows, 37 KB — smaller than `head2head.json`, because the names became indices) and the JavaScript sums.
+
+   The rule was not abandoned, it **became a check**: `etl.metrics.aggregate_timeline` is the reference implementation in Python, `map.js` mirrors it, and the page **re-runs the full range on load and compares it to `metrics.json`, team by team**. On a divergence a red warning appears at the top saying the numbers cannot be trusted. The duplicated logic exists — what does not exist is it being silent. A Python test locks the other side.
+
+2. **Two ramps, because they do two different jobs.** Single-hue sequential (blue, light→dark) for magnitude — goals, wins, matches, titles. **Diverging** (red ↔ grey ↔ blue) only for **goal difference**, the one metric with a negative side: painting polarity with a sequential ramp would put −20 and +20 at the two ends of a scale that has no sides. In dark mode both ramps invert the direction of lightness, so "almost nothing" recedes instead of jumping out.
+
+3. **Quantile classes, not equal intervals.** Brazil has 247 goals and half the teams have fewer than 10. Equal intervals turn the map into four dark countries and a white rest. Quantiles spread it out (classes land at 18/16/15/15/18); the price is that the distance between classes is not constant, which is why the legend shows the cuts.
+
+4. **Zero and "no data" are different colours.** Three teams have never scored a World Cup goal — China, Trinidad and Tobago, and Zaire in 1974 — and that is a fact, not an absence. They get the lightest ramp step; teams that did not play in the chosen range get the out-of-data grey.
+
+**What the map shows today:** 9 metrics, 85 of 264 polygons painted, a country selector with head-to-head mode, a total/per-match toggle, a 1930–2026 year range, and a panel that doubles as the *table view* the accessibility rule demands (the information is never carried by colour alone).
 
 **Tools:** Leaflet.js with a GeoJSON country layer; `pandas` to pre-compute the metrics.
+
+**How to run:**
+
+```bash
+python -m http.server 8000 --directory web
+```
+
+The page needs an HTTP server: opening `index.html` straight off disk hits the browser's origin policy and the JSON `fetch` fails. The page says so itself if that happens.
 
 **Why this design suits our data:** it lives entirely at **match level** — scoreline, teams, venue. That is precisely the dimension both sources have complete. Player, confederation or squad features would break in 2026 (see 2.1); this one does not.
 
 ### Stage 5 — Publish
 
-- [ ] Structure as a static site (`web/index.html` + assets)
-- [ ] Test locally
+- [x] Structure as a static site (`web/index.html` + assets)
+- [x] Test locally
 - [ ] Publish via GitHub Pages
 - [ ] (Optional) configure GitHub Actions to run the ETL pipeline automatically
 - [x] Write the repository README explaining the ETL process (good for the portfolio)
@@ -298,9 +330,11 @@ atlas-copa-mundo/
 ├── notebooks/            ✅
 ├── tests/                ✅
 ├── web/                  ✅
-│   ├── index.html        ⏳
-│   ├── map.js            ⏳
-│   └── data/             ✅
+│   ├── index.html        ✅ the map page
+│   ├── map.js            ✅ aggregates, classifies, paints, self-checks
+│   ├── style.css         ✅ cartographic chrome + the two data ramps
+│   ├── vendor/           ✅ Leaflet 1.9.4, vendored (no CDN)
+│   └── data/             ✅ + timeline.json
 ├── docs/
 │   └── roadmap.html      ✅ visual roadmap
 ├── .github/workflows/    ✅ (empty — GitHub Actions deferred)
@@ -318,8 +352,8 @@ atlas-copa-mundo/
 | 1 | Extract ready-made datasets + scrape the 2026 World Cup | ✅ complete |
 | 2 | Cleaning and name reconciliation | ✅ complete |
 | 3 | Modelling, validation and geocoding | ✅ complete |
-| 4 | Visualisation (working map) | 🔵 next step |
-| 5 | Visual polish + publication + README | ⬜ |
+| 4 | Visualisation (working map) | ✅ complete |
+| 5 | Visual polish + publication + README | 🔵 next step |
 
 ## 7. Decisions
 
@@ -360,3 +394,7 @@ atlas-copa-mundo/
 - **2026-08-08** — two smaller geocoding findings: (1) for the 8 English venues of 1966, Nominatim returns `United Kingdom` where the dataset says `England` — the same border the `map_units` choice resolves from the other side; (2) Natural Earth splits **Belgium** into three map units, exactly as it splits the UK into four — which forced the team→polygon map to be one-to-many.
 - **2026-08-08** — **scope narrowed to the men's World Cup.** The model went from 1,352 to 1,068 matches, 86 to 83 teams and 252 to 208 venues; the `competition` column, now single-valued, left the model tables, and the map JSONs lost the competition dimension (`head2head` became `{team: {opponent}}`). The women's data was **not deleted**: the 284 matches of 1991–2019 remain in `data/raw/` and in `matches_clean.csv`, and the venues that only ever hosted women's matches remain geocoded in the cache. The cut is the `COMPETITION` constant in `etl/model.py` — one place — and a test fails if anyone strips the women's rows further upstream.
 - **2026-08-08** — **features settled: match statistics only.** Closes the project's longest-running open question — attendance or capacity — by **narrowing scope** rather than picking a side: both are out. The map exposes goals, goals conceded, goal difference, W/D/L, win rate, matches played, matches hosted, titles, participations, and the same figures head-to-head. The reason is that either candidate would need a caveat attached to every number: attendance covers 104 of 1,068 matches, and capacity is complete but time-varying (Azteca: 115,000 in 1970, 80,824 in 2026). No code changed — those were already the metrics. What changed is the record: the `attendance` column stays in `matches.csv` as a fact from the source, feeding no metric, and capacity **never** enters the model, by decision rather than by oversight. Kaggle's `wcmatches` dataset is no longer needed.
+
+- **2026-08-08** — **Stage 4 complete: the map exists.** `web/index.html`, `web/map.js` and `web/style.css`, with Leaflet 1.9.4 vendored into the repo instead of a CDN. Nine metrics, a country selector with head-to-head mode, a total/per-match toggle, a year-range slider and a side panel. Every figure documented in this plan reproduces on screen: Germany 248 goals and Brazil 247 in raw counts, Hungary 2.72 per match, Brazil 247 goals in 119 matches at 82W–15D–22L, and Brazil × Sweden 21 goals in 7. 44 tests passing.
+- **2026-08-08** — **choosing the year slider cost the "the front-end aggregates nothing" rule — and the trade was documented, not hidden.** A decade filter would be pre-computable; a free range is not (276 possible ranges). So aggregation moved into the browser, with a counterpart: `timeline.json` (the long table in columnar form, 37 KB), a reference implementation in Python (`aggregate_timeline`), `map.js` mirroring it, and the **page re-running the full range on load to compare against `metrics.json` team by team** — with an on-screen warning if they diverge. A Python test locks the other side. It is the same idea as `pandera` in Stage 3: the check that catches a wrong row, not just a wrong total.
+- **2026-08-08** — **three colour decisions the data forced.** (1) **Goal difference** got a diverging ramp (red ↔ grey ↔ blue) while the other eight metrics use the single-hue sequential one: goal difference is the only metric with a negative side, and a sequential ramp would put −20 and +20 at the two ends of a scale with no sides. (2) Classes are by **quantile** — Brazil has 247 goals and half the teams have fewer than 10, so equal intervals would give four dark countries and a white rest. (3) **Zero and "no data" are different colours**: China, Trinidad and Tobago and Zaire in 1974 never scored a World Cup goal, and that is a fact, not an absence.

@@ -17,9 +17,9 @@ inconsistent records, relational modelling, validation, and publication.
 
 | | |
 |---|---|
-| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, and the geodata the map needs |
+| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, and an interactive choropleth map served from `web/` |
 | **Data on hand** | `data/processed/` — 1,068 men's matches, 23 tournaments, 83 teams, 208 geocoded venues, 1930–2026. Schema: [`docs/schema.md`](docs/schema.md) |
-| **Not built yet** | The map itself, and publication |
+| **Not built yet** | Publication to GitHub Pages |
 | **Known gap** | Attendance exists only for 2026 (Fjelstul carries none) — and is deliberately not a feature |
 | **Scope** | The men's World Cup. The women's data is extracted and cleaned but excluded from the model and the map — see [Scope](#scope) |
 
@@ -268,9 +268,48 @@ behaviour — **the label wins** — and made the consequence loud instead of hi
 > prints the case on every run and a test locks it, so nobody "fixes" an editorial decision
 > by accident.
 
-### Stages 4–5 — not yet built
+### Stage 4 — The map ✅
 
-The Leaflet map and publication. See [Roadmap](#roadmap).
+```bash
+python -m http.server 8000 --directory web
+```
+
+Then open http://localhost:8000. The page needs a real HTTP server: opening
+`index.html` off disk trips the browser's origin policy and the JSON fetch fails — the
+page tells you so if it happens.
+
+| File | Role |
+|---|---|
+| `web/index.html` | The page: four controls, map, legend, side panel, licence credits |
+| `web/map.js` | Aggregates, classifies, paints — and checks itself against the pipeline |
+| `web/style.css` | Chrome inherited from `docs/panorama.html` + the two colour ramps |
+| `web/vendor/` | Leaflet 1.9.4, vendored rather than pulled from a CDN |
+
+**The year slider cost a rule, so the rule became a check.** Every other number on the
+map is pre-computed in Python, on the principle that a wrong number is always an ETL
+bug. A free year range breaks that — 23 editions give 276 possible ranges, so the
+browser has to do the arithmetic. Rather than quietly duplicating the metric
+definitions in JavaScript, the duplication is made loud: `etl.metrics.aggregate_timeline`
+is the reference implementation, `web/map.js` mirrors it, and **the page re-runs the
+full 1930–2026 range on load and compares it to `metrics.json` team by team**. Diverge,
+and a red banner says the numbers cannot be trusted. A Python test locks the other side.
+
+**Three colour decisions the data forced:**
+
+- **Goal difference gets a diverging ramp** (red ↔ grey ↔ blue); the other eight metrics
+  use a single-hue sequential one. Goal difference is the only metric with a negative
+  side, and a sequential ramp would put −20 and +20 at the two ends of a scale that has
+  no sides.
+- **Classes are quantiles, not equal intervals.** Brazil has 247 goals and half the
+  teams have fewer than ten. Equal intervals give four dark countries and a white rest;
+  quantiles spread the field, at the cost of uneven class widths — which is why the
+  legend prints the cuts.
+- **Zero and "no data" are different colours.** China, Trinidad and Tobago, and Zaire in
+  1974 have never scored a World Cup goal. That is a fact worth showing, not an absence.
+
+### Stage 5 — not yet built
+
+Publication. See [Roadmap](#roadmap).
 
 ## Tests
 
@@ -278,7 +317,7 @@ The Leaflet map and publication. See [Roadmap](#roadmap).
 pytest
 ```
 
-38 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+44 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
 two sentinel nulls, and a hand-checked sample of coordinates (a valid schema cannot tell
@@ -422,8 +461,10 @@ metric. Capacity was never joined in — that is a deliberate omission, not an o
 
 | Control | Options |
 |---|---|
-| **Metric** | Goals · Wins/Losses · Matches received · Matches played · Titles · Participations |
+| **Metric** | Goals · Goals conceded · Goal difference · Wins · Win rate · Matches played · Matches received · Titles · Participations |
 | **Country** | None (global view) or one specific team |
+| **Reading** | Totals or per match (10-match floor) |
+| **Years** | Any range across the 23 editions, 1930–2026 |
 
 Selecting a country **recolours the map by head-to-head**. *Brazil + Goals* shades every
 country by how many goals Brazil scored against it — Sweden brightest at 21 in 7 matches,
@@ -459,9 +500,9 @@ the reasoning.
 | 1 · Extract ready-made datasets | ✅ Done |
 | 1b · Scrape the 2026 tournament | ✅ Done |
 | 2 · Clean and reconcile names | ✅ Done |
-| 3 · Model, validate, geocode | ⬜ Next |
-| 4 · Build the Leaflet map | ⬜ Not started |
-| 5 · Publish to GitHub Pages | ⬜ Not started |
+| 3 · Model, validate, geocode | ✅ Done |
+| 4 · Build the Leaflet map | ✅ Done |
+| 5 · Publish to GitHub Pages | ⬜ Next |
 
 A bilingual visual roadmap with the reasoning behind each stage is in
 [`docs/roadmap.html`](docs/roadmap.html).
@@ -549,3 +590,9 @@ pipeline costs the service nothing.
 [geopy](https://geopy.readthedocs.io/) ·
 [requests](https://requests.readthedocs.io/) ·
 [Leaflet](https://leafletjs.com/)
+
+Leaflet 1.9.4 is **vendored** into `web/vendor/` rather than loaded from a CDN, so a
+clone renders the map offline and the version in git is the version on screen. It keeps
+its own BSD 2-Clause licence, reproduced at
+[`web/vendor/LEAFLET-LICENSE.txt`](web/vendor/LEAFLET-LICENSE.txt) — neither this
+repository's MIT code licence nor its CC BY-SA data licence applies to it.

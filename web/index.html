@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas da Copa do Mundo — 1930–2026</title>
+<meta name="description" content="Mapa-múndi coroplético com o histórico da Copa do Mundo masculina: 1.068 partidas, 83 seleções, 23 edições.">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Atlas da Copa do Mundo</div>
+      <h1>Um século de Copa, país por país</h1>
+      <p class="standfirst">
+        1.068 partidas, 83 seleções e 23 edições da Copa do Mundo masculina, de 1930 a 2026.
+        Escolha uma métrica para pintar o mundo — ou escolha uma seleção, e o mapa se repinta
+        pelos confrontos diretos dela.
+      </p>
+    </div>
+    <button id="theme" class="ghost" type="button">Alternar tema</button>
+  </header>
+
+  <div id="alarm" class="alarm" role="status">
+    <b>Conferência</b>
+    <span id="alarm-text"></span>
+  </div>
+
+  <section class="controls" aria-label="Controles do mapa">
+    <div class="field">
+      <label for="metric">Métrica</label>
+      <select id="metric"></select>
+    </div>
+
+    <div class="field">
+      <label for="team">País selecionado</label>
+      <select id="team"></select>
+    </div>
+
+    <div class="field">
+      <span class="legend" id="mode-label">Leitura</span>
+      <div class="segmented" role="group" aria-labelledby="mode-label">
+        <button type="button" id="mode-total" aria-pressed="true">Total</button>
+        <button type="button" id="mode-rate" aria-pressed="false">Por partida</button>
+      </div>
+    </div>
+
+    <div class="field" style="grid-column:span 2;">
+      <span class="legend" id="years-label">Faixa de edições</span>
+      <div class="range" role="group" aria-labelledby="years-label">
+        <div class="track"><div class="fill" id="range-fill"></div></div>
+        <input type="range" id="year-from" aria-label="Primeira edição">
+        <input type="range" id="year-to" aria-label="Última edição">
+      </div>
+      <div class="range-read">
+        <span>de <b id="read-from">1930</b></span>
+        <span id="read-count"></span>
+        <span>até <b id="read-to">2026</b></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="map-card">
+      <div id="map" role="application" aria-label="Mapa-múndi coroplético"></div>
+      <div class="map-foot">
+        <div class="scale">
+          <div class="scale-title" id="scale-title">Escala</div>
+          <div class="swatches" id="scale"></div>
+        </div>
+        <p class="scale-note" id="scale-note"></p>
+      </div>
+    </div>
+
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </section>
+
+  <footer>
+    <div>
+      Gerado a partir de <code>data/processed/team_matches.csv</code> pelo
+      <code>etl/metrics.py</code> · escopo: Copa do Mundo masculina ·
+      <a href="https://github.com/alaindelon96/atlas-copa-mundo">github.com/alaindelon96/atlas-copa-mundo</a>
+    </div>
+    <div>
+      Dados: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) para 1930–2022; Wikipédia em
+      inglês (CC&nbsp;BY-SA&nbsp;4.0) para 2026; fronteiras: Natural Earth (domínio público).
+      Rampas de cor: paleta do skill <code>dataviz</code>, validada contra as superfícies desta página.
+    </div>
+  </footer>
+
+</div>
+
+<script src="vendor/leaflet.js"></script>
+<script src="map.js"></script>
+</body>
+</html>

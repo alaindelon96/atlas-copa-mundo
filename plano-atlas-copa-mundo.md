@@ -2,7 +2,7 @@
 
 > Documento vivo. Atualize conforme o projeto evoluir. Última revisão: 08/08/2026.
 >
-> **Status atual:** Etapas 1 a 3 concluídas — extração, scraping, limpeza, modelagem, geocodificação e validação. Etapa 4 (Visualização) é o próximo passo: o mapa em si.
+> **Status atual:** Etapas 1 a 4 concluídas — extração, scraping, limpeza, modelagem, geocodificação, validação e o mapa. Etapa 5 (Publicação) é o próximo passo: subir para o GitHub Pages.
 >
 > **Escopo:** Copa masculina — 23 edições, 1.068 partidas, 1930–2026. A Copa feminina é extraída e limpa, mas fica fora do modelo e do mapa (ver Etapa 3).
 >
@@ -25,10 +25,10 @@
 | Validação de dados | `pandera` | `great_expectations` | Garantir qualidade antes de modelar (bom diferencial de portfólio) | ✅ implementado (`etl/validate.py`) |
 | Modelagem | `pandas`, schema documentado em Mermaid ERD | `dbdiagram.io` | Formalizar schema relacional | ✅ implementado (6 tabelas, [`docs/schema.md`](docs/schema.md)) |
 | Geocodificação | `geopy` (Nominatim) | CSV manual de sedes | **Ver nota abaixo — não dá mais pra fazer manual** | ✅ implementado (252 sedes, cache versionado) |
-| Visualização | Leaflet.js | Mapbox GL JS | Leve, gratuito, sem chave de API | ✅ **decidido: Leaflet** |
+| Visualização | Leaflet.js | Mapbox GL JS | Leve, gratuito, sem chave de API | ✅ implementado (`web/map.js`, 9 métricas) |
 | Publicação | GitHub Pages | Netlify/Vercel | Grátis, integrado ao repositório | ⏳ não iniciado |
 | Automação/CI | GitHub Actions | — | Rodar pipeline de ETL automaticamente (opcional, mas valoriza o portfólio) | ⏳ adiado para v2 |
-| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 36 testes, todos offline |
+| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 44 testes, todos offline |
 
 **Ambiente verificado:** Python 3.11.9, git 2.55.0, Windows 11. Todas as dependências instaladas e fixadas em `requirements.txt`.
 
@@ -214,19 +214,51 @@ Não é um mapa de marcadores em sedes — é um mapa que **pinta países** segu
 - [x] ~~Desenho do mapa~~ → **coroplético com seletor de métrica e de país**
 - [x] ~~Reino Unido~~ → **sub-regiões separadas.** Inglaterra, Escócia, País de Gales e Irlanda do Norte são quatro seleções distintas e continuam quatro regiões distintas no mapa. Somar as quatro criaria uma "seleção do Reino Unido" que nunca existiu, com 168 gols que ninguém marcou.
 - [x] ~~Contagem bruta ou por jogo~~ → **as duas, com alternância.** Contagem bruta sozinha reproduz "quem se classificou mais vezes": a Alemanha tem 248 gols e o Brasil 247 porque os dois jogaram ~120 partidas. Por jogo, a **Hungria lidera com 2,72** e some do top 10 bruto. A alternância entre as duas leituras *é* o insight.
-- [ ] Escala sequencial de uma cor só para a métrica (nunca arco-íris)
-- [ ] Piso de 10 partidas no modo "por jogo", para uma seleção de 3 jogos não ultrapassar o Brasil
-- [ ] Filtro por década/era
-- [ ] Painel lateral com o resumo da seleção escolhida e a tabela de confrontos
+- [x] Escala sequencial de uma cor só para a métrica (nunca arco-íris)
+- [x] Piso de 10 partidas no modo "por jogo", para uma seleção de 3 jogos não ultrapassar o Brasil
+- [x] ~~Filtro por década/era~~ → **slider de faixa de anos**, sobre as 23 edições
+- [x] Painel lateral com o resumo da seleção escolhida e a tabela de confrontos
+
+**O que foi construído:**
+
+| Arquivo | Papel |
+|---|---|
+| `web/index.html` | A página: cabeçalho, os quatro controles, mapa, legenda, painel e créditos de licença |
+| `web/map.js` | Agrega, classifica e pinta — e faz a autoconferência contra o `metrics.json` |
+| `web/style.css` | Cromo cartográfico herdado do `panorama.html` + as duas rampas de cor do dado |
+| `web/vendor/leaflet.*` | Leaflet 1.9.4 versionado no repositório, não via CDN |
+| `web/data/timeline.json` | A tabela longa em forma compacta (37 KB) — o que o slider agrega |
+
+**Quatro decisões desta etapa:**
+
+1. **O filtro temporal é um slider de faixa, e ele quebrou a regra "o front-end não agrega".** Década seria pré-computável; faixa livre não é — 23 edições dão 276 faixas possíveis. Então `timeline.json` leva a tabela longa em forma colunar (2.136 linhas, 37 KB — menor que o `head2head.json`, porque os nomes viraram índices) e o JavaScript soma.
+
+   A regra não foi abandonada, **virou conferência**: `etl.metrics.aggregate_timeline` é a implementação de referência em Python, o `map.js` a espelha, e a página **refaz a faixa completa ao carregar e compara com o `metrics.json`, seleção por seleção**. Divergiu, aparece um aviso vermelho no topo dizendo que os números não são confiáveis. A duplicação de lógica existe — o que não existe é ela ser silenciosa. Um teste em Python trava o outro lado.
+
+2. **Duas rampas, porque são dois trabalhos.** Sequencial de um matiz só (azul, claro→escuro) para magnitude — gols, vitórias, partidas, títulos. **Divergente** (vermelho ↔ cinza ↔ azul) só para o **saldo de gols**, que é a única métrica com lado negativo: pintar polaridade com rampa sequencial colocaria −20 e +20 nos dois extremos de uma escala que não tem lado. No modo escuro as duas invertem a direção da luz, para o "quase nada" recuar em vez de saltar.
+
+3. **Classes por quantil, não por intervalos iguais.** O Brasil tem 247 gols e metade das seleções tem menos de 10. Com intervalos iguais o mapa vira quatro países escuros e o resto branco. Quantil distribui (as classes saem em 18/16/15/15/18); o preço é a distância entre classes não ser constante, e por isso a legenda mostra os cortes.
+
+4. **Zero e "sem dado" são cores diferentes.** Três seleções nunca marcaram um gol em Copa — China, Trinidad e Tobago e o Zaire de 1974 — e isso é um fato, não uma ausência. Elas recebem o passo mais claro da rampa; quem não jogou na faixa escolhida recebe o cinza de fora do dado.
+
+**O que o mapa mostra hoje:** 9 métricas, 85 polígonos pintados de 264, seletor de país com modo de confronto direto, alternância total/por partida, faixa de anos de 1930 a 2026 e um painel que é também a *table view* exigida pela regra de acessibilidade (a informação nunca fica só na cor).
 
 **Ferramentas:** Leaflet.js com camada GeoJSON de países; `pandas` para pré-computar as métricas.
+
+**Como rodar:**
+
+```bash
+python -m http.server 8000 --directory web
+```
+
+A página precisa de um servidor HTTP: abrir o `index.html` direto do disco esbarra na política de origem do navegador e o `fetch` dos JSONs falha. A própria página diz isso se acontecer.
 
 **Por que este desenho combina com o nosso dado:** ele vive inteiramente no **nível de partida** — placar, seleções, sede. É exatamente a dimensão que as duas fontes têm completa. Features de jogador, confederação ou escalação teriam buraco em 2026 (ver seção 2.1); esta não tem.
 
 ### Etapa 5 — Publicação
 
-- [ ] Estruturar como site estático (`web/index.html` + assets)
-- [ ] Testar localmente
+- [x] Estruturar como site estático (`web/index.html` + assets)
+- [x] Testar localmente
 - [ ] Publicar via GitHub Pages
 - [ ] (Opcional) configurar GitHub Actions para rodar o pipeline de ETL automaticamente
 - [x] Escrever README do repositório explicando o processo de ETL (bom para portfólio)
@@ -304,9 +336,11 @@ atlas-copa-mundo/
 ├── notebooks/            ✅
 ├── tests/                ✅ 36 testes, todos offline
 ├── web/                  ✅
-│   ├── index.html        ⏳ Etapa 4
-│   ├── map.js            ⏳ Etapa 4
-│   └── data/             ✅ metrics.json, head2head.json, countries.geojson
+│   ├── index.html        ✅ a página do mapa
+│   ├── map.js            ✅ agrega, classifica, pinta e se autoconfere
+│   ├── style.css         ✅ cromo cartográfico + as duas rampas de cor
+│   ├── vendor/           ✅ Leaflet 1.9.4 versionado (sem CDN)
+│   └── data/             ✅ metrics.json, head2head.json, timeline.json, countries.geojson
 ├── docs/
 │   ├── schema.md         ✅ ERD do modelo (Mermaid)
 │   ├── panorama.html     ✅ panorama dos dados
@@ -326,8 +360,8 @@ atlas-copa-mundo/
 | 1 | Extração dos datasets prontos + scraping da Copa 2026 | ✅ concluída |
 | 2 | Limpeza e reconciliação de nomes | ✅ concluída |
 | 3 | Modelagem, validação e geocodificação | ✅ concluída |
-| 4 | Visualização (mapa funcional) | 🔵 próximo passo |
-| 5 | Refinamento visual + publicação + README | ⬜ |
+| 4 | Visualização (mapa funcional) | ✅ concluída |
+| 5 | Refinamento visual + publicação + README | 🔵 próximo passo |
 
 ## 7. Decisões
 
@@ -368,3 +402,6 @@ atlas-copa-mundo/
 - **08/08/2026** — dois achados menores da geocodificação: (1) nas 8 sedes inglesas de 1966 o Nominatim devolve `United Kingdom` onde o dataset diz `England` — a mesma fronteira que a escolha por `map_units` resolve do outro lado; (2) o Natural Earth divide a **Bélgica** em três unidades de mapa, exatamente como divide o Reino Unido em quatro — o que obrigou o mapa seleção→polígono a ser um-para-muitos.
 - **08/08/2026** — **escopo reduzido à Copa masculina.** O modelo passou de 1.352 para 1.068 partidas, 86 para 83 seleções e 252 para 208 sedes; a coluna `competition`, que agora teria um valor só, saiu das tabelas do modelo, e os JSONs do mapa perderam a dimensão de competição (`head2head` virou `{seleção: {adversário}}`). O dado feminino **não foi apagado**: as 284 partidas de 1991–2019 seguem em `data/raw/` e em `matches_clean.csv`, e as sedes que só receberam Copa feminina seguem geocodificadas em cache. O corte é a constante `COMPETITION` em `etl/model.py` — um lugar só —, e um teste falha se alguém apagar o feminino mais atrás no pipeline.
 - **08/08/2026** — **features definidas: só estatística de jogo.** Fecha a pergunta em aberto mais antiga do projeto — público ou capacidade — por **redução de escopo**, sem escolher um lado: os dois ficam de fora. O mapa expõe gols, gols sofridos, saldo, V/E/D, aproveitamento, partidas jogadas, partidas recebidas, títulos, participações e os mesmos números em confronto direto. O motivo é que os dois candidatos exigiriam uma ressalva colada em cada número: público existe em 104 de 1.068 partidas, e capacidade é completa mas varia no tempo (Azteca: 115.000 em 1970, 80.824 em 2026). Nenhuma linha de código mudou — as métricas já eram essas. O que mudou foi o registro: a coluna `attendance` fica em `matches.csv` como fato da fonte, sem alimentar métrica, e a capacidade **nunca** entra no modelo, por decisão e não por esquecimento. O dataset `wcmatches` do Kaggle deixa de ser necessário.
+- **08/08/2026** — **Etapa 4 concluída: o mapa existe.** `web/index.html`, `web/map.js` e `web/style.css`, com Leaflet 1.9.4 versionado no repositório em vez de CDN. Nove métricas, seletor de país com modo de confronto direto, alternância total/por partida, slider de faixa de anos e painel lateral. Todos os números documentados no plano se reproduzem na tela: Alemanha 248 gols e Brasil 247 no total, Hungria 2,72 por partida, Brasil 247 gols em 119 partidas com 82–15–22, e Brasil × Suécia 21 gols em 7 jogos. 44 testes passando.
+- **08/08/2026** — **a escolha do slider de anos custou a regra "o front-end não agrega nada" — e a troca foi documentada, não escondida.** Filtro por década seria pré-computável; faixa livre não é (276 faixas possíveis). Então a agregação foi para o navegador, com uma contrapartida: `timeline.json` (a tabela longa em forma colunar, 37 KB), uma implementação de referência em Python (`aggregate_timeline`), o `map.js` espelhando-a, e a **página refazendo a faixa completa ao carregar para comparar com o `metrics.json` seleção por seleção** — com aviso na tela se divergir. Um teste em Python trava o lado de lá. É a mesma ideia do `pandera` na Etapa 3: a conferência que pega erro de linha, não só de total.
+- **08/08/2026** — **três decisões de cor que o dado impôs.** (1) O **saldo de gols** ganhou rampa divergente (vermelho ↔ cinza ↔ azul) enquanto as outras oito métricas usam a sequencial de um matiz: saldo é a única com lado negativo, e uma rampa sequencial colocaria −20 e +20 nos dois extremos de uma escala sem lado. (2) As classes são por **quantil** — o Brasil tem 247 gols e metade das seleções tem menos de 10, então intervalo igual daria quatro países escuros e o resto branco. (3) **Zero e "sem dado" são cores diferentes**: China, Trinidad e Tobago e o Zaire de 1974 nunca marcaram um gol em Copa, e isso é um fato, não uma ausência.
