@@ -448,6 +448,11 @@ coordinates (a valid schema cannot tell Wembley in London from Wembley in the At
 someone edits the succession map without realising the consequence, a test fails with the
 reason attached.
 
+One of the 82 reads `data/raw/`, which is not in the repository — the champions come from
+the source's own standings table rather than from `stage == "final"`, so that check has
+nowhere else to look. It skips in a clone that has not run `python -m etl.extract`, and the
+deploy workflow runs the extraction so that it never skips there.
+
 The suite also **gates the deploy** — see [stage 5](#stage-5--publish-).
 
 ---

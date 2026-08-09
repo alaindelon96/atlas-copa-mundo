@@ -125,8 +125,18 @@ def test_1950_nao_teve_final(matches):
 
 
 def test_titulos_fecham_com_o_numero_de_edicoes(succession):
-    """Cada edição masculina tem exatamente um campeão."""
+    """Cada edição masculina tem exatamente um campeão.
+
+    Único teste da suíte que depende de `data/raw/`, que não é versionado: os
+    campeões vêm da tabela de classificação da fonte, não de `stage == "final"`
+    (ver `test_1950_nao_teve_final`). Num clone sem extração ele pula; no CI
+    não pula, porque o workflow roda `python -m etl.extract` antes.
+    """
+    from etl.paths import RAW_FJELSTUL
     from etl.transform import titles_table
+
+    if not (RAW_FJELSTUL / "tournament_standings.csv").exists():
+        pytest.skip("Rode `python -m etl.extract` primeiro.")
 
     titles = titles_table(succession)
     assert int(titles.titles.sum()) == 23

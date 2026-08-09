@@ -44,8 +44,23 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      # Offline: a suíte lê data/processed/ e web/data/, ambos versionados.
-      - run: pytest -q
+      # data/raw/ não é versionado — é reproduzível, e é isso que o
+      # metadata.json prova. Um teste depende dele (os campeões vêm da tabela
+      # de classificação da fonte, não do filtro por final), então o CI baixa
+      # os 1,9 MB em vez de deixar esse teste pular em silêncio. De quebra,
+      # todo push confere que a fonte ainda reproduz os mesmos SHA-256.
+      - run: python -m etl.extract
+
+      # O resto da suíte é offline: lê data/processed/ e web/data/, versionados.
+      # A saída vai também para o resumo do run, para uma suíte vermelha ser
+      # legível na página sem abrir o log.
+      - name: pytest
+        run: |
+          rc=0
+          pytest -q -ra > out.txt 2>&1 || rc=$?
+          cat out.txt
+          { echo '```'; cat out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
 
   deploy:
     needs: test
