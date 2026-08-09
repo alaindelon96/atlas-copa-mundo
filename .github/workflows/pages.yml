@@ -71,13 +71,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # `enablement` cria o site do Pages pela API se ele ainda não existir.
-      # Sem isso, o primeiro deploy de um repositório novo falha num passo que
-      # só se resolve clicando em Settings → Pages — um estado que não está no
-      # repositório e que ninguém que clonar isso teria como adivinhar.
+      # PRÉ-REQUISITO, UMA VEZ POR REPOSITÓRIO: Settings → Pages → Source:
+      # "GitHub Actions". Sem isso este passo falha com "Get Pages site failed".
+      #
+      # Tentei tirar o clique do caminho com `enablement: true`, que manda a
+      # ação criar o site pela API. Não funciona: o GITHUB_TOKEN padrão responde
+      # "Resource not accessible by integration" mesmo com `pages: write`, que é
+      # permissão para PUBLICAR num site que existe, não para criar um. Habilitar
+      # o Pages é configuração de repositório, e configuração de repositório não
+      # mora no repositório — é o único estado deste projeto que um clone não
+      # carrega junto, e por isso está escrito aqui.
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
