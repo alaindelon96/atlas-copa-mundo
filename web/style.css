@@ -326,6 +326,57 @@ tbody tr:hover { background:var(--surface-2); }
 }
 .panel h2 .flag { width:1.2em; height:1.2em; vertical-align:-.16em; }
 
+/* ---- detalhamento: a lista de partidas ---- */
+
+.back {
+  align-self:flex-start; font-family:var(--sans); font-size:.76rem; font-weight:600;
+  color:var(--accent); background:var(--accent-soft); border:0;
+  border-radius:var(--r-pill); padding:.35rem .75rem; cursor:pointer;
+}
+.back:hover { filter:brightness(1.08); }
+
+/* Linha de confronto que abre o detalhamento. O cursor e o realce dizem que ela
+   é clicável — uma linha de tabela não parece um botão por conta própria. */
+tbody tr.drill { cursor:pointer; }
+tbody tr.drill:hover, tbody tr.drill:focus-visible { background:var(--accent-soft); outline:none; }
+tbody tr.drill:focus-visible td:first-child { box-shadow:inset 2px 0 0 var(--accent); }
+
+.matches { display:flex; flex-direction:column; gap:1px; margin-top:.4rem; }
+.match {
+  display:flex; align-items:center; gap:.55rem;
+  padding:.4rem .3rem; border-bottom:1px solid var(--rule); font-size:.8rem;
+}
+.match:last-child { border-bottom:0; }
+.res {
+  flex:none; width:1.35rem; height:1.35rem; border-radius:var(--r-pill);
+  display:grid; place-items:center; font-size:.66rem; font-weight:700;
+  font-family:var(--mono); color:#fff;
+}
+/* Vitória, empate e derrota nunca dependem só da cor: a letra está dentro do
+   círculo. É a mesma regra que vale para as métricas no mapa. */
+.res-W { background:#1E9E62; }
+.res-D { background:#8A94A0; }
+.res-L { background:#D1495B; }
+.match-main { display:flex; flex-direction:column; min-width:0; line-height:1.3; }
+.match-main b { font-variant-numeric:tabular-nums; }
+.match-sub { font-size:.68rem; color:var(--ink-3); }
+.pens { font-style:normal; font-size:.7rem; color:var(--ink-2); font-weight:400; }
+
+/* ---- comparação de duas seleções ---- */
+
+.panel h2 .vs { color:var(--ink-3); font-weight:400; margin:0 .1rem; }
+table.compare { margin-top:.2rem; }
+table.compare td {
+  text-align:center; font-variant-numeric:tabular-nums; font-weight:600;
+  width:30%; font-size:.86rem;
+}
+table.compare th[scope="row"] {
+  text-align:center; font-weight:400; font-size:.68rem; color:var(--ink-3);
+  text-transform:uppercase; letter-spacing:.05em;
+}
+table.compare td.win { color:var(--accent); }
+table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15em; }
+
 .muted { color:var(--ink-2); font-size:.8rem; }
 .empty { color:var(--ink-3); font-size:.84rem; }
 
@@ -379,6 +430,12 @@ tbody tr:hover { background:var(--surface-2); }
 /* ---- telas estreitas: os painéis viram folhas empilhadas ---- */
 
 @media (max-width:72rem) {
+  /* A altura da folha do rodapé vira variável porque três coisas dependem dela:
+     a própria folha, a barra de ferramentas e o zoom do Leaflet. Com números
+     soltos elas saem de sincronia assim que o painel muda de tamanho — foi o que
+     aconteceu quando os controles ganharam dois campos novos. */
+  :root { --sheet:44vh; }
+
   .ui {
     grid-template-columns:minmax(0,1fr);
     grid-template-rows:auto 1fr auto;
@@ -389,12 +446,12 @@ tbody tr:hover { background:var(--surface-2); }
   }
   .controls .card-body { flex-direction:row; flex-wrap:wrap; gap:.6rem .9rem; }
   .controls .field { flex:1 1 9rem; }
-  .side { align-self:end; max-height:44vh; }
+  .side { align-self:end; max-height:var(--sheet); }
   .legend-card { display:none; }
   .alarm { justify-self:stretch; }
   /* `right` precisa voltar: o recuo que evita o painel na tela larga jogaria a
      barra para fora da tela aqui, onde o painel é uma folha no rodapé. */
-  .toolbar { top:auto; right:var(--gap); bottom:calc(42vh + var(--gap) * 2); }
+  .toolbar { top:auto; right:var(--gap); bottom:calc(var(--sheet) + var(--gap) * 2); }
   /* e o zoom sobe para não ficar embaixo da folha */
-  .leaflet-bottom.leaflet-left { margin-left:0; margin-bottom:calc(42vh + var(--gap)); }
+  .leaflet-bottom.leaflet-left { margin-left:0; margin-bottom:calc(var(--sheet) + var(--gap) * 2); }
 }

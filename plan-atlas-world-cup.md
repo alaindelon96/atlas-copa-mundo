@@ -28,7 +28,7 @@
 | Visualisation | Leaflet.js | Mapbox GL JS | Lightweight, free, no API key | ✅ implemented (`web/map.js`, 9 metrics) |
 | Publication | GitHub Pages | Netlify/Vercel | Free, integrated with the repository | ⏳ not started |
 | Automation/CI | GitHub Actions | — | Run the ETL pipeline automatically (optional, but adds portfolio value) | ⏳ deferred to v2 |
-| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 65 tests, all offline |
+| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 73 tests, all offline |
 
 **Verified environment:** Python 3.11.9, git 2.55.0, Windows 11. All dependencies installed and pinned in `requirements.txt`.
 
@@ -271,6 +271,27 @@ The page needs an HTTP server: opening `index.html` straight off disk hits the b
 
 **Why this design suits our data:** it lives entirely at **match level** — scoreline, teams, venue. That is precisely the dimension both sources have complete. Player, confederation or squad features would break in 2026 (see 2.1); this one does not.
 
+### Stage 4b — Four new features
+
+Inspired by **SofaScore**, whose team page is built on a match list with a W/D/L marker per row, a form summary and a compare action — and by [copa2026.goodstart.com.br](https://copa2026.goodstart.com.br/) for the shell. All four come from data that already existed; none needed a new source.
+
+| Feature | What it solves |
+|---|---|
+| **State in the URL** | A view becomes a link. Without it, "Brazil against Sweden between 1958 and 1970" is a set of instructions to carry out by hand. |
+| **Match drill-down** | The map said *how many* and never *which*. Now the number opens: click a fixture and the matches appear, with date, edition, stage, score and venue. |
+| **Compare two teams** | Head-to-head only answers for sides that have met. A side-by-side works for those who never have. |
+| **Venue layer** | Returns the 252 venues Stage 3 geocoded and the map never used. The choropleth aggregates to the country; the layer shows **where**. |
+
+**Three decisions the data forced:**
+
+1. **Shootouts produce no draw — not in the drill-down either.** `etl.model` resolves the 39 shootouts into wins and losses, because treating normal time as final would invent draws that never happened. The JavaScript must apply the same rule, or the list shows "D" directly under a panel claiming 82 wins. A test redoes the count from `matches.json` and compares it to `metrics.json` — the map's self-check pattern, one level down.
+
+2. **The two venue lists must share an order.** The front-end takes a match's venue index and uses it to find the coordinate in the layer. The first version sorted the layer by match count and broke that **silently**, because both lists stay the same length. It is now a contract checked in the ETL and in a test.
+
+3. **The URL stores only what differs from the default.** An initial view yields a clean `#` rather than a paragraph of redundant parameters, and `replaceState` keeps each slider step from becoming a history entry.
+
+**New files:** `web/data/matches.json` (58 KB, the 1,068 matches) and `web/data/venues.json` (15 KB, the 208 venues with matches).
+
 ### Stage 5 — Publish
 
 - [x] Structure as a static site (`web/index.html` + assets)
@@ -421,3 +442,5 @@ atlas-copa-mundo/
 - **2026-08-08** — **the map became the page.** The layout stopped being a document with the map in a card: the map now fills the window and the controls, legend and side panel float over it in frosted glass, as on [copa2026.goodstart.com.br](https://copa2026.goodstart.com.br/). The detail that makes it work is `pointer-events` — the layer positioning the cards takes no pointer, only the cards do; without that the empty space between them would swallow the drag and half the screen would stop being a map. The header with the title and standfirst is gone: the map is the title. The `h1` stays for screen readers, and the CC BY-SA attribution — a licence obligation — moved out of Leaflet's 10px control into a "Fontes e licenças" block on the legend card, where all three sources are named in full. A button hides the panels and hands the whole window back to the map.
 - **2026-08-09** — **the coloured dots in the tables became flags — and the route there was more interesting than the result.** The first version used emoji, which costs no bytes: `iso_a2` came from Natural Earth itself (the `ISO_A2_EH` field, which resolves the `-99`s that `ISO_A2` writes for Norway and Portugal), and the three British sides with emoji came from tag sequences. But **Windows ships no flag glyphs at all**: `🇧🇷` renders as the letters "BR" and the British ones as a plain black flag, identical for all three. A canvas check measured 16.88px against 17.42px for two loose letters and confirmed the browser was not composing — meaning half the visitors, the project's own author included, would never see a flag.
 - **2026-08-09** — **switching to SVG solved two problems at once.** The vendored set renders identically on every system and **includes Northern Ireland**, which Unicode has never defined as an emoji and which was therefore the one team condemned to have no flag. The choice of set was measured too: the first candidate weighed 723 KB, with ten coats of arms (Serbia alone at 177 KB) making up 87% of it for detail invisible at 16px; the adopted set does the same job in **146 KB**. An `onerror` falls back to the coloured dot if a file is missing, and the ETL fails if any SVG is absent from disk — because a broken icon raises no error anywhere.
+- **2026-08-09** — **four new features, all from data that already existed:** state in the URL (a view becomes a link), match drill-down (the number opens and shows the rows behind it), comparing two teams (works even for sides that never met) and a venue layer (returns the 252 venues geocoded in Stage 3 that the map never used). The design reference was SofaScore, whose team page is built on a match list with a W/D/L marker per row.
+- **2026-08-09** — **two silent bugs surfaced while building, and both became tests.** (1) The venue layer was sorted by match count while the drill-down indexes venues in CSV order — both lists stayed the same length, so nothing complained, but one stadium's count would have been plotted at another's coordinates. (2) `badge()` escaped single but not double quotes in the flag's `onerror`, ending the attribute early and leaking `'">` as text beside the team name — a bug live since the flags commit.

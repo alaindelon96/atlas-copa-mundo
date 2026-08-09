@@ -70,10 +70,17 @@
   var FIELDS = ["goals", "conceded", "goal_difference", "wins", "draws", "losses",
                 "matches_played", "matches_received", "titles", "participations"];
 
-  var state = { metric: "goals", mode: "total", team: null, from: 0, to: 0 };
+  var state = {
+    metric: "goals", mode: "total", team: null, from: 0, to: 0,
+    versus: null,     // segunda seleção, para a comparação lado a lado
+    view: null,       // null = padrão; "matches" = detalhamento de partidas
+    opponent: null,   // adversário do detalhamento, quando veio de um confronto
+    venues: false     // camada de sedes
+  };
 
   var TIMELINE = null, GOLDEN = null, GEO = null, COLORS = null;
-  var map = null, layer = null, byTeam = {};
+  var MATCHES = null, VENUES = null;
+  var map = null, layer = null, venueLayer = null, byTeam = {};
   var current = { records: null, scale: null, metric: null };
 
   // ---------------------------------------------------------------- utilidades
@@ -105,9 +112,13 @@
     // que nem sempre é avaliado como se espera dentro de um contêiner rolável.
     // O conjunto inteiro são 146 KB e uma tela usa no máximo umas 47; carregar
     // direto custa pouco e não tem esse modo de falha.
+    // As duas aspas precisam ser escapadas, não só a simples: o `dot` traz
+    // `class="chip"` dentro dele, e uma aspa dupla crua encerra o atributo
+    // `onerror` no meio — o resto do `<img>` vaza como texto na tela.
+    var fallback = dot.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "\\'");
     return '<img class="flag" src="vendor/flags/' + entry.flag + '" alt="" aria-hidden="true"' +
            ' decoding="async"' +
-           " onerror=\"this.outerHTML='" + dot.replace(/'/g, "&#39;") + "'\">";
+           " onerror=\"this.outerHTML='" + fallback + "'\">";
   }
 
   function metricDef(key) {
@@ -298,8 +309,15 @@
     if (state.team && team === state.team) {
       // A seleção escolhida não joga contra si mesma. Em vez de sumir do mapa,
       // ela vira contorno: o olho precisa achar de onde os confrontos partem.
-      return { fillColor: css("--done-soft"), fillOpacity: 1,
-               color: css("--done"), weight: 2, opacity: 1 };
+      return { fillColor: css("--accent-soft"), fillOpacity: 1,
+               color: css("--accent"), weight: 2.5, opacity: 1 };
+    }
+
+    if (state.versus && team === state.versus) {
+      // Na comparação, a segunda seleção precisa ser achável no mapa sem virar
+      // um valor da escala — daí contorno tracejado em vez de preenchimento.
+      return { fillColor: css("--accent-soft"), fillOpacity: .55,
+               color: css("--accent"), weight: 2.5, opacity: 1, dashArray: "5 3" };
     }
 
     var value = valueOf(current.records[team], metricDef(state.metric), state.mode);
@@ -348,6 +366,8 @@
     }
     drawScale();
     drawPanel();
+    drawVenues();
+    syncURL();
   }
 
   function buildMap() {
@@ -390,6 +410,132 @@
         });
       }
     }).addTo(map);
+  }
+
+  // ------------------------------------------------------------ camada de sedes
+
+  /* As 208 sedes onde as partidas de fato aconteceram.
+   *
+   * A Etapa 3 geocodificou 252 sedes no Nominatim e o mapa nunca usou nenhuma:
+   * o desenho é coroplético, que pinta países, e as coordenadas ficaram paradas.
+   * Esta camada responde o que o coroplético não responde, porque ele agrega ao
+   * país: **onde**. O México inteiro fica de uma cor só; o Azteca sozinho
+   * recebeu 24 partidas em três edições separadas por 56 anos.
+   *
+   * A contagem respeita o filtro de anos, e por isso é recontada a partir do
+   * detalhamento em vez de usar o total pré-computado do `venues.json` — que
+   * vale para a faixa inteira. Os dois arquivos listam as sedes na mesma ordem;
+   * é contrato conferido no ETL, não coincidência.
+   *
+   * O raio cresce com a raiz da contagem, não com ela: área é o que o olho
+   * compara num círculo, e área cresce com o quadrado do raio. Sem a raiz, uma
+   * sede com 24 partidas pareceria vinte e quatro vezes maior que uma com uma. */
+  function venueCounts(from, to) {
+    var firstYear = TIMELINE.years[from], lastYear = TIMELINE.years[to];
+    var counts = {};
+    MATCHES.rows.forEach(function (row) {
+      if (row[0] < firstYear || row[0] > lastYear || row[6] < 0) return;
+      counts[row[6]] = (counts[row[6]] || 0) + 1;
+    });
+    return counts;
+  }
+
+  function drawVenues() {
+    if (venueLayer) { map.removeLayer(venueLayer); venueLayer = null; }
+    if (!state.venues) return;
+
+    var counts = venueCounts(state.from, state.to);
+    var accent = css("--accent");
+    venueLayer = L.layerGroup();
+
+    VENUES.rows.forEach(function (row, index) {
+      var hosted = counts[index];
+      if (!hosted) return;   // sede fora da faixa de anos escolhida
+      var marker = L.circleMarker([row[0], row[1]], {
+        radius: 3 + Math.sqrt(hosted) * 1.9,
+        color: accent, weight: 1.5, opacity: .9,
+        fillColor: accent, fillOpacity: .35
+      });
+      marker.bindTooltip(
+        "<b>" + row[5] + "</b><em>" + row[6] + " · " + row[7] + "</em><em>" +
+        NUM.format(hosted) + (hosted === 1 ? " partida" : " partidas") +
+        (row[3] === row[4] ? " em " + row[3] : " · " + row[3] + "–" + row[4]) + "</em>",
+        { className: "atlas-tip", direction: "top" });
+      venueLayer.addLayer(marker);
+    });
+    venueLayer.addTo(map);
+  }
+
+  // ------------------------------------------------------------ estado na URL
+
+  /* Toda a visão cabe na URL — e é isso que torna o mapa compartilhável.
+   *
+   * Sem isso, "olha o Brasil contra a Suécia entre 1958 e 1970" é um conjunto de
+   * instruções para a pessoa executar à mão. Com isso, é um link. Também é o que
+   * faz o botão voltar do navegador significar alguma coisa numa página que não
+   * troca de página nunca.
+   *
+   * Só o que difere do padrão entra na URL: uma visão inicial devolve `#` limpo,
+   * em vez de um parágrafo de parâmetros redundantes. */
+  function serialize() {
+    var parts = [];
+    if (state.metric !== "goals") parts.push("m=" + state.metric);
+    if (state.team) parts.push("t=" + encodeURIComponent(state.team));
+    if (state.versus) parts.push("v=" + encodeURIComponent(state.versus));
+    if (state.mode === "rate") parts.push("r=1");
+    if (state.from !== 0 || state.to !== TIMELINE.years.length - 1) {
+      parts.push("y=" + TIMELINE.years[state.from] + "-" + TIMELINE.years[state.to]);
+    }
+    if (state.venues) parts.push("sedes=1");
+    if (state.view === "matches") {
+      parts.push("jogos=" + (state.opponent ? encodeURIComponent(state.opponent) : "1"));
+    }
+    return parts.join("&");
+  }
+
+  var writingHash = false;
+
+  function syncURL() {
+    var hash = serialize();
+    var target = hash ? "#" + hash : window.location.pathname + window.location.search;
+    writingHash = true;
+    // `replaceState` e não `pushState`: cada passo do slider viraria uma entrada
+    // no histórico, e voltar exigiria dezenas de cliques para desfazer um gesto.
+    window.history.replaceState(null, "", target);
+    writingHash = false;
+  }
+
+  function applyURL() {
+    var raw = window.location.hash.replace(/^#/, "");
+    if (!raw) return false;
+    var params = {};
+    raw.split("&").forEach(function (pair) {
+      var bits = pair.split("=");
+      if (bits[0]) params[bits[0]] = decodeURIComponent(bits.slice(1).join("=") || "");
+    });
+
+    var known = {};
+    TIMELINE.teams.forEach(function (name) { known[name] = true; });
+
+    if (params.m && metricDef(params.m).key === params.m) state.metric = params.m;
+    if (params.t && known[params.t]) state.team = params.t;
+    if (params.v && known[params.v] && params.v !== state.team) state.versus = params.v;
+    state.mode = params.r === "1" ? "rate" : "total";
+    state.venues = params.sedes === "1";
+
+    if (params.y) {
+      var edges = params.y.split("-").map(Number);
+      var from = TIMELINE.years.indexOf(edges[0]);
+      var to = TIMELINE.years.indexOf(edges[1]);
+      // Anos que não são edições (2020, digamos) são ignorados em vez de
+      // aproximados: aproximar mostraria um recorte que ninguém pediu.
+      if (from >= 0 && to >= 0 && from <= to) { state.from = from; state.to = to; }
+    }
+    if (params.jogos && state.team) {
+      state.view = "matches";
+      state.opponent = params.jogos !== "1" && known[params.jogos] ? params.jogos : null;
+    }
+    return true;
   }
 
   // ---------------------------------------------------------------- legenda
@@ -507,6 +653,183 @@
     return '<div class="tile"><b>' + value + '</b><span>' + label + '</span></div>';
   }
 
+  // ---------------------------------------------------- detalhamento (partidas)
+
+  /* Índice partida→seleção, construído uma vez no primeiro uso.
+   *
+   * São 1.068 partidas e 83 seleções; varrer a lista inteira a cada clique
+   * funcionaria, mas o painel repinta a cada movimento do slider e isso vira
+   * varredura em cima de varredura. O índice troca isso por uma leitura direta. */
+  var matchIndex = null;
+
+  function indexMatches() {
+    matchIndex = {};
+    MATCHES.rows.forEach(function (row, position) {
+      [MATCHES.teams[row[2]], MATCHES.teams[row[3]]].forEach(function (name) {
+        (matchIndex[name] = matchIndex[name] || []).push(position);
+      });
+    });
+  }
+
+  /* O resultado de uma partida do ponto de vista de uma seleção.
+   *
+   * Espelha `etl.model`: numa partida decidida nos pênaltis **não existe
+   * empate** — quem passou tem vitória, quem caiu tem derrota. Tratar o tempo
+   * normal como final criaria empates que não aconteceram e tiraria vitórias de
+   * quem avançou. São 39 partidas em 1.068, e são justamente as mais lembradas.
+   *
+   * Se esta regra divergir da do Python, o detalhamento contradiz o agregado que
+   * está logo acima dele na tela — por isso um teste refaz esta conta a partir
+   * do `matches.json` e a compara com o `metrics.json`. */
+  function resultOf(goalsFor, goalsAgainst, pensFor, pensAgainst) {
+    if (goalsFor > goalsAgainst) return "W";
+    if (goalsFor < goalsAgainst) return "L";
+    if (pensFor === null || pensFor === undefined) return "D";
+    return pensFor > pensAgainst ? "W" : "L";
+  }
+
+  /* As partidas de uma seleção na faixa escolhida, opcionalmente contra um
+   * adversário só. Devolve o mais recente primeiro. */
+  function matchesFor(team, opponent, from, to) {
+    if (!matchIndex) indexMatches();
+    var firstYear = TIMELINE.years[from], lastYear = TIMELINE.years[to];
+    var out = [];
+
+    (matchIndex[team] || []).forEach(function (position) {
+      var row = MATCHES.rows[position];
+      if (row[0] < firstYear || row[0] > lastYear) return;
+
+      var home = MATCHES.teams[row[2]], away = MATCHES.teams[row[3]];
+      var atHome = home === team;
+      var other = atHome ? away : home;
+      if (opponent && other !== opponent) return;
+
+      var pens = row[8];
+      out.push({
+        year: row[0],
+        stage: MATCHES.stages[row[1]],
+        date: row[7],
+        opponent: other,
+        home: atHome,
+        goalsFor: atHome ? row[4] : row[5],
+        goalsAgainst: atHome ? row[5] : row[4],
+        pensFor: pens ? (atHome ? pens[0] : pens[1]) : null,
+        pensAgainst: pens ? (atHome ? pens[1] : pens[0]) : null,
+        venue: row[6] >= 0 ? MATCHES.venues[row[6]] : null
+      });
+    });
+
+    out.forEach(function (match) {
+      match.result = resultOf(match.goalsFor, match.goalsAgainst,
+                              match.pensFor, match.pensAgainst);
+    });
+    return out.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+
+  var STAGE_SHORT = {
+    "group stage": "Grupos", "second group stage": "2ª fase de grupos",
+    "round of 32": "32-avos", "round of 16": "Oitavas", "quarter-finals": "Quartas",
+    "semi-finals": "Semi", "third-place match": "3º lugar",
+    "final": "Final", "final round": "Quadrangular"
+  };
+
+  function matchRows(list) {
+    if (!list.length) return '<p class="empty">Nenhuma partida nesta faixa.</p>';
+    var html = '<div class="matches">';
+    list.forEach(function (match) {
+      var score = match.goalsFor + "–" + match.goalsAgainst;
+      var pens = match.pensFor === null ? "" :
+                 ' <em class="pens">(' + match.pensFor + "–" + match.pensAgainst + " p)</em>";
+      html += '<div class="match">' +
+        '<span class="res res-' + match.result + '">' + match.result + "</span>" +
+        '<span class="match-main">' +
+          '<b>' + score + pens + "</b> " + (match.home ? "vs " : "em ") + match.opponent +
+          '<span class="match-sub">' + match.year + " · " + (STAGE_SHORT[match.stage] || match.stage) +
+          (match.venue ? " · " + match.venue.city : "") + "</span>" +
+        "</span></div>";
+    });
+    return html + "</div>";
+  }
+
+  /* Resumo V–E–D de uma lista de partidas, para o cabeçalho do detalhamento. */
+  function tally(list) {
+    var wins = 0, draws = 0, losses = 0, forGoals = 0, against = 0;
+    list.forEach(function (match) {
+      if (match.result === "W") wins++;
+      else if (match.result === "D") draws++;
+      else losses++;
+      forGoals += match.goalsFor;
+      against += match.goalsAgainst;
+    });
+    return { wins: wins, draws: draws, losses: losses, goals: forGoals, conceded: against };
+  }
+
+  /* Duas seleções lado a lado.
+   *
+   * O confronto direto já existia no mapa; o que faltava era comparar quem nunca
+   * se enfrentou — Brasil e Holanda têm história, Brasil e Japão quase não têm, e
+   * as duas perguntas são legítimas. Por isso a tabela tem duas partes: as
+   * carreiras separadas (que sempre existem) e o histórico entre elas (que pode
+   * estar vazio, e o painel diz isso em vez de mostrar zeros).
+   *
+   * O vencedor de cada linha recebe destaque. "Vencedor" não é sempre o maior:
+   * em gols sofridos, menos é melhor — daí a tabela declarar a direção de cada
+   * linha em vez de assumir. */
+  function comparePanel(span) {
+    var totals = aggregate(state.from, state.to);
+    var left = totals[state.team], right = totals[state.versus];
+
+    if (!left || !right) {
+      var quem = !left ? state.team : state.versus;
+      return '<div class="sub">' + span + "</div><h2>" + state.team + " × " + state.versus +
+             '</h2><p class="empty">' + quem +
+             " não disputou nenhuma partida nesta faixa de edições.</p>";
+    }
+
+    var lines = [
+      ["Partidas", "matches_played", 1], ["Vitórias", "wins", 1],
+      ["Empates", "draws", 0], ["Derrotas", "losses", -1],
+      ["Gols", "goals", 1], ["Gols sofridos", "conceded", -1],
+      ["Saldo", "goal_difference", 1], ["Títulos", "titles", 1],
+      ["Participações", "participations", 1], ["Partidas recebidas", "matches_received", 1]
+    ];
+
+    var html = '<div class="sub">' + span + "</div>" +
+      "<h2>" + badge(state.team, null) + state.team + " <span class='vs'>×</span> " +
+      badge(state.versus, null) + state.versus + "</h2>" +
+      '<table class="compare"><tbody>';
+
+    lines.forEach(function (line) {
+      var a = left[line[1]], b = right[line[1]], direction = line[2];
+      var better = direction === 0 || a === b ? 0 : (a > b ? 1 : -1) * direction;
+      html += "<tr>" +
+        '<td class="' + (better > 0 ? "win" : "") + '">' + NUM.format(a) + "</td>" +
+        '<th scope="row">' + line[0] + "</th>" +
+        '<td class="' + (better < 0 ? "win" : "") + '">' + NUM.format(b) + "</td></tr>";
+    });
+
+    var aprovA = left.matches_played ? 100 * left.wins / left.matches_played : 0;
+    var aprovB = right.matches_played ? 100 * right.wins / right.matches_played : 0;
+    html += "<tr>" +
+      '<td class="' + (aprovA > aprovB ? "win" : "") + '">' + PCT.format(aprovA) + "%</td>" +
+      '<th scope="row">Aproveitamento</th>' +
+      '<td class="' + (aprovB > aprovA ? "win" : "") + '">' + PCT.format(aprovB) + "%</td></tr>" +
+      "</tbody></table>";
+
+    var duels = matchesFor(state.team, state.versus, state.from, state.to);
+    html += '<div><div class="sub">Entre as duas · ' + duels.length +
+            (duels.length === 1 ? " partida" : " partidas") + "</div>";
+    if (duels.length) {
+      var sums = tally(duels);
+      html += '<p class="muted">' + state.team + " " + sums.wins + "–" + sums.draws + "–" +
+              sums.losses + " " + state.versus + " · " + sums.goals + "–" + sums.conceded +
+              " em gols.</p>" + matchRows(duels);
+    } else {
+      html += '<p class="empty">Nunca se enfrentaram em Copas do Mundo.</p>';
+    }
+    return html + "</div>";
+  }
+
   function drawPanel() {
     var def = current.metric, panel = document.getElementById("panel");
     var span = TIMELINE.years[state.from] + "–" + TIMELINE.years[state.to];
@@ -515,7 +838,31 @@
     // A barra do cartão diz o que ele contém mesmo recolhido — é a única pista
     // que sobra quando o painel está fechado.
     document.getElementById("side-title").textContent =
-      state.team ? "📋 " + state.team : "📋 Ranking";
+      state.versus ? "⚔️ " + state.team + " × " + state.versus
+      : state.team ? "📋 " + state.team : "📋 Ranking";
+
+    // --- detalhamento: as partidas que formam o número -----------------
+    if (state.view === "matches" && state.team) {
+      var list = matchesFor(state.team, state.opponent, state.from, state.to);
+      var sums = tally(list);
+      panel.innerHTML =
+        '<div class="sub">' + span + '</div>' +
+        '<button class="back" type="button" data-back="1">← voltar</button>' +
+        '<h2>' + badge(state.team, null) + state.team +
+        (state.opponent ? " × " + state.opponent : "") + "</h2>" +
+        '<div class="tiles">' +
+          tile(NUM.format(list.length), "Partidas") +
+          tile(sums.wins + "–" + sums.draws + "–" + sums.losses, "V–E–D") +
+          tile(NUM.format(sums.goals) + "–" + NUM.format(sums.conceded), "Gols") +
+        "</div>" + matchRows(list);
+      return;
+    }
+
+    // --- comparação de duas seleções -----------------------------------
+    if (state.team && state.versus) {
+      panel.innerHTML = comparePanel(span);
+      return;
+    }
 
     if (state.team) {
       var totals = aggregate(state.from, state.to)[state.team];
@@ -552,12 +899,18 @@
         return y - x || a[0].localeCompare(b[0]);
       });
 
+      html += '<button class="back" type="button" data-matches="1">' +
+        "Ver as " + NUM.format(totals.matches_played) + " partidas →</button>";
+
       html += '<div><div class="sub">Confrontos diretos · ' + rows.length + ' adversários</div>' +
         '<div class="h2h-scroll"><table><thead><tr><th>Adversário</th><th>' +
         def.label + '</th><th>J</th><th>V–E–D</th></tr></thead><tbody>';
       rows.forEach(function (entry) {
         var rec = entry[1], value = valueOf(rec, def, state.mode);
-        html += '<tr><td>' + badge(entry[0], value) + entry[0] + '</td>' +
+        // A linha inteira abre o detalhamento daquele confronto: é o gesto que
+        // liga "21 gols em 7 jogos" às sete partidas que produziram o número.
+        html += '<tr class="drill" data-opponent="' + entry[0] + '" tabindex="0">' +
+          '<td>' + badge(entry[0], value) + entry[0] + '</td>' +
           '<td>' + format(value, def, state.mode) + '</td>' +
           '<td>' + NUM.format(rec.matches_played) + '</td>' +
           '<td>' + rec.wins + '–' + rec.draws + '–' + rec.losses + '</td></tr>';
@@ -642,6 +995,11 @@
   function select(team) {
     var previous = metricDef(state.metric).label;
     state.team = team || null;
+    // Trocar de seleção zera o que dependia da anterior: o detalhamento de um
+    // confronto que não é mais o atual, e uma comparação com ela mesma.
+    state.view = null;
+    state.opponent = null;
+    if (state.versus === state.team) state.versus = null;
     document.getElementById("team").value = state.team || "";
     if (syncMetricOptions()) {
       state.swapped = previous;
@@ -649,6 +1007,42 @@
     } else {
       state.swapped = null;
     }
+    syncVersusOptions();
+    repaint();
+  }
+
+  /* A segunda seleção da comparação. Ela não pode ser a mesma da primeira — a
+   * opção some da lista em vez de existir e não fazer nada. */
+  function syncVersusOptions() {
+    var picker = document.getElementById("versus");
+    var options = picker.options;
+    for (var i = 0; i < options.length; i++) {
+      options[i].disabled = Boolean(options[i].value) && options[i].value === state.team;
+    }
+    picker.disabled = !state.team;
+    picker.title = state.team ? "" : "Escolha um país primeiro";
+    if (!state.team) state.versus = null;
+    picker.value = state.versus || "";
+  }
+
+  function selectVersus(team) {
+    state.versus = team || null;
+    state.view = null;
+    state.opponent = null;
+    syncVersusOptions();
+    repaint();
+  }
+
+  /* Abre o detalhamento. Sem adversário, são todas as partidas da seleção. */
+  function openMatches(opponent) {
+    state.view = "matches";
+    state.opponent = opponent || null;
+    repaint();
+  }
+
+  function closeMatches() {
+    state.view = null;
+    state.opponent = null;
     repaint();
   }
 
@@ -816,6 +1210,59 @@
       });
     team.addEventListener("change", function () { select(team.value); });
 
+    // O seletor de comparação recebe a mesma lista. Ele é preenchido a partir do
+    // primeiro para as duas listas nunca divergirem.
+    var versus = document.getElementById("versus");
+    var blank = document.createElement("option");
+    blank.value = "";
+    blank.textContent = "Ninguém — sem comparação";
+    versus.appendChild(blank);
+    Array.prototype.slice.call(team.options, 1).forEach(function (option) {
+      var copy = document.createElement("option");
+      copy.value = option.value;
+      copy.textContent = option.value;
+      versus.appendChild(copy);
+    });
+    versus.addEventListener("change", function () { selectVersus(versus.value); });
+
+    document.getElementById("layer-venues").addEventListener("click", function () {
+      state.venues = !state.venues;
+      this.setAttribute("aria-pressed", String(state.venues));
+      repaint();
+    });
+
+    /* Um só ouvinte no painel, em vez de um por linha: o painel é reescrito
+     * inteiro a cada repintura, e ouvintes presos às linhas morreriam junto. */
+    document.getElementById("panel").addEventListener("click", function (event) {
+      var back = event.target.closest("[data-back]");
+      if (back) { closeMatches(); return; }
+      var all = event.target.closest("[data-matches]");
+      if (all) { openMatches(null); return; }
+      var row = event.target.closest("[data-opponent]");
+      if (row) openMatches(row.getAttribute("data-opponent"));
+    });
+    document.getElementById("panel").addEventListener("keydown", function (event) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      var row = event.target.closest("[data-opponent]");
+      if (row) { event.preventDefault(); openMatches(row.getAttribute("data-opponent")); }
+    });
+
+    // Voltar/avançar do navegador, e links colados na barra de endereço.
+    window.addEventListener("hashchange", function () {
+      if (writingHash) return;
+      if (applyURL()) {
+        document.getElementById("metric").value = state.metric;
+        document.getElementById("year-from").value = state.from;
+        document.getElementById("year-to").value = state.to;
+        document.getElementById("layer-venues").setAttribute("aria-pressed", String(state.venues));
+        syncYears();
+        syncMode();
+        syncMetricOptions();
+        syncVersusOptions();
+        repaint();
+      }
+    });
+
     document.getElementById("mode-total").addEventListener("click", function () {
       state.mode = "total"; syncMode(); repaint();
     });
@@ -862,18 +1309,32 @@
     load("data/timeline.json"),
     load("data/metrics.json"),
     load("data/countries.geojson"),
-    load("data/colors.json")
+    load("data/colors.json"),
+    load("data/matches.json"),
+    load("data/venues.json")
   ]).then(function (loaded) {
     TIMELINE = loaded[0];
     GOLDEN = loaded[1];
     GEO = loaded[2];
     COLORS = loaded[3];
+    MATCHES = loaded[4];
+    VENUES = loaded[5];
 
     state.to = TIMELINE.years.length - 1;
+    // A URL manda: um link compartilhado precisa abrir na visão que ele
+    // descreve, não na visão padrão para só então pular para ela.
+    applyURL();
+
     wire();
+    document.getElementById("metric").value = state.metric;
+    document.getElementById("team").value = state.team || "";
+    document.getElementById("year-from").value = state.from;
+    document.getElementById("year-to").value = state.to;
+    document.getElementById("layer-venues").setAttribute("aria-pressed", String(state.venues));
     syncYears();
     syncMode();
     syncMetricOptions();
+    syncVersusOptions();
 
     current.records = aggregate(state.from, state.to);
     current.scale = scaleFor(current.records, metricDef(state.metric), state.mode);

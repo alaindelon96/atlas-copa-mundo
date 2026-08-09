@@ -28,7 +28,7 @@
 | Visualização | Leaflet.js | Mapbox GL JS | Leve, gratuito, sem chave de API | ✅ implementado (`web/map.js`, 9 métricas) |
 | Publicação | GitHub Pages | Netlify/Vercel | Grátis, integrado ao repositório | ⏳ não iniciado |
 | Automação/CI | GitHub Actions | — | Rodar pipeline de ETL automaticamente (opcional, mas valoriza o portfólio) | ⏳ adiado para v2 |
-| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 65 testes, todos offline |
+| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 73 testes, todos offline |
 
 **Ambiente verificado:** Python 3.11.9, git 2.55.0, Windows 11. Todas as dependências instaladas e fixadas em `requirements.txt`.
 
@@ -271,6 +271,27 @@ A página precisa de um servidor HTTP: abrir o `index.html` direto do disco esba
 
 **Por que este desenho combina com o nosso dado:** ele vive inteiramente no **nível de partida** — placar, seleções, sede. É exatamente a dimensão que as duas fontes têm completa. Features de jogador, confederação ou escalação teriam buraco em 2026 (ver seção 2.1); esta não tem.
 
+### Etapa 4b — Quatro funcionalidades novas
+
+Inspiradas no **SofaScore**, cuja página de seleção é construída em cima de uma lista de partidas com marcador V/E/D por linha, um resumo de forma e um botão de comparação — e no [copa2026.goodstart.com.br](https://copa2026.goodstart.com.br/) para a casca. As quatro nascem do dado que já existia; nenhuma exigiu fonte nova.
+
+| Funcionalidade | O que resolve |
+|---|---|
+| **Estado na URL** | A visão vira link. Sem isso, "Brasil contra a Suécia entre 1958 e 1970" é um roteiro para a pessoa executar à mão. |
+| **Detalhamento de partidas** | O mapa dizia *quanto* e nunca *quais*. Agora o número abre: clique num confronto e vêm as partidas, com data, edição, fase, placar e sede. |
+| **Comparação de duas seleções** | Confronto direto só responde sobre quem se enfrentou. A comparação lado a lado funciona também para quem nunca se cruzou. |
+| **Camada de sedes** | Devolve as 252 sedes que a Etapa 3 geocodificou e o mapa nunca usou. O coroplético agrega ao país; a camada mostra **onde**. |
+
+**Três decisões que o dado impôs:**
+
+1. **Pênaltis não geram empate — nem no detalhamento.** `etl.model` resolve as 39 disputas em vitória e derrota, porque tratar o tempo normal como final criaria empates que não aconteceram. O JavaScript precisa aplicar a mesma regra, senão a lista mostra "E" logo abaixo de um painel que diz 82 vitórias. Um teste refaz a conta a partir do `matches.json` e compara com o `metrics.json` — mesmo padrão da autoconferência do mapa, um nível abaixo.
+
+2. **As duas listas de sede têm que estar na mesma ordem.** O front-end pega o índice de sede de uma partida e usa esse índice para achar a coordenada na camada. A primeira versão ordenava a camada por número de partidas e quebrava isso **em silêncio**, porque as duas listas continuam do mesmo tamanho. Virou contrato conferido no ETL e em teste.
+
+3. **A URL guarda só o que difere do padrão.** Uma visão inicial devolve `#` limpo em vez de um parágrafo de parâmetros redundantes, e o `replaceState` evita que cada passo do slider vire uma entrada no histórico.
+
+**Novos arquivos:** `web/data/matches.json` (58 KB, as 1.068 partidas) e `web/data/venues.json` (15 KB, as 208 sedes com partida).
+
 ### Etapa 5 — Publicação
 
 - [x] Estruturar como site estático (`web/index.html` + assets)
@@ -428,3 +449,5 @@ atlas-copa-mundo/
 - **08/08/2026** — **o mapa virou a página.** O layout deixou de ser um documento com o mapa dentro de um cartão: agora o mapa ocupa a janela inteira e os controles, a legenda e o painel flutuam por cima em vidro fosco, como no [copa2026.goodstart.com.br](https://copa2026.goodstart.com.br/). O detalhe que faz isso funcionar é `pointer-events` — a camada que posiciona os cartões não recebe ponteiro, só os cartões recebem; sem isso o espaço vazio entre eles engoliria o arrasto e metade da tela deixaria de ser mapa. O cabeçalho com título e resumo saiu: o mapa é o título. O `h1` continua na página para leitor de tela, e a atribuição CC BY-SA — que é obrigação de licença — saiu do controle de 10px do Leaflet para um bloco "Fontes e licenças" no cartão da legenda, onde as três fontes aparecem por extenso. Um botão devolve a janela inteira ao mapa, escondendo os painéis.
 - **09/08/2026** — **os pontos coloridos das tabelas viraram bandeiras — e o caminho até elas foi mais interessante que o resultado.** A primeira versão usou emoji, que não custa byte nenhum: `iso_a2` saiu do próprio Natural Earth (o mesmo `ISO_A2_EH` que resolve os `-99` de Noruega e Portugal), e as três seleções britânicas com emoji vieram de sequências de tag. Só que **o Windows não tem nenhuma bandeira nas fontes do sistema**: `🇧🇷` vira as letras "BR" e as britânicas viram uma bandeira preta lisa, igual para as três. Uma conferência em canvas media 16,88 px contra 17,42 px de duas letras soltas e confirmava que o navegador não compunha — ou seja, metade dos visitantes (e o dono do projeto) nunca veria bandeira nenhuma.
 - **09/08/2026** — **a troca por SVG resolveu dois problemas de uma vez.** O conjunto vendorizado desenha igual em qualquer sistema e **tem a Irlanda do Norte**, que o Unicode nunca criou como emoji e que por isso era a única seleção condenada a ficar sem bandeira. A escolha do conjunto também foi medida: o primeiro candidato pesava 723 KB, com dez brasões (Sérvia sozinha, 177 KB) somando 87% do total para um detalhe invisível a 16 px; o conjunto adotado faz o mesmo trabalho em **146 KB**. Um `onerror` volta ao ponto colorido se algum arquivo faltar, e o ETL falha se algum SVG não existir no disco — porque ícone quebrado não gera erro em lugar nenhum.
+- **09/08/2026** — **quatro funcionalidades novas, todas do dado que já existia:** estado na URL (a visão vira link), detalhamento de partidas (o número abre e mostra as linhas que o formam), comparação de duas seleções (funciona inclusive para quem nunca se enfrentou) e camada de sedes (devolve as 252 sedes geocodificadas na Etapa 3 que o mapa nunca usou). A referência de desenho foi o SofaScore, cuja página de seleção é construída em cima de uma lista de partidas com marcador V/E/D por linha.
+- **09/08/2026** — **dois erros silenciosos apareceram durante a construção, e os dois viraram teste.** (1) A camada de sedes saía ordenada por número de partidas, enquanto o detalhamento indexa sedes na ordem do CSV — as duas listas continuavam do mesmo tamanho, então nada acusava, mas a contagem de um estádio seria plotada na coordenada de outro. (2) O `badge()` escapava aspas simples e não duplas no `onerror` da bandeira, o que encerrava o atributo no meio e vazava `'">` como texto ao lado do nome da seleção — bug que já estava no ar desde o commit das bandeiras.

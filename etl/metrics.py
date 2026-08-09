@@ -361,6 +361,106 @@ def build_colors(teams: list[str], last_cup: dict[str, int]) -> dict:
     }
 
 
+def build_match_list(matches: pd.DataFrame, venues: pd.DataFrame) -> dict:
+    """As 1.068 partidas, uma a uma — o que o detalhamento abre.
+
+    Até aqui o front-end só via agregados: "Brasil 21 gols contra a Suécia em 7
+    jogos". Isso responde *quanto* e nunca *quais*. Este arquivo é a resposta de
+    baixo: data, edição, fase, placar, sede e disputa de pênaltis de cada
+    partida, para a página poder abrir o número e mostrar as linhas que o formam.
+
+    Colunar pelo mesmo motivo do `timeline.json`: nomes de seleção, fase e sede
+    se repetem centenas de vezes e viram índices. **Os índices são próprios**,
+    não os do `timeline.json` — os dois arquivos não se conhecem, e assim mexer
+    em um nunca corrompe silenciosamente a leitura do outro.
+
+    O placar de pênaltis só aparece nas partidas que tiveram disputa; nas outras
+    é nulo, e não `0–0`. Foi um dos sentinels que o `pandera` pegou na Etapa 3: a
+    fonte grava `0–0` em 1.205 partidas sem disputa, e um zero é um placar
+    perfeitamente válido.
+    """
+    stages = sorted(matches.stage.unique())
+    teams = sorted(set(matches.home_team) | set(matches.away_team))
+    venue_names = venues.set_index("venue_id")
+
+    stage_ix = {name: i for i, name in enumerate(stages)}
+    team_ix = {name: i for i, name in enumerate(teams)}
+    used = [vid for vid in venues.venue_id if vid in set(matches.venue_id)]
+    venue_ix = {vid: i for i, vid in enumerate(used)}
+
+    rows = []
+    for match in matches.sort_values("match_date").itertuples():
+        penalties = None
+        if match.penalty_shootout and pd.notna(match.home_team_score_penalties):
+            penalties = [int(match.home_team_score_penalties),
+                         int(match.away_team_score_penalties)]
+        rows.append([
+            int(match.year), stage_ix[match.stage],
+            team_ix[match.home_team], team_ix[match.away_team],
+            int(match.home_team_score), int(match.away_team_score),
+            venue_ix.get(match.venue_id, -1),
+            str(match.match_date),
+            penalties,
+        ])
+
+    return {
+        "generated_from": "data/processed/matches.csv",
+        "competition": COMPETITION,
+        "stages": stages,
+        "teams": teams,
+        "venues": [
+            {
+                "name": venue_names.loc[vid, "stadium_name"],
+                "city": venue_names.loc[vid, "city_name"],
+                "country": venue_names.loc[vid, "country_name"],
+            }
+            for vid in used
+        ],
+        "rows": rows,
+    }
+
+
+def build_venue_layer(venues: pd.DataFrame, matches: pd.DataFrame) -> dict:
+    """As sedes geocodificadas, prontas para virar uma camada no mapa.
+
+    A Etapa 3 resolveu 252 sedes no Nominatim e o mapa nunca usou nenhuma: o
+    desenho escolhido foi coroplético, que pinta países, e as coordenadas
+    ficaram paradas. Esta camada devolve esse trabalho — e responde uma pergunta
+    que o coroplético não responde, porque ele agrega ao país: *onde exatamente*
+    se jogou.
+
+    Só entram as sedes que de fato receberam partida no recorte do modelo. Uma
+    sede sem partida seria um ponto no mapa que não corresponde a nada.
+
+    **A ordem das linhas é a mesma do índice de sedes do `matches.json`**, e isso
+    é contrato, não coincidência: o front-end filtra as sedes pelo intervalo de
+    anos contando partidas do detalhamento, e sem alinhamento ele plotaria a
+    contagem de um estádio na coordenada de outro. Ordenar aqui por número de
+    partidas — que foi a primeira versão — quebrava exatamente isso, e em
+    silêncio, porque as duas listas continuam do mesmo tamanho. Uma conferência
+    em `main` compara os dois nomes posição a posição.
+    """
+    hosted = matches.groupby("venue_id").size()
+    rows = []
+    for venue in venues.itertuples():
+        if venue.venue_id not in hosted.index:
+            continue
+        rows.append([
+            round(float(venue.latitude), 4),
+            round(float(venue.longitude), 4),
+            int(hosted[venue.venue_id]),
+            int(venue.first_year), int(venue.last_year),
+            venue.stadium_name, venue.city_name, venue.country_name,
+        ])
+    return {
+        "generated_from": "data/processed/venues.csv",
+        "competition": COMPETITION,
+        "fields": ["lat", "lon", "matches", "first_year", "last_year",
+                   "stadium", "city", "country"],
+        "rows": rows,
+    }
+
+
 def aggregate_timeline(timeline: dict, first: int, last: int) -> dict[str, dict]:
     """Agrega o `timeline.json` numa faixa de anos — a referência do JavaScript.
 
@@ -421,9 +521,12 @@ def main() -> int:
         print(f"ERRO: {len(long)} linhas longas para {len(matches)} partidas")
         return 1
 
+    venues = pd.read_csv(PROCESSED / "venues.csv")
     metrics = build_metrics(long, matches)
     head2head = build_head_to_head(long)
     timeline = build_timeline(long, matches)
+    match_list = build_match_list(matches, venues)
+    venue_layer = build_venue_layer(venues, matches)
     try:
         colors = build_colors(
             timeline["teams"],
@@ -441,7 +544,8 @@ def main() -> int:
         "matches_received_complete": bool(matches.country_name.notna().all()),
         "teams": metrics,
     }), ("head2head.json", head2head), ("timeline.json", timeline),
-            ("colors.json", colors)):
+            ("colors.json", colors), ("matches.json", match_list),
+            ("venues.json", venue_layer)):
         path = WEB_DATA / name
         with path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
@@ -481,6 +585,22 @@ def main() -> int:
         print(f"  seleções divergentes: {', '.join(divergent[:8])}")
     checks.append(("timeline reproduz metrics", len(divergent), 0))
     checks.append(("linhas do timeline", len(timeline["rows"]), 2 * len(matches)))
+
+    # O detalhamento tem que conter TODAS as partidas: uma lista que perde linhas
+    # mostraria um confronto incompleto embaixo de um total correto — a pior
+    # combinação possível, porque o número de cima continua batendo.
+    checks.append(("partidas no detalhamento", len(match_list["rows"]), len(matches)))
+    detailed_goals = sum(row[4] + row[5] for row in match_list["rows"])
+    checks.append(("gols no detalhamento", detailed_goals, expected_goals))
+    checks.append(("sedes na camada", len(venue_layer["rows"]), matches.venue_id.nunique()))
+    hosted_in_layer = sum(row[2] for row in venue_layer["rows"])
+    checks.append(("partidas por sede", hosted_in_layer, len(matches)))
+
+    # Os dois arquivos precisam listar as sedes na MESMA ordem — o front-end usa
+    # o índice de um para achar a coordenada no outro.
+    aligned = sum(1 for layer, listed in zip(venue_layer["rows"], match_list["venues"])
+                  if layer[5] == listed["name"])
+    checks.append(("sedes alinhadas", aligned, len(venue_layer["rows"])))
     checks.append(("seleções com rampa", len(colors["teams"]), len(timeline["teams"])))
 
     # A claridade tem que ser monótona em toda rampa: é ela que carrega o dado, e
