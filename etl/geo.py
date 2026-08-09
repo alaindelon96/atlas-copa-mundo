@@ -53,6 +53,20 @@ USER_AGENT = "atlas-copa-mundo/0.1 (https://github.com/alaindelon96/atlas-copa-m
 
 TEAM_COUNTRY_CSV = REFERENCE / "team_country.csv"
 
+# As quatro seleções britânicas dividem o mesmo ISO ("GB") — o mesmo motivo pelo
+# qual este projeto usa `map_units` e não `countries`. Cada uma recebe o código
+# de subdivisão, que é como o conjunto de bandeiras vendorizado as identifica.
+#
+# Vale registrar o caminho até aqui: a primeira tentativa foi emoji, e o Unicode
+# só tem bandeira para três das quatro — `GB-NIR` não existe como emoji em versão
+# nenhuma. Foi um dos motivos de trocar emoji por SVG: em SVG as quatro existem.
+ISO_OVERRIDES = {
+    "England": "GB-ENG",
+    "Scotland": "GB-SCT",
+    "Wales": "GB-WLS",
+    "Northern Ireland": "GB-NIR",
+}
+
 # Escala 1:50m em vez de 1:110m porque a 110m simplesmente não tem os países
 # pequenos — e vários deles jogaram Copa (Curaçao, Trinidad e Tobago, Cabo
 # Verde). Um país ausente do GeoJSON some do mapa sem gerar erro nenhum.
@@ -145,6 +159,13 @@ def match_teams(teams: list[str], features: list[dict]) -> tuple[pd.DataFrame, l
                 "gu_a3": properties["GU_A3"],
                 "geounit_name": properties["GEOUNIT"],
                 "sovereign": properties["SOVEREIGNT"],
+                # `ISO_A2_EH` e não `ISO_A2`: o campo sem sufixo grava -99 para
+                # dezenas de unidades (inclusive Noruega e Portugal), enquanto o
+                # `_EH` resolve o código de fato. É daqui que sai a bandeira da
+                # seleção — o emoji é o código de duas letras em indicadores
+                # regionais, então a bandeira vem da mesma fonte que o polígono
+                # em vez de virar uma terceira tabela curada à mão.
+                "iso_a2": ISO_OVERRIDES.get(team, properties["ISO_A2_EH"]),
             })
 
     mapping = pd.DataFrame(rows).sort_values(["team_name", "gu_a3"])

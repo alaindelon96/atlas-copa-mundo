@@ -1,270 +1,400 @@
 /* Atlas da Copa do Mundo — Etapa 4
  *
- * Cromo cartográfico herdado de `docs/panorama.html` e `docs/roadmap.html`, para
- * o mapa e as páginas de bastidores parecerem o mesmo projeto.
- *
  * **As rampas de cor do dado não estão aqui.** Elas dependem da seleção
  * escolhida — o mapa de confronto direto é pintado na cor da própria seleção —,
  * então são geradas em `etl/color.py` a partir de `reference/team_colors.csv` e
- * chegam prontas em `web/data/colors.json`, nos dois modos. Uma variável CSS por
- * passo daria 83 × 2 × 9 variáveis; o JSON faz o mesmo trabalho e o cálculo
- * perceptual (OKLab) fica de um lado só.
+ * chegam prontas em `web/data/colors.json`, nos dois modos.
  *
  * O que sobra aqui é o cromo: superfícies, tinta, réguas — e `--absent`, o cinza
  * de "não jogou nesta faixa". Esse cinza é a única cor de dado no CSS porque é a
  * única que não depende de seleção nenhuma. Ele é deliberadamente acromático: as
  * rampas geradas sempre carregam um traço do matiz da seleção, inclusive no
- * passo mais fraco, exatamente para que "zero" nunca se confunda com "sem dado".
+ * passo mais fraco, para que "zero" nunca se confunda com "sem dado".
+ *
+ * **O acento da interface nunca é azul.** Azul é a rampa da visão global, e um
+ * botão azul ao lado de um mapa azul faria o olho ler o botão como parte da
+ * escala. O acento é verde-esmeralda, distinto de qualquer passo das rampas.
+ *
+ * **Layout: o mapa é a página.** Ele ocupa a janela inteira e os painéis
+ * flutuam por cima, em vidro fosco. A camada que os posiciona não recebe
+ * ponteiro (`pointer-events:none`) e só os cartões recebem — senão o espaço
+ * vazio entre eles engoliria o arrasto e metade da tela deixaria de ser mapa.
  */
 
 :root {
-  --paper:#E9EDF0; --surface:#FFFFFF; --surface-2:#F3F6F8;
-  --ink:#16202B; --ink-2:#46586B; --ink-3:#7A8CA0;
-  --rule:#CFD9E1; --rule-strong:#AFBECB;
-  --done:#0F7A6B; --done-soft:#DBEDE8;
-  --now:#BE4A22; --now-soft:#F7E1D8;
-  /* fora do dado: nunca disputou uma partida na faixa escolhida */
-  --absent:#DCE3E9;
-  --ocean:#F3F6F8; --coast:#FFFFFF;
+  color-scheme: light;
 
-  --shadow:0 1px 2px rgba(22,32,43,.06), 0 8px 24px -12px rgba(22,32,43,.18);
-  --serif: ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  --surface:#FFFFFF; --surface-2:#F4F7F9; --surface-3:#E8EDF1;
+  --ink:#0C1620; --ink-2:#42566B; --ink-3:#75899E;
+  --rule:#DCE4EA; --rule-strong:#B9C6D1;
+
+  --glass:rgba(255,255,255,.88); --glass-line:rgba(12,22,32,.10);
+
+  --accent:#00A37A; --accent-ink:#FFFFFF; --accent-soft:#D6F3E9;
+  --warn:#D9541F; --warn-soft:#FDEBE2;
+
+  /* fora do dado: nunca disputou uma partida na faixa escolhida */
+  --absent:#DAE2E8;
+  --ocean:#E4EBF0; --coast:#FFFFFF;
+
+  --shadow-1:0 1px 2px rgba(12,22,32,.06);
+  --shadow-2:0 4px 10px rgba(12,22,32,.08), 0 18px 40px -18px rgba(12,22,32,.35);
+  --glow:0 0 0 3px rgba(0,163,122,.18);
+
+  --r-card:16px; --r-input:10px; --r-pill:999px;
+  --gap:.85rem;
+
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
-    --paper:#0D161F; --surface:#15212C; --surface-2:#1B2836;
-    --ink:#E4ECF2; --ink-2:#A5B8C8; --ink-3:#77899C;
-    --rule:#2A3A4A; --rule-strong:#3D5165;
-    --done:#3FB6A0; --done-soft:#103831;
-    --now:#E8794D; --now-soft:#3A1F14;
-    --absent:#233140;
-    --ocean:#101A24; --coast:#15212C;
-    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+    color-scheme: dark;
+    --surface:#111823; --surface-2:#18212E; --surface-3:#212C3B;
+    --ink:#F2F6FA; --ink-2:#A8B9C9; --ink-3:#78899C;
+    --rule:#243040; --rule-strong:#3A4A5D;
+    --glass:rgba(15,21,31,.86); --glass-line:rgba(255,255,255,.10);
+    --accent:#12C79A; --accent-ink:#04231B; --accent-soft:#0B3A2E;
+    --warn:#FF7A45; --warn-soft:#3A1B0E;
+    --absent:#1E2836;
+    --ocean:#0A0F16; --coast:#111823;
+    --shadow-1:0 1px 2px rgba(0,0,0,.5);
+    --shadow-2:0 4px 10px rgba(0,0,0,.45), 0 18px 44px -18px rgba(0,0,0,.9);
+    --glow:0 0 0 3px rgba(18,199,154,.22);
   }
 }
 
 :root[data-theme="dark"] {
-  --paper:#0D161F; --surface:#15212C; --surface-2:#1B2836;
-  --ink:#E4ECF2; --ink-2:#A5B8C8; --ink-3:#77899C;
-  --rule:#2A3A4A; --rule-strong:#3D5165;
-  --done:#3FB6A0; --done-soft:#103831;
-  --now:#E8794D; --now-soft:#3A1F14;
-  --absent:#233140;
-  --ocean:#101A24; --coast:#15212C;
-  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  color-scheme: dark;
+  --surface:#111823; --surface-2:#18212E; --surface-3:#212C3B;
+  --ink:#F2F6FA; --ink-2:#A8B9C9; --ink-3:#78899C;
+  --rule:#243040; --rule-strong:#3A4A5D;
+  --glass:rgba(15,21,31,.86); --glass-line:rgba(255,255,255,.10);
+  --accent:#12C79A; --accent-ink:#04231B; --accent-soft:#0B3A2E;
+  --warn:#FF7A45; --warn-soft:#3A1B0E;
+  --absent:#1E2836;
+  --ocean:#0A0F16; --coast:#111823;
+  --shadow-1:0 1px 2px rgba(0,0,0,.5);
+  --shadow-2:0 4px 10px rgba(0,0,0,.45), 0 18px 44px -18px rgba(0,0,0,.9);
+  --glow:0 0 0 3px rgba(18,199,154,.22);
 }
 
 :root[data-theme="light"] {
-  --paper:#E9EDF0; --surface:#FFFFFF; --surface-2:#F3F6F8;
-  --ink:#16202B; --ink-2:#46586B; --ink-3:#7A8CA0;
-  --rule:#CFD9E1; --rule-strong:#AFBECB;
-  --done:#0F7A6B; --done-soft:#DBEDE8;
-  --now:#BE4A22; --now-soft:#F7E1D8;
-  --absent:#DCE3E9;
-  --ocean:#F3F6F8; --coast:#FFFFFF;
+  color-scheme: light;
+  --surface:#FFFFFF; --surface-2:#F4F7F9; --surface-3:#E8EDF1;
+  --ink:#0C1620; --ink-2:#42566B; --ink-3:#75899E;
+  --rule:#DCE4EA; --rule-strong:#B9C6D1;
+  --glass:rgba(255,255,255,.88); --glass-line:rgba(12,22,32,.10);
+  --accent:#00A37A; --accent-ink:#FFFFFF; --accent-soft:#D6F3E9;
+  --warn:#D9541F; --warn-soft:#FDEBE2;
+  --absent:#DAE2E8;
+  --ocean:#E4EBF0; --coast:#FFFFFF;
+  --shadow-1:0 1px 2px rgba(12,22,32,.06);
+  --shadow-2:0 4px 10px rgba(12,22,32,.08), 0 18px 40px -18px rgba(12,22,32,.35);
+  --glow:0 0 0 3px rgba(0,163,122,.18);
 }
 
 * { box-sizing:border-box; }
 
+html, body { height:100%; }
 body {
-  margin:0; background:var(--paper); color:var(--ink);
-  font-family:var(--sans); font-size:clamp(.88rem,.45rem+1vw,1rem); line-height:1.6;
+  margin:0; overflow:hidden; background:var(--ocean); color:var(--ink);
+  font-family:var(--sans); font-size:15px; line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
 
-h1,h2,h3 { font-family:var(--serif); font-weight:600; margin:0; line-height:1.2; text-wrap:balance; }
+h1,h2,h3 { font-family:var(--sans); font-weight:750; margin:0; line-height:1.15;
+  letter-spacing:-.02em; }
 p { margin:0; }
-a { color:var(--done); text-underline-offset:2px; }
-a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
-  outline:2px solid var(--done); outline-offset:2px;
+a { color:var(--accent); text-underline-offset:2px; }
+a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible,
+summary:focus-visible {
+  outline:2px solid var(--accent); outline-offset:2px; border-radius:6px;
 }
-code { font-family:var(--mono); font-size:.88em; }
+code { font-family:var(--mono); font-size:.86em; }
 
-.wrap {
-  max-width:96rem; margin:0 auto;
-  padding:clamp(1.2rem,.8rem+1.6vw,2.4rem) clamp(1rem,.6rem+2vw,2.5rem) 3rem;
-  display:flex; flex-direction:column; gap:1.4rem;
+.sr-only {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
 }
 
-/* ---- cabeçalho ---- */
+/* ---- o mapa é a página ---- */
 
-.mast { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:1rem; }
-.eyebrow { font-family:var(--mono); font-size:.7rem; letter-spacing:.16em;
-  text-transform:uppercase; color:var(--ink-3); }
-h1 { font-size:clamp(1.5rem,1.1rem+1.8vw,2.3rem); letter-spacing:-.015em; }
-.standfirst { color:var(--ink-2); max-width:62ch; margin-top:.35rem; }
+#map { position:fixed; inset:0; background:var(--ocean); }
+.leaflet-container { font-family:var(--sans); background:var(--ocean); }
 
-.ghost {
-  font-family:var(--mono); font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
-  color:var(--ink-2); background:var(--surface); border:1px solid var(--rule);
-  border-radius:2px; padding:.45rem .7rem; cursor:pointer;
+/* ---- a camada de interface ---- */
+
+.ui {
+  position:fixed; inset:0; z-index:1000; pointer-events:none;
+  display:grid; gap:var(--gap); padding:var(--gap);
+  grid-template-columns:minmax(0,20.5rem) 1fr minmax(0,21.5rem);
+  grid-template-rows:auto 1fr auto;
+  grid-template-areas:
+    "controls alarm   panel"
+    ".        .       panel"
+    "legend   .       panel";
 }
-.ghost:hover { border-color:var(--rule-strong); color:var(--ink); }
+.ui > * { pointer-events:auto; }
 
-/* ---- controles ---- */
-
-.controls {
-  display:grid; gap:1rem 1.4rem; align-items:end;
-  grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));
-  background:var(--surface); border:1px solid var(--rule); border-radius:3px;
-  padding:1rem 1.15rem; box-shadow:var(--shadow);
+.hud {
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(16px) saturate(1.4);
+  backdrop-filter:blur(16px) saturate(1.4);
+  border:1px solid var(--glass-line); border-radius:var(--r-card);
+  box-shadow:var(--shadow-2);
 }
+
+/* ---- cartões recolhíveis ----
+ *
+ * Recolher esconde o corpo e deixa a barra de título. Nunca o cartão inteiro: um
+ * painel que some por completo precisa de um segundo controle, em outro canto da
+ * tela, só para voltar — a barra é o próprio caminho de volta, e fica onde o
+ * painel estava. */
+
+.card { display:flex; flex-direction:column; min-height:0; }
+.card-head {
+  display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+  padding:.55rem .6rem .55rem .95rem; min-height:2.4rem;
+}
+.card-title {
+  font-family:var(--mono); font-size:.63rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.card-toggle {
+  flex:none; width:1.6rem; height:1.6rem; display:grid; place-items:center;
+  font-size:.7rem; line-height:1; color:var(--ink-3); cursor:pointer;
+  background:transparent; border:0; border-radius:var(--r-pill);
+  transition:transform .18s ease, color .15s, background .15s;
+}
+.card-toggle:hover { color:var(--ink); background:var(--surface-2); }
+.card-body {
+  padding:0 .95rem .95rem; display:flex; flex-direction:column; gap:.8rem; min-height:0;
+}
+.card.collapsed > .card-body { display:none; }
+.card.collapsed > .card-head { padding-bottom:.55rem; }
+.card.collapsed .card-toggle { transform:rotate(-90deg); }
+
+/* À esquerda da coluna do painel, não por cima dela: a barra tem z-index maior
+   e cobriria o conteúdo do painel se ficasse no canto. */
+.toolbar {
+  position:fixed; top:var(--gap); right:calc(21.5rem + var(--gap) * 2); z-index:1100;
+  display:flex; gap:.4rem; pointer-events:none;
+}
+/* Sem painéis não há o que evitar — a barra volta para o canto. */
+.ui.bare .toolbar { right:var(--gap); }
+.toolbar > * { pointer-events:auto; }
+.icon-btn {
+  width:2.35rem; height:2.35rem; display:grid; place-items:center;
+  font-size:1rem; color:var(--ink-2); cursor:pointer;
+  border-radius:var(--r-pill); border:1px solid var(--glass-line);
+  transition:color .15s, transform .15s;
+}
+.icon-btn:hover { color:var(--ink); transform:translateY(-1px); }
+.icon-btn[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); }
+
+/* ---- controles (canto superior esquerdo) ---- */
+
+.controls { grid-area:controls; align-self:start; }
 .field { display:flex; flex-direction:column; gap:.35rem; min-width:0; }
 .field > label, .field > .legend {
-  font-family:var(--mono); font-size:.66rem; letter-spacing:.12em;
+  font-family:var(--mono); font-size:.63rem; letter-spacing:.14em;
   text-transform:uppercase; color:var(--ink-3);
 }
 select {
-  font-family:inherit; font-size:.92rem; color:var(--ink);
-  background:var(--surface-2); border:1px solid var(--rule); border-radius:2px;
-  padding:.45rem .55rem; width:100%; cursor:pointer;
+  font-family:inherit; font-size:.92rem; font-weight:550; color:var(--ink);
+  background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-input);
+  padding:.5rem .6rem; width:100%; cursor:pointer;
+  transition:border-color .15s, box-shadow .15s;
 }
+select:hover { border-color:var(--rule-strong); }
+select:focus { box-shadow:var(--glow); }
 select option:disabled { color:var(--ink-3); }
 
-.segmented { display:flex; border:1px solid var(--rule); border-radius:2px; overflow:hidden; }
-.segmented button {
-  flex:1; font-family:var(--sans); font-size:.82rem; color:var(--ink-2);
-  background:var(--surface-2); border:0; border-right:1px solid var(--rule);
-  padding:.45rem .5rem; cursor:pointer; white-space:nowrap;
+.segmented {
+  display:flex; gap:.25rem; background:var(--surface-2);
+  border:1px solid var(--rule); border-radius:var(--r-pill); padding:.2rem;
 }
-.segmented button:last-child { border-right:0; }
-.segmented button[aria-pressed="true"] { background:var(--done); color:#fff; }
-.segmented button[disabled] { opacity:.45; cursor:not-allowed; }
+.segmented button {
+  flex:1; font-family:var(--sans); font-size:.8rem; font-weight:600; color:var(--ink-2);
+  background:transparent; border:0; border-radius:var(--r-pill);
+  padding:.4rem .5rem; cursor:pointer; white-space:nowrap; transition:background .15s, color .15s;
+}
+.segmented button:hover:not([disabled]):not([aria-pressed="true"]) { color:var(--ink); }
+.segmented button[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); }
+.segmented button[disabled] { opacity:.4; cursor:not-allowed; }
 
 /* Slider de faixa: dois <input range> empilhados no mesmo trilho. Só os
    polegares recebem ponteiro, senão o de cima engoliria os cliques do de baixo. */
-.range { position:relative; height:2.1rem; }
+.range { position:relative; height:1.9rem; }
 .range .track {
-  position:absolute; left:0; right:0; top:calc(50% - 2px); height:4px;
-  background:var(--rule); border-radius:2px;
+  position:absolute; left:0; right:0; top:calc(50% - 3px); height:6px;
+  background:var(--surface-3); border-radius:var(--r-pill);
 }
-.range .fill { position:absolute; top:0; bottom:0; background:var(--done); border-radius:2px; }
+.range .fill { position:absolute; top:0; bottom:0; background:var(--accent);
+  border-radius:var(--r-pill); }
 .range input[type="range"] {
   position:absolute; left:0; width:100%; top:0; height:100%; margin:0;
   -webkit-appearance:none; appearance:none; background:transparent; pointer-events:none;
 }
 .range input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance:none; pointer-events:auto; width:16px; height:16px; border-radius:50%;
-  background:var(--surface); border:2px solid var(--done); cursor:grab; box-shadow:var(--shadow);
+  -webkit-appearance:none; pointer-events:auto; width:17px; height:17px; border-radius:50%;
+  background:var(--surface); border:3px solid var(--accent); cursor:grab;
+  box-shadow:var(--shadow-1); transition:transform .12s;
 }
+.range input[type="range"]::-webkit-slider-thumb:hover { transform:scale(1.12); }
 .range input[type="range"]::-moz-range-thumb {
-  pointer-events:auto; width:14px; height:14px; border-radius:50%;
-  background:var(--surface); border:2px solid var(--done); cursor:grab;
+  pointer-events:auto; width:13px; height:13px; border-radius:50%;
+  background:var(--surface); border:3px solid var(--accent); cursor:grab;
 }
 .range-read {
-  font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:.8rem; color:var(--ink-2);
-  display:flex; justify-content:space-between;
+  font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:.74rem; color:var(--ink-3);
+  display:flex; justify-content:space-between; gap:.4rem;
 }
-.range-read b { font-weight:600; color:var(--ink); }
+.range-read b { font-weight:700; color:var(--ink); font-size:.82rem; }
 
-/* ---- corpo: mapa + painel ---- */
+/* ---- legenda (canto inferior esquerdo) ---- */
 
-.stage { display:grid; gap:1.4rem; grid-template-columns:minmax(0,1fr) 21rem; align-items:start; }
-@media (max-width:60rem) { .stage { grid-template-columns:minmax(0,1fr); } }
-
-.map-card {
-  background:var(--surface); border:1px solid var(--rule); border-radius:3px;
-  box-shadow:var(--shadow); overflow:hidden;
-}
-#map { height:clamp(24rem,60vh,40rem); background:var(--ocean); }
-.leaflet-container { font-family:var(--sans); background:var(--ocean); }
-
-.map-foot {
-  display:flex; flex-wrap:wrap; gap:1rem 1.6rem; align-items:flex-start;
-  padding:.85rem 1.1rem; border-top:1px solid var(--rule);
-}
-.scale { display:flex; flex-direction:column; gap:.3rem; flex:1 1 18rem; min-width:14rem; }
-.scale-title { font-family:var(--mono); font-size:.66rem; letter-spacing:.12em;
-  text-transform:uppercase; color:var(--ink-3); }
+.legend-card { grid-area:legend; align-self:end; }
+.legend-card .card-body { gap:.5rem; }
 
 /* Legenda de escala contínua: uma barra com o degradê da rampa e marcas
    posicionadas onde o valor cai de verdade — em sqrt(v/máx), a mesma
    transformação que pinta o mapa. */
 #scale { display:flex; flex-direction:column; gap:0; }
-#scale .bar {
-  height:.72rem; border:1px solid var(--rule); border-radius:2px;
-}
-#scale .ticks { position:relative; height:1.5rem; }
+#scale .bar { height:.75rem; border-radius:var(--r-pill);
+  box-shadow:inset 0 0 0 1px var(--glass-line); }
+#scale .ticks { position:relative; height:1.4rem; }
 #scale .tick { position:absolute; top:0; transform:translateX(-50%);
   display:flex; flex-direction:column; align-items:center; gap:.1rem; }
-#scale .tick i { display:block; width:1px; height:.28rem; background:var(--rule-strong); }
+#scale .tick i { display:block; width:1px; height:.26rem; background:var(--rule-strong); }
 #scale .tick em {
   font-style:normal; font-family:var(--mono); font-variant-numeric:tabular-nums;
-  font-size:.64rem; color:var(--ink-3); white-space:nowrap;
+  font-size:.62rem; color:var(--ink-3); white-space:nowrap;
 }
-#scale .absent-key { display:flex; align-items:center; gap:.35rem; margin-top:.15rem; }
-#scale .absent-key i { width:.8rem; height:.8rem; border:1px solid var(--rule); border-radius:2px; }
-#scale .absent-key span { font-family:var(--mono); font-size:.64rem; color:var(--ink-3); }
+#scale .absent-key { display:flex; align-items:center; gap:.4rem; margin-top:.15rem; }
+#scale .absent-key i { width:.8rem; height:.8rem; border-radius:4px;
+  box-shadow:inset 0 0 0 1px var(--glass-line); }
+#scale .absent-key span { font-family:var(--mono); font-size:.62rem; color:var(--ink-3); }
 
-.scale-note { font-size:.78rem; color:var(--ink-3); max-width:44ch; flex:1 1 16rem; }
+.scale-note { font-size:.73rem; color:var(--ink-3); line-height:1.45; }
 
-/* ---- painel lateral ---- */
+.credits { font-size:.7rem; color:var(--ink-3); border-top:1px solid var(--rule); padding-top:.5rem; }
+.credits summary { cursor:pointer; font-family:var(--mono); font-size:.62rem;
+  letter-spacing:.12em; text-transform:uppercase; }
+.credits div { margin-top:.4rem; line-height:1.5; }
 
-.panel {
-  background:var(--surface); border:1px solid var(--rule); border-radius:3px;
-  box-shadow:var(--shadow); padding:1.05rem 1.15rem; display:flex; flex-direction:column; gap:1rem;
-}
-.panel h2 { font-size:1.15rem; }
-.panel .sub { font-family:var(--mono); font-size:.7rem; letter-spacing:.1em;
+/* ---- painel lateral (coluna direita inteira) ---- */
+
+.side { grid-area:panel; align-self:stretch; }
+.side.collapsed { align-self:start; }
+.side > .card-body { overflow-y:auto; gap:.9rem; }
+.panel h2 { font-size:1.3rem; display:flex; align-items:center; gap:.15rem; }
+.panel .sub { font-family:var(--mono); font-size:.64rem; letter-spacing:.14em;
   text-transform:uppercase; color:var(--ink-3); }
 
-.tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
-  background:var(--rule); border:1px solid var(--rule); border-radius:2px; overflow:hidden; }
-.tile { background:var(--surface); padding:.5rem .55rem; display:flex; flex-direction:column; }
+.tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:.35rem; }
+.tile {
+  background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-input);
+  padding:.5rem .55rem; display:flex; flex-direction:column; gap:.05rem;
+}
 .tile b { font-family:var(--mono); font-variant-numeric:tabular-nums;
-  font-size:1.12rem; font-weight:600; letter-spacing:-.02em; line-height:1.25; }
-.tile span { font-size:.64rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3); }
+  font-size:1.05rem; font-weight:700; letter-spacing:-.03em; line-height:1.25; }
+.tile span { font-size:.58rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
 
-table { border-collapse:collapse; width:100%; font-size:.82rem; }
-th, td { text-align:right; padding:.28rem .35rem; border-bottom:1px solid var(--rule); }
+table { border-collapse:collapse; width:100%; font-size:.8rem; }
+th, td { text-align:right; padding:.3rem .35rem; border-bottom:1px solid var(--rule); }
 th:first-child, td:first-child { text-align:left; }
-thead th { font-family:var(--mono); font-size:.62rem; letter-spacing:.08em;
-  text-transform:uppercase; color:var(--ink-3); font-weight:400; }
+thead th { font-family:var(--mono); font-size:.58rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:400;
+  position:sticky; top:0; background:var(--surface); }
 tbody td { font-variant-numeric:tabular-nums; }
 tbody tr:hover { background:var(--surface-2); }
-.h2h-scroll { max-height:22rem; overflow-y:auto; }
-.chip { display:inline-block; width:.62rem; height:.62rem; border-radius:2px;
-  border:1px solid var(--rule); margin-right:.4rem; vertical-align:baseline; }
+.h2h-scroll { margin-top:.4rem; }
+.chip { display:inline-block; width:.64rem; height:.64rem; border-radius:3px;
+  box-shadow:inset 0 0 0 1px rgba(128,128,128,.3); margin-right:.4rem; vertical-align:baseline; }
 
-.muted { color:var(--ink-2); font-size:.85rem; }
-.empty { color:var(--ink-3); font-size:.85rem; }
+/* A bandeira é um SVG versionado, não emoji: emoji de bandeira depende da fonte
+   do sistema e o Windows não tem nenhuma. Redonda porque ela senta ao lado de
+   texto, e um retângulo nessa altura briga com a linha de base. */
+.flag {
+  width:1.05em; height:1.05em; border-radius:50%; margin-right:.45rem;
+  vertical-align:-.14em; flex:none; object-fit:cover;
+  box-shadow:inset 0 0 0 1px var(--glass-line), 0 0 0 1px rgba(128,128,128,.16);
+}
+.panel h2 .flag { width:1.2em; height:1.2em; vertical-align:-.16em; }
+
+.muted { color:var(--ink-2); font-size:.8rem; }
+.empty { color:var(--ink-3); font-size:.84rem; }
 
 /* ---- aviso da autoconferência ---- */
 
 .alarm {
-  display:none; gap:.6rem; align-items:flex-start;
-  background:var(--now-soft); border:1px solid var(--now); border-left-width:3px;
-  border-radius:2px; padding:.7rem .9rem; font-size:.85rem; color:var(--ink);
+  grid-area:alarm; align-self:start; justify-self:center;
+  display:none; gap:.6rem; align-items:flex-start; max-width:44rem;
+  background:var(--warn-soft); border-color:var(--warn); border-left-width:4px;
+  padding:.7rem 1rem; font-size:.83rem; color:var(--ink);
 }
 .alarm[data-on] { display:flex; }
-.alarm b { font-family:var(--mono); font-size:.7rem; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--now); }
+.alarm b { font-family:var(--mono); font-size:.64rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--warn); white-space:nowrap; }
 
-footer {
-  border-top:1px solid var(--rule); padding-top:1rem; margin-top:.6rem;
-  color:var(--ink-3); font-size:.78rem; display:flex; flex-direction:column; gap:.35rem;
-}
-
-/* ---- tooltip do Leaflet, no cromo da página ---- */
+/* ---- Leaflet no cromo da página ---- */
 
 .leaflet-tooltip.atlas-tip {
-  background:var(--surface); color:var(--ink); border:1px solid var(--rule-strong);
-  border-radius:2px; box-shadow:var(--shadow); padding:.4rem .55rem;
-  font-family:var(--sans); font-size:.82rem; white-space:nowrap;
+  background:var(--glass); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  color:var(--ink); border:1px solid var(--glass-line);
+  border-radius:var(--r-input); box-shadow:var(--shadow-2); padding:.45rem .6rem;
+  font-family:var(--sans); font-size:.8rem; white-space:nowrap;
 }
 .leaflet-tooltip.atlas-tip::before { display:none; }
-.atlas-tip b { display:block; font-weight:600; }
+.atlas-tip b { display:block; font-weight:700; font-size:.88rem; margin-bottom:.1rem; }
 .atlas-tip em { font-style:normal; font-family:var(--mono);
-  font-variant-numeric:tabular-nums; color:var(--ink-2); }
+  font-variant-numeric:tabular-nums; font-size:.74rem; color:var(--ink-2); }
+
+/* O zoom fica no rodapé, deslocado para a direita do cartão da legenda — que é
+   o único elemento que disputa aquele canto. Em tela estreita a legenda some e o
+   deslocamento volta a zero. */
+.leaflet-bottom.leaflet-left { margin-left:21.5rem; }
+.leaflet-control-zoom { margin:0 0 var(--gap) var(--gap) !important; }
+.leaflet-bar { border:0 !important; box-shadow:var(--shadow-2) !important;
+  border-radius:var(--r-input) !important; overflow:hidden; }
+.leaflet-bar a {
+  background:var(--glass) !important; color:var(--ink) !important;
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  border-bottom-color:var(--glass-line) !important;
+  width:30px !important; height:30px !important; line-height:30px !important;
+}
+.leaflet-bar a:hover { background:var(--surface-2) !important; }
 .leaflet-control-attribution {
-  background:var(--surface) !important; color:var(--ink-3) !important;
-  font-size:.66rem !important;
+  background:var(--glass) !important; color:var(--ink-3) !important;
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  font-size:.6rem !important; padding:2px 8px !important;
+  border-radius:var(--r-pill) 0 0 0 !important;
 }
 .leaflet-control-attribution a { color:var(--ink-2) !important; }
-.leaflet-bar a {
-  background:var(--surface) !important; color:var(--ink) !important;
-  border-bottom-color:var(--rule) !important;
+
+/* ---- telas estreitas: os painéis viram folhas empilhadas ---- */
+
+@media (max-width:72rem) {
+  .ui {
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto 1fr auto;
+    grid-template-areas:
+      "controls"
+      "alarm"
+      "panel";
+  }
+  .controls .card-body { flex-direction:row; flex-wrap:wrap; gap:.6rem .9rem; }
+  .controls .field { flex:1 1 9rem; }
+  .side { align-self:end; max-height:44vh; }
+  .legend-card { display:none; }
+  .alarm { justify-self:stretch; }
+  /* `right` precisa voltar: o recuo que evita o painel na tela larga jogaria a
+     barra para fora da tela aqui, onde o painel é uma folha no rodapé. */
+  .toolbar { top:auto; right:var(--gap); bottom:calc(42vh + var(--gap) * 2); }
+  /* e o zoom sobe para não ficar embaixo da folha */
+  .leaflet-bottom.leaflet-left { margin-left:0; margin-bottom:calc(42vh + var(--gap)); }
 }

@@ -1,84 +1,84 @@
-team_name,hex,basis,note
-Algeria,#0A7B3E,identity,"Camisa principal branca; o verde é a cor que identifica os Fennecs"
-Angola,#CE1126,home,
-Argentina,#75AADB,home,
-Australia,#FFCD00,home,
-Austria,#ED2939,home,
-Belgium,#D42A2A,home,
-Bolivia,#1E9E52,home,
-Bosnia and Herzegovina,#002F6C,home,
-Brazil,#FFDF00,home,
-Bulgaria,#00966E,identity,"Camisa principal branca; o verde vem da bandeira e do uniforme reserva"
-Cameroon,#007A5E,home,
-Canada,#C8102E,home,
-Cape Verde,#003893,home,
-Chile,#DA291C,home,
-China,#DE2910,home,
-Colombia,#FCD116,home,
-Costa Rica,#C8102E,home,
-Croatia,#D6001C,home,"O xadrez é vermelho e branco; o vermelho é o lado cromático"
-Cuba,#CF142B,home,
-Curaçao,#0033A0,home,
-Czech Republic,#D7141A,home,
-DR Congo,#0085CA,home,
-Denmark,#C8102E,home,
-Ecuador,#FFD100,home,
-Egypt,#C8102E,home,
-El Salvador,#0F47AF,home,
-England,#CE1124,identity,"Camisa principal branca; o vermelho é a cor do escudo e do uniforme de 1966"
-France,#002395,home,
-Germany,#C8102E,identity,"Camisa principal branca com preto — nenhum dos dois serve de matiz (ver cabeçalho); vermelho da bandeira"
-Ghana,#CE1126,identity,"Camisa principal branca; vermelho da bandeira"
-Greece,#0D5EAF,home,
-Haiti,#00209F,home,
-Honduras,#0073CF,identity,"Camisa principal branca; azul da bandeira"
-Hungary,#CE2939,home,
-Iceland,#003897,home,
-Indonesia,#CE1126,home,
-Iran,#C8102E,identity,"Camisa principal branca; vermelho da bandeira e do uniforme reserva"
-Iraq,#007A3D,home,
-Israel,#0038B8,home,
-Italy,#0066B2,home,
-Ivory Coast,#F77F00,home,
-Jamaica,#FFD100,home,
-Japan,#0B2D71,home,
-Jordan,#CE1126,identity,"Camisa principal branca; vermelho da bandeira"
-Kuwait,#0057B8,home,
-Mexico,#006847,home,
-Morocco,#C1272D,home,
-Netherlands,#FF6C00,home,
-New Zealand,#00247D,identity,"'All Whites' de branco, escudo preto — nenhum dos dois serve de matiz; azul da bandeira"
-Nigeria,#008751,home,
-North Korea,#ED1C27,home,
-Northern Ireland,#007A3D,home,
-Norway,#BA0C2F,home,
-Panama,#DA121A,home,
-Paraguay,#D52B1E,home,
-Peru,#D91023,home,
-Poland,#DC143C,identity,"Camisa principal branca; o vermelho é a segunda cor da bandeira e do uniforme reserva"
-Portugal,#A32638,home,
-Qatar,#8A1538,home,
-Republic of Ireland,#009A44,home,
-Romania,#FCD116,home,
-Russia,#D52B1E,home,
-Saudi Arabia,#006C35,identity,"Camisa principal branca com verde; o verde é a cor da bandeira e da federação"
-Scotland,#002B5C,home,
-Senegal,#00853F,identity,"Camisa principal branca; verde da bandeira e dos Leões de Teranga"
-Serbia,#C6363C,home,
-Slovakia,#0B4EA2,home,
-Slovenia,#009A49,home,
-South Africa,#FFB612,home,
-South Korea,#CD2E3A,home,
-Spain,#C60B1E,home,
-Sweden,#FFCD00,home,
-Switzerland,#DA291C,home,
-Togo,#FFCE00,home,
-Trinidad and Tobago,#DA1A35,home,
-Tunisia,#E70013,home,
-Turkey,#E30A17,home,
-Ukraine,#FFD500,home,
-United Arab Emirates,#00732F,identity,"'Al Abyad' joga de branco; verde da bandeira"
-United States,#002868,identity,"Camisa principal branca; o azul é a cor do uniforme reserva e do escudo"
-Uruguay,#56A0D3,home,
-Uzbekistan,#0099B5,home,
-Wales,#C8102E,home,
+team_name,last_cup,hex,basis,note
+Algeria,2026,#00A651,identity,"Camisa branca com verde; o verde dos Fennecs é o lado cromático"
+Angola,2006,#E4002B,home,
+Argentina,2026,#6CB4EE,home,"Celeste das listras"
+Australia,2026,#FFD100,home,"Ouro dos Socceroos"
+Austria,2026,#EF3340,home,
+Belgium,2026,#E63329,home,"Vermelho dos Diabos Vermelhos"
+Bolivia,1994,#009B3A,home,
+Bosnia and Herzegovina,2026,#0072CE,home,
+Brazil,2026,#FFDF00,home,"Amarelo-ouro da CBF"
+Bulgaria,1998,#00A651,identity,"Camisa branca em 1998; verde da bandeira e do uniforme reserva"
+Cameroon,2022,#009639,home,"Verde dos Leões Indomáveis"
+Canada,2026,#E4002B,home,
+Cape Verde,2026,#0057B8,home,
+Chile,2014,#DA291C,home,
+China,2002,#EE1C25,home,
+Colombia,2026,#FFD100,home,
+Costa Rica,2022,#DC1C2E,home,
+Croatia,2026,#E4002B,home,"O xadrez é vermelho e branco; o vermelho é o lado cromático"
+Cuba,1938,#D52B1E,home,"Vermelho da campanha de 1938, quando chegou às quartas"
+Curaçao,2026,#0047BB,home,
+Czech Republic,2026,#E4002B,home,
+DR Congo,2026,#0093DD,home,"Azul dos Leopardos"
+Denmark,2022,#D50032,home,
+Ecuador,2026,#FFD100,home,
+Egypt,2026,#E4002B,home,"Vermelho dos Faraós"
+El Salvador,1982,#0047BB,home,
+England,2026,#E4002B,identity,"Camisa branca; vermelho do escudo e do uniforme de 1966"
+France,2026,#1A4FB8,home,"Azul dos Bleus"
+Germany,2026,#E4002B,identity,"Camisa branca com preto — nenhum dos dois sustenta uma rampa; vermelho da bandeira"
+Ghana,2026,#E4002B,identity,"Camisa branca; vermelho da bandeira"
+Greece,2014,#0D5EAF,home,
+Haiti,2026,#0047BB,home,
+Honduras,2014,#0073CF,identity,"Camisa branca; azul da bandeira"
+Hungary,1986,#E4002B,home,
+Iceland,2018,#0F62C4,home,
+Indonesia,1938,#E1122F,identity,"Jogou 1938 como Índias Orientais Neerlandesas, de branco — sem matiz para uma rampa; usa o vermelho da Indonésia moderna, que é o rótulo do registro"
+Iran,2026,#E4002B,identity,"Camisa branca; vermelho da bandeira e do uniforme reserva"
+Iraq,2026,#00A651,home,
+Israel,1970,#0038B8,home,
+Italy,2014,#0F80D6,home,"Azzurro"
+Ivory Coast,2026,#FF8200,home,"Laranja dos Elefantes"
+Jamaica,1998,#FFD100,home,"Ouro dos Reggae Boyz"
+Japan,2026,#1B4FD8,home,"Samurai Blue, no tom vivo que o uniforme de 2026 usa"
+Jordan,2026,#E4002B,identity,"Camisa branca; vermelho da bandeira"
+Kuwait,1982,#0072CE,home,
+Mexico,2026,#00844B,home,"Verde do Tri"
+Morocco,2026,#E4002B,home,"Vermelho dos Leões do Atlas"
+Netherlands,2026,#FF6C00,home,"Laranja"
+New Zealand,2026,#0057B8,identity,"'All Whites' de branco, escudo preto — nenhum dos dois sustenta uma rampa; azul da bandeira"
+Nigeria,2018,#00A651,home,"Verde das Super Águias"
+North Korea,2010,#ED1C27,home,
+Northern Ireland,1986,#00A651,home,
+Norway,2026,#E4002B,home,
+Panama,2026,#DA121A,home,
+Paraguay,2026,#E4002B,home,"Listras vermelhas e brancas"
+Peru,2018,#E4002B,identity,"A camisa é branca com a banda vermelha atravessada; o vermelho é o lado cromático"
+Poland,2022,#E4002B,identity,"Camisa branca; vermelho da bandeira e do uniforme reserva"
+Portugal,2026,#C8102E,home,"Vermelho-vinho das Quinas"
+Qatar,2026,#8A1538,home,"Grená da bandeira"
+Republic of Ireland,2002,#00A651,home,
+Romania,1998,#FFD100,home,
+Russia,2018,#E4002B,home,
+Saudi Arabia,2026,#00A651,identity,"Camisa branca com verde; verde da bandeira e da federação"
+Scotland,2026,#0F4C9E,home,"Azul-marinho, clareado para sustentar a rampa"
+Senegal,2026,#00A651,identity,"Camisa branca; verde dos Leões de Teranga"
+Serbia,2022,#E4002B,home,
+Slovakia,2010,#0B5EC4,home,
+Slovenia,2010,#00A651,home,
+South Africa,2026,#FFB612,home,"Ouro dos Bafana Bafana"
+South Korea,2026,#E4002B,home,"Vermelho dos Guerreiros Taeguk"
+Spain,2026,#E4002B,home,"Vermelho da Roja"
+Sweden,2026,#FFD100,home,
+Switzerland,2026,#E4002B,home,
+Togo,2006,#FFD100,home,
+Trinidad and Tobago,2006,#E4002B,home,"Vermelho dos Soca Warriors"
+Tunisia,2026,#E4002B,home,
+Turkey,2026,#E30A17,home,
+Ukraine,2006,#FFD500,home,
+United Arab Emirates,1990,#00A651,identity,"'Al Abyad' joga de branco; verde da bandeira"
+United States,2026,#1A4FB8,identity,"Camisa branca; azul do uniforme reserva e do escudo"
+Uruguay,2026,#5BC2E7,home,"Celeste"
+Uzbekistan,2026,#0093DD,home,
+Wales,2022,#E4002B,home,

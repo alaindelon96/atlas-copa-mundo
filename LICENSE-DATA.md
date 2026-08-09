@@ -127,10 +127,12 @@ Two files are **not** derived from any source above — they are curated by hand
 project and are covered by the repository's own licences:
 
 - [`reference/team_colors.csv`](reference/team_colors.csv) — each national team's map
-  colour. The rule is the home shirt colour; where that is white or black (neither can
-  carry a sequential ramp), the chromatic colour that identifies the side, marked
-  `identity` with the reasoning in the row. These are editorial judgements, not facts
-  from a dataset.
+  colour. The rule is the home shirt of the last World Cup that team played (the
+  `last_cup` column, checked against the model); where that shirt is white or black —
+  neither can carry a sequential ramp — the chromatic colour that identifies the side,
+  marked `identity` with the reasoning in the row. These are editorial judgements about
+  kit colour, not facts from any dataset above, and they are approximations of a shirt
+  rather than verified brand values.
 - [`web/data/colors.json`](web/data/colors.json) — the ramps generated from that table by
   [`etl/color.py`](etl/color.py).
 
@@ -152,6 +154,21 @@ someone else's code, which carries its own obligation:
 The files are byte-for-byte as published on unpkg; neither was modified. Leaflet is
 **not** covered by this repository's MIT licence or by the CC BY-SA 4.0 data
 licence — it keeps its own.
+
+The map also vendors **83 national flag SVGs** at `web/vendor/flags/`, one per team:
+
+- **circle-flags** — © HatScripts
+- **Licence:** MIT, reproduced at
+  [`web/vendor/flags/LICENSE.md`](web/vendor/flags/LICENSE.md)
+- **Source:** https://github.com/HatScripts/circle-flags
+
+Only the 83 files this map actually uses were retrieved, unmodified; the set is
+selected by the `iso_a2` column of
+[`reference/team_country.csv`](reference/team_country.csv), which comes from Natural
+Earth. This set was chosen over flag emoji because emoji flags depend on system fonts
+and **Windows ships none**, and over a larger flag set because its coats of arms cost
+723 KB against 146 KB here for detail invisible at 16px. It also carries `gb-nir`,
+which Unicode has never defined as an emoji — so Northern Ireland has a flag.
 
 Country outlines come from **Natural Earth**, which is public domain; the map
 credits it in the attribution control, as its terms request rather than require.

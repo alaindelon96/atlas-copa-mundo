@@ -59,7 +59,7 @@ import pandas as pd
 
 from etl.color import MIN_CHROMA, hex_to_oklch, ramp
 from etl.model import COMPETITION
-from etl.paths import (INTERIM, PROCESSED, RAW_FJELSTUL, REFERENCE, ROOT,
+from etl.paths import (INTERIM, PROCESSED, RAW_FJELSTUL, REFERENCE, ROOT, WEB,
                        WEB_DATA, ensure_dirs)
 
 # Abaixo deste número de partidas, a média por partida não é comparável: uma
@@ -266,25 +266,75 @@ DEFAULT_HUE = "#2A78D6"
 DIVERGING = {"negative": "#C8102E", "positive": DEFAULT_HUE}
 
 
-def build_colors(teams: list[str]) -> dict:
+def flag_file(code: str) -> str:
+    """Código ISO -> nome do arquivo SVG da bandeira, em `web/vendor/flags/`.
+
+    **Por que SVG e não emoji.** A primeira versão gerava emoji de bandeira, que
+    não custa byte nenhum. O problema é que emoji de bandeira depende da fonte do
+    sistema, e o **Windows não tem nenhuma**: um `🇧🇷` vira as letras "BR" em duas
+    caixinhas, e as bandeiras britânicas (sequências de tag) viram uma bandeira
+    preta lisa, igual para as três. Numa página que é justamente sobre países,
+    isso deixaria de fora todo visitante de Windows.
+
+    O conjunto vendorizado resolve os dois problemas de uma vez — desenha igual
+    em qualquer sistema e **tem a Irlanda do Norte**, que o Unicode nunca criou
+    como emoji e que por isso ficava sem bandeira na versão anterior.
+    """
+    return f"{code.lower()}.svg" if code and code != "-99" else ""
+
+
+def build_colors(teams: list[str], last_cup: dict[str, int]) -> dict:
     """A rampa de cada seleção, nos dois modos, pronta para o navegador.
 
     A cor de cada seleção é curada à mão em `reference/team_colors.csv`, na mesma
     lógica do `team_succession.csv`: é decisão editorial, não dado da fonte, e
     por isso fica versionada com o porquê de cada linha não óbvia.
 
-    A regra da curadoria: **a cor da camisa principal**; e quando ela é branca ou
-    preta — que não têm matiz para sustentar uma rampa, e cujo cinza colidiria
-    com o cinza de "sem dado" —, a cor cromática que identifica a seleção. São 12
-    casos (Alemanha, Inglaterra, Polônia, Senegal…), todos marcados como
-    `identity` e justificados linha a linha.
+    A regra da curadoria: **a camisa principal da última Copa que a seleção
+    disputou**. Não é "a cor do país" nem a do uniforme atual — é a que estava em
+    campo da última vez que aquela seleção apareceu neste dado. Para 48 das 83 a
+    última Copa é 2026, então a distinção quase não morde; ela aparece nas nove
+    que não jogam desde antes de 1998 (Cuba 1938, Israel 1970, Kuwait 1982…).
+
+    A exceção: quando essa camisa é branca ou preta — que não têm matiz para
+    sustentar uma rampa, e cujo cinza colidiria com o cinza de "sem dado" —, usa-se
+    a cor cromática que identifica a seleção, marcada `identity` e justificada
+    linha a linha.
+
+    A coluna `last_cup` é **conferida contra o modelo**, não decorativa: se uma
+    seleção voltar a disputar uma Copa, a linha fica desatualizada em silêncio, e
+    a cor passaria a descrever um uniforme que não é mais o último.
     """
     table = pd.read_csv(REFERENCE / "team_colors.csv")
     base = dict(zip(table.team_name, table.hex))
+    declared = dict(zip(table.team_name, table.last_cup))
+
+    # A bandeira vem do `iso_a2` que `etl.geo` extraiu do Natural Earth — mesma
+    # fonte do polígono, em vez de uma terceira tabela curada à mão.
+    units = pd.read_csv(REFERENCE / "team_country.csv").drop_duplicates("team_name")
+    flags = {name: flag_file(str(code) if pd.notna(code) else "")
+             for name, code in zip(units.team_name, units.get("iso_a2", pd.Series(dtype=str)))}
+
+    # Um SVG ausente vira um ícone quebrado na tabela — some sem erro no console
+    # e sem falha em teste nenhum. Conferir aqui é barato e fecha esse buraco.
+    absent = sorted(name for name in teams
+                    if not flags.get(name) or not (WEB / "vendor" / "flags" / flags[name]).exists())
+    if absent:
+        raise ValueError(
+            "sem arquivo de bandeira em web/vendor/flags/ para: " + ", ".join(absent))
 
     missing = sorted(set(teams) - set(base))
     if missing:
         raise ValueError(f"sem cor em reference/team_colors.csv: {', '.join(missing)}")
+
+    stale = sorted(
+        f"{name} (tabela diz {declared[name]}, modelo diz {last_cup[name]})"
+        for name in teams if int(declared[name]) != int(last_cup[name])
+    )
+    if stale:
+        raise ValueError(
+            "`last_cup` desatualizado — a cor precisa ser a da camisa da última Copa "
+            f"disputada: {'; '.join(stale)}")
 
     faint = sorted(name for name in teams if hex_to_oklch(base[name])[1] < MIN_CHROMA)
     if faint:
@@ -301,6 +351,8 @@ def build_colors(teams: list[str]) -> dict:
         "teams": {
             name: {
                 "hex": base[name],
+                "flag": flags.get(name, ""),
+                "last_cup": int(declared[name]),
                 "light": ramp(base[name], "light"),
                 "dark": ramp(base[name], "dark"),
             }
@@ -373,7 +425,10 @@ def main() -> int:
     head2head = build_head_to_head(long)
     timeline = build_timeline(long, matches)
     try:
-        colors = build_colors(timeline["teams"])
+        colors = build_colors(
+            timeline["teams"],
+            {name: int(year) for name, year in long.groupby("team").year.max().items()},
+        )
     except ValueError as error:
         print(f"ERRO: {error}")
         return 1

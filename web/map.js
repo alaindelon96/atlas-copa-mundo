@@ -82,6 +82,34 @@
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
 
+  /* O marcador de uma seleção: a bandeira dela.
+   *
+   * São SVGs versionados em `web/vendor/flags/`, não emoji. Emoji de bandeira
+   * depende da fonte do sistema e o **Windows não tem nenhuma** — um `🇧🇷` vira
+   * as letras "BR" ali, e as três bandeiras britânicas de emoji viram uma
+   * bandeira preta lisa, igual para as três. Numa página sobre países, isso
+   * deixaria de fora todo visitante de Windows. O conjunto vendorizado desenha
+   * igual em qualquer sistema e ainda tem a Irlanda do Norte, que o Unicode
+   * nunca criou como emoji.
+   *
+   * O ponto colorido continua existindo para quando a bandeira não carregar —
+   * e o `onerror` troca um pelo outro sem deixar ícone quebrado na tabela.
+   */
+  function badge(team, value) {
+    var entry = COLORS.teams[team];
+    var dot = '<span class="chip" style="background:' +
+              (colorFor(value, current.scale) || css("--absent")) + '"></span>';
+    if (!entry || !entry.flag) return dot;
+    // Sem `loading="lazy"`: as bandeiras vivem dentro de um painel com rolagem
+    // própria, e o carregamento preguiçoso depende de a linha estar visível — o
+    // que nem sempre é avaliado como se espera dentro de um contêiner rolável.
+    // O conjunto inteiro são 146 KB e uma tela usa no máximo umas 47; carregar
+    // direto custa pouco e não tem esse modo de falha.
+    return '<img class="flag" src="vendor/flags/' + entry.flag + '" alt="" aria-hidden="true"' +
+           ' decoding="async"' +
+           " onerror=\"this.outerHTML='" + dot.replace(/'/g, "&#39;") + "'\">";
+  }
+
   function metricDef(key) {
     for (var i = 0; i < METRICS.length; i++) if (METRICS[i].key === key) return METRICS[i];
     return METRICS[0];
@@ -328,13 +356,16 @@
       // infla Rússia, Canadá e Groenlândia — justamente as áreas grandes cuja
       // cor a gente quer comparar com a dos países pequenos.
       crs: L.CRS.EPSG4326,
-      center: [20, 0], zoom: 1, minZoom: 1, maxZoom: 6,
-      zoomControl: true, attributionControl: true,
+      center: [25, 0], zoom: 2, minZoom: 1, maxZoom: 6,
+      zoomControl: false,
+      // A atribuição não vem do controle minúsculo do Leaflet: ela está no bloco
+      // "Fontes e licenças" do cartão da legenda, que nomeia as três fontes e as
+      // licenças por extenso. CC BY-SA é obrigação, e obrigação não cabe em 10px
+      // no canto da tela.
+      attributionControl: false,
       maxBounds: [[-90, -200], [90, 200]], maxBoundsViscosity: 0.8
     });
-    map.attributionControl.setPrefix("");
-    map.attributionControl.addAttribution(
-      'Fronteiras: <a href="https://www.naturalearthdata.com/">Natural Earth</a>');
+    L.control.zoom({ position: "bottomleft" }).addTo(map);
 
     layer = L.geoJSON(GEO, {
       // A Antártida ocupa um quinto da tela e nunca disputou nada — tirá-la é
@@ -481,6 +512,11 @@
     var span = TIMELINE.years[state.from] + "–" + TIMELINE.years[state.to];
     var rows = [], name, html;
 
+    // A barra do cartão diz o que ele contém mesmo recolhido — é a única pista
+    // que sobra quando o painel está fechado.
+    document.getElementById("side-title").textContent =
+      state.team ? "📋 " + state.team : "📋 Ranking";
+
     if (state.team) {
       var totals = aggregate(state.from, state.to)[state.team];
       if (!totals) {
@@ -488,7 +524,14 @@
           '<p class="empty">Não disputou nenhuma partida nesta faixa de edições.</p>';
         return;
       }
-      html = '<div class="sub">' + span + '</div><h2>' + state.team + '</h2>' +
+      // O ponto colorido não é enfeite: ele diz de onde veio a cor do mapa. A
+      // regra da tabela é "a camisa da última Copa que a seleção disputou", e o
+      // ano ao lado é o que torna isso verificável em vez de decorativo.
+      var identity = COLORS.teams[state.team];
+      html = '<div class="sub">' + span + '</div>' +
+        '<h2>' + badge(state.team, null) + state.team + '</h2>' +
+        (identity ? '<div class="sub" style="margin-top:-.5rem">Cor da camisa em ' +
+                    identity.last_cup + '</div>' : '') +
         '<div class="tiles">' +
           tile(NUM.format(totals.goals), "Gols") +
           tile(NUM.format(totals.conceded), "Sofridos") +
@@ -514,8 +557,7 @@
         def.label + '</th><th>J</th><th>V–E–D</th></tr></thead><tbody>';
       rows.forEach(function (entry) {
         var rec = entry[1], value = valueOf(rec, def, state.mode);
-        html += '<tr><td><span class="chip" style="background:' +
-          (colorFor(value, current.scale) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
+        html += '<tr><td>' + badge(entry[0], value) + entry[0] + '</td>' +
           '<td>' + format(value, def, state.mode) + '</td>' +
           '<td>' + NUM.format(rec.matches_played) + '</td>' +
           '<td>' + rec.wins + '–' + rec.draws + '–' + rec.losses + '</td></tr>';
@@ -553,8 +595,7 @@
     rows.slice(0, 30).forEach(function (entry, index) {
       var rec = entry[1], value = valueOf(rec, def, state.mode);
       html += '<tr><td>' + (index + 1) + '</td>' +
-        '<td><span class="chip" style="background:' +
-        (colorFor(value, current.scale) || css("--absent")) + '"></span>' + entry[0] + '</td>' +
+        '<td>' + badge(entry[0], value) + entry[0] + '</td>' +
         '<td>' + format(value, def, state.mode) + '</td>' +
         '<td>' + NUM.format(rec.matches_played) + '</td></tr>';
     });
@@ -635,6 +676,84 @@
     return swapped;
   }
 
+  /* Recolher e mostrar os painéis.
+   *
+   * Recolhido, o cartão fica reduzido à sua barra de título — nunca some. Um
+   * painel que desaparece por inteiro exige um segundo controle, em outro canto,
+   * só para trazê-lo de volta; a barra é o caminho de volta, e fica exatamente
+   * onde o painel estava.
+   *
+   * A escolha fica no `localStorage`: quem recolhe o painel lateral para ver o
+   * mapa inteiro não quer fazer isso de novo a cada recarga. Se o armazenamento
+   * estiver bloqueado (navegação privada, terceiros), a interface segue igual —
+   * só não lembra. Por isso o acesso é sempre dentro de try/catch: falhar em
+   * lembrar uma preferência não pode derrubar o mapa. */
+  var CARDS = { controls: "card-controls", legend: "card-legend", side: "card-side" };
+  var STORAGE_KEY = "atlas.cards.collapsed";
+
+  function remember(collapsed) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, collapsed.join(","));
+    } catch (error) { /* sem persistência; a interface não muda */ }
+  }
+
+  function recall() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      return raw ? raw.split(",").filter(Boolean) : [];
+    } catch (error) { return []; }
+  }
+
+  function collapsedNow() {
+    return Object.keys(CARDS).filter(function (name) {
+      return document.getElementById(CARDS[name]).classList.contains("collapsed");
+    });
+  }
+
+  function setCard(name, collapsed) {
+    var card = document.getElementById(CARDS[name]);
+    if (!card) return;
+    card.classList.toggle("collapsed", collapsed);
+    var toggle = card.querySelector(".card-toggle");
+    toggle.setAttribute("aria-expanded", String(!collapsed));
+    toggle.title = collapsed ? "Mostrar" : "Recolher";
+  }
+
+  function syncMaster() {
+    var all = Object.keys(CARDS);
+    var every = collapsedNow().length === all.length;
+    var button = document.getElementById("panels");
+    button.setAttribute("aria-pressed", String(every));
+    button.title = every ? "Mostrar todos os painéis" : "Recolher todos os painéis";
+    // Sem painéis abertos não há o que a barra de ferramentas precise evitar.
+    document.querySelector(".ui").classList.toggle("bare", every);
+  }
+
+  function wirePanels() {
+    var saved = recall();
+    Object.keys(CARDS).forEach(function (name) {
+      setCard(name, saved.indexOf(name) >= 0);
+      var card = document.getElementById(CARDS[name]);
+      card.querySelector(".card-toggle").addEventListener("click", function () {
+        setCard(name, !card.classList.contains("collapsed"));
+        syncMaster();
+        remember(collapsedNow());
+      });
+    });
+
+    // O botão da barra recolhe todos — ou devolve todos, se já estiverem todos
+    // recolhidos. O mapa não muda de tamanho (ele já ocupa a janela toda; os
+    // cartões só flutuam por cima), então não há `invalidateSize` a fazer.
+    document.getElementById("panels").addEventListener("click", function () {
+      var every = collapsedNow().length === Object.keys(CARDS).length;
+      Object.keys(CARDS).forEach(function (name) { setCard(name, !every); });
+      syncMaster();
+      remember(collapsedNow());
+    });
+
+    syncMaster();
+  }
+
   function syncMode() {
     var def = metricDef(state.metric);
     var rate = document.getElementById("mode-rate");
@@ -711,6 +830,8 @@
       input.value = index === 0 ? 0 : last;
       input.addEventListener("input", function () { syncYears(); repaint(); });
     });
+
+    wirePanels();
 
     document.getElementById("theme").addEventListener("click", function () {
       var root = document.documentElement;

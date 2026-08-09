@@ -54,6 +54,16 @@ MIN_CHROMA = 0.045
 # cinza e se confundir com "sem dado". Ver `ramp`.
 CHROMA_FLOOR = 0.10
 
+# Quanto a rampa pode passar do croma da cor da camisa nos passos fortes.
+#
+# Acima de 1.0 de propósito: um matiz não tem o mesmo croma disponível em toda
+# claridade. O amarelo do Brasil é vivo em L 0.90 e não existe vivo em L 0.45 —
+# amarelo escuro e saturado não cabe no sRGB. Pedindo mais croma do que a cor
+# original tem, cada passo fica tão saturado quanto aquela claridade permite, e o
+# `oklch_to_hex` corta o excesso no limite do gamut. O efeito é uma rampa mais
+# vibrante sem nenhum passo inventado: claridade e matiz seguem intactos.
+VIBRANCY = 1.45
+
 
 def _srgb_to_linear(channel: float) -> float:
     return channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
@@ -148,6 +158,6 @@ def ramp(base: str, mode: str, stops: int = STOPS) -> list[str]:
     for index in range(stops):
         position = index / (stops - 1)
         lightness = first + (last - first) * position
-        weight = max(CHROMA_FLOOR, min(1.0, position * 1.45) ** 0.85)
+        weight = max(CHROMA_FLOOR, VIBRANCY * position ** 0.7)
         out.append(oklch_to_hex(lightness, chroma * weight, hue))
     return out

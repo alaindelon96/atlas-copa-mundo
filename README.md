@@ -289,10 +289,10 @@ page tells you so if it happens.
 
 | File | Role |
 |---|---|
-| `web/index.html` | The page: four controls, map, legend, side panel, licence credits |
+| `web/index.html` | The shell: a full-window map with the panels floating over it |
 | `web/map.js` | Aggregates, classifies, paints — and checks itself against the pipeline |
 | `web/style.css` | Chrome inherited from `docs/panorama.html` + the two colour ramps |
-| `web/vendor/` | Leaflet 1.9.4, vendored rather than pulled from a CDN |
+| `web/vendor/` | Leaflet 1.9.4 and 83 flag SVGs, vendored rather than pulled from a CDN |
 | `etl/color.py` | Turns a shirt colour into a sequential ramp, in OKLab |
 | `reference/team_colors.csv` | Each team's curated colour, with the exceptions reasoned |
 
@@ -305,12 +305,23 @@ is the reference implementation, `web/map.js` mirrors it, and **the page re-runs
 full 1930–2026 range on load and compares it to `metrics.json` team by team**. Diverge,
 and a red banner says the numbers cannot be trusted. A Python test locks the other side.
 
-**The map is painted in the selected team's colour.** Pick Brazil and the world turns
-yellow; Italy, azzurro; the Netherlands, orange. The colours are curated by hand in
-[`reference/team_colors.csv`](reference/team_colors.csv) — the home shirt colour, or,
-for the twelve sides who play in white or black, the chromatic colour that identifies
-them, marked `identity` and reasoned row by row. Neither white nor black can carry a
-ramp: white has no hue, and black becomes the same grey that means "no data".
+**The map is painted in the selected team's shirt colour.** Pick Brazil and the world
+turns yellow; Italy, azzurro; the Netherlands, orange. The rule is precise: **the home
+shirt of the last World Cup that team actually played**, curated by hand in
+[`reference/team_colors.csv`](reference/team_colors.csv). For 48 of the 83 teams that is
+2026, so it rarely bites; it bites for the nine who have not played since before 1998 —
+Cuba's 1938 red, Israel's 1970 blue, Kuwait's 1982 blue.
+
+The `last_cup` column is **checked against the model on every run**, so a team playing
+again cannot leave the colour quietly describing a kit that is no longer their last. That
+check caught two curation errors the first time it ran: Italy (last played 2014, not
+2026) and Peru (2018).
+
+Sixteen sides play in white or black, which cannot carry a ramp — white has no hue, and
+black becomes the same grey that means "no data". Those fall back to the chromatic colour
+that identifies them, marked `identity` and reasoned row by row. The Dutch East Indies are
+the sharpest case: they played 1938 in white, so the row uses modern Indonesia's red — the
+label the record appears under.
 
 `etl/color.py` turns each of those colours into a nine-step ramp in **OKLab**, a
 perceptually uniform space — interpolating yellow to white in sRGB detours through dirty
@@ -347,7 +358,7 @@ Publication. See [Roadmap](#roadmap).
 pytest
 ```
 
-58 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+65 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
 two sentinel nulls, and a hand-checked sample of coordinates (a valid schema cannot tell
