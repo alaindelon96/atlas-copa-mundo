@@ -210,6 +210,77 @@ def build_team_matches(matches: pd.DataFrame) -> pd.DataFrame:
     return long.sort_values(["match_date", "match_id", "home_away"]).reset_index(drop=True)
 
 
+def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
+    """Os 3.028 gols, com autor e minuto — duas fontes num formato só.
+
+    **Esta tabela desmente uma decisão de escopo do projeto.** A Etapa 3 concluiu
+    que dado de jogador teria buraco em 2026 e cortou as features para "só
+    estatística de jogo". A conclusão estava certa sobre o Fjelstul, que termina
+    em 2022, e errada sobre o que já havia no disco: as páginas raspadas da
+    Wikipédia trazem os 308 artilheiros de 2026 com minuto. O buraco não existia
+    — faltava um parser (ver `etl.parse_2026.parse_goals`).
+
+    Somando as duas fontes: 2.720 gols masculinos de 1930 a 2022 e 308 de 2026.
+    O total, 3.028, é exatamente o que os placares do modelo já diziam — o que
+    torna esta tabela conferível linha a linha contra `matches.csv` em vez de
+    apenas plausível.
+
+    Duas ressalvas que o dado impõe:
+
+    - **Gol contra é creditado a quem ganhou o gol.** As duas fontes concordam
+      nisso, e é o que faz a soma bater com o placar; `player_team` guarda o time
+      de quem de fato chutou, que nos gols contra é o adversário.
+    - **Nome de jogador não é comparável entre as fontes.** O Fjelstul separa
+      `given_name` e `family_name` e grava a string `"not applicable"` para quem
+      só tem um nome — o Ronaldo brasileiro entre eles. A Wikipédia traz o nome
+      curto que a caixa de partida exibe ("Mbappé"). Como não há id de jogador em
+      2026, os dois lados ficam num campo só, `player`, e o projeto não promete
+      que "Ronaldo" de 1998 e "Ronaldo" de 2026 sejam a mesma pessoa. Contar
+      artilheiro por edição é seguro; somar carreira entre fontes não é.
+    """
+    succession = pd.read_csv(REFERENCE / "team_succession.csv")
+    labels = dict(zip(succession.historic_name, succession.display_name))
+
+    historic = pd.read_csv(RAW_FJELSTUL / "goals.csv")
+    historic = historic[historic.match_id.isin(set(matches.match_id))].copy()
+
+    def full_name(row: pd.Series) -> str:
+        given = "" if str(row.given_name) == "not applicable" else str(row.given_name)
+        return f"{given} {row.family_name}".strip()
+
+    historic["player"] = historic.apply(full_name, axis=1)
+    historic["team"] = historic.team_name.map(lambda name: labels.get(name, name))
+    historic["player_team"] = historic.player_team_name.map(lambda name: labels.get(name, name))
+    historic["source"] = "fjelstul"
+
+    modern = pd.read_csv(INTERIM / "goals_2026.csv")
+    modern = modern[modern.match_id.isin(set(matches.match_id))].copy()
+    modern["player"] = modern.player_name
+    modern["team"] = modern.team_name.map(lambda name: labels.get(name, name))
+    # Num gol contra, quem chutou é do outro time — a fonte de 2026 não diz o
+    # time do jogador, mas a partida diz quem é o adversário.
+    modern["player_team"] = modern.apply(
+        lambda row: row.opponent_name if row.own_goal else row.team_name, axis=1)
+    modern["player_team"] = modern.player_team.map(lambda name: labels.get(name, name))
+    modern["source"] = "wikipedia"
+
+    columns = ["match_id", "team", "player_team", "player",
+               "minute_regulation", "minute_stoppage", "penalty", "own_goal", "source"]
+    goals = pd.concat([historic[columns], modern[columns]], ignore_index=True)
+
+    context = matches[["match_id", "tournament_id", "year", "stage", "match_date"]]
+    goals = goals.merge(context, on="match_id", how="left")
+
+    goals["minute_stoppage"] = goals.minute_stoppage.astype("Int64")
+    goals["minute"] = goals.minute_regulation + goals.minute_stoppage.fillna(0).astype(int)
+
+    ordered = ["match_id", "tournament_id", "year", "stage", "match_date",
+               "team", "player_team", "player",
+               "minute", "minute_regulation", "minute_stoppage",
+               "penalty", "own_goal", "source"]
+    return goals[ordered].sort_values(["match_date", "match_id", "minute"]).reset_index(drop=True)
+
+
 def build_tournaments(matches: pd.DataFrame) -> pd.DataFrame:
     """Uma linha por edição, com campeão e vice.
 
@@ -321,6 +392,7 @@ def main() -> int:
     venues = build_venues(raw_venues, raw_matches)
     matches = build_matches(raw_matches, venues)
     long = build_team_matches(matches)
+    goals = build_goals(matches)
     tournaments = build_tournaments(matches)
     hosts = build_hosts(matches)
     teams = build_teams(long, team_country)
@@ -332,6 +404,7 @@ def main() -> int:
         "venues.csv": venues,
         "matches.csv": matches,
         "team_matches.csv": long,
+        "goals.csv": goals,
     }
     print("Tabelas do modelo:")
     for name, table in tables.items():
@@ -364,6 +437,13 @@ def main() -> int:
         ("seleções com confederação", int(teams.confederation.notna().sum()), len(teams)),
         ("sedes com coordenada", int(venues.latitude.notna().sum()), len(venues)),
         ("edições", len(tournaments), raw_matches.tournament_id.nunique()),
+        # A conferência que torna a tabela de gols verificável em vez de
+        # plausível: a soma dos gols com autor tem que dar o mesmo que a soma
+        # dos placares, que é um número que o modelo já produzia sozinho.
+        ("gols com autor = placares", len(goals),
+         int((matches.home_team_score + matches.away_team_score).sum())),
+        ("gols sem minuto", int(goals.minute.isna().sum()), 0),
+        ("gols sem autor", int(goals.player.isna().sum() + (goals.player == "").sum()), 0),
     ]
 
     # Cada partida gera uma vitória e uma derrota, ou dois empates.

@@ -54,6 +54,11 @@ RE_ATTENDANCE = re.compile(r"Attendance:\s*([\d,]+)")
 RE_REFEREE = re.compile(r"Referee:\s*([^(]+?)\s*\(")
 RE_REVISION = re.compile(r'"wgRevisionId"\s*:\s*(\d+)')
 
+# Um gol na caixa de partida: minuto, acréscimo opcional e uma marca opcional
+# logo depois. A marca gruda no minuto que a precede, não na linha inteira —
+# "Fulano 12', 45' (pen.)" é um gol normal e um de pênalti, não dois de pênalti.
+RE_GOAL = re.compile(r"(\d+)(?:\s*\+\s*(\d+))?\s*'\s*(?:\(\s*(pen\.|o\.g\.)\s*\))?")
+
 
 def text_of(node: Tag | None) -> str:
     """Texto normalizado de um nó, com espaços colapsados."""
@@ -88,6 +93,73 @@ def iter_matches_with_stage(soup: BeautifulSoup) -> Iterator[tuple[Tag, str | No
                 stage = heading
         elif "footballbox" in (element.get("class") or []):
             yield element, stage
+
+
+def parse_goals(box: Tag) -> list[dict[str, Any]]:
+    """Os gols de uma partida, a partir das duas colunas de artilheiros.
+
+    **Esta função existe porque uma suposição do projeto estava errada.** A Etapa
+    3 concluiu que dado de jogador teria buraco em 2026 e cortou o escopo para
+    "só estatística de jogo". Mas as páginas que o `scrape_2026.py` já baixou
+    trazem os artilheiros com minuto: 104 caixas de partida, 308 marcas de
+    minuto — exatamente o total que o próprio artigo declara — e as 7 partidas
+    sem nome listado são todas 0–0. O buraco nunca existiu; o parser é que não
+    olhava.
+
+    O texto de uma coluna encadeia jogadores e minutos:
+
+        Manzambi 74' , 90'                 -> dois gols do mesmo jogador
+        Xhaka 90+7' ( pen. )               -> acréscimo e pênalti
+        Manai 75' ( o.g. )                 -> gol contra
+        Dembélé 7' , 20' , 32' Doué 90+4'  -> dois jogadores na mesma coluna
+
+    **A leitura é pelo texto, não pela lista.** A maioria das colunas embrulha
+    cada jogador num `<li>`, mas nem todas — e confiar no `<li>` perdia 6 gols
+    em 302, todos em colunas que a Wikipédia deixou como texto solto. O que vale
+    em qualquer um dos dois formatos é a alternância: um nome, os minutos dele,
+    o próximo nome. Então o parser anda pelos minutos e trata o texto entre dois
+    deles como troca de jogador — vazio ou só pontuação significa "mesmo
+    jogador".
+
+    **Gol contra fica na coluna de quem ganhou o gol**, que é como a Wikipédia
+    (e o placar) contam — por isso `team_side` é o lado da coluna, e o nome do
+    jogador é de quem marcou contra. Sem essa distinção a soma dos gols não
+    fecharia com o placar.
+    """
+    goals: list[dict[str, Any]] = []
+
+    for side, selector in (("home", "td.fhgoal"), ("away", "td.fagoal")):
+        cell = box.select_one(selector)
+        if cell is None:
+            continue
+
+        items = cell.select("li")
+        lines = items if items else [cell]
+
+        for item in lines:
+            text = " ".join(item.get_text(" ", strip=True).split())
+            first = RE_GOAL.search(text)
+            if not first:
+                continue
+
+            player = text[:first.start()].strip(" ,;·")
+            cursor = 0
+            for match in RE_GOAL.finditer(text):
+                between = text[cursor:match.start()].strip(" ,;·")
+                if between:
+                    player = between
+                cursor = match.end()
+
+                marker = match.group(3) or ""
+                goals.append({
+                    "team_side": side,
+                    "player_name": player,
+                    "minute_regulation": int(match.group(1)),
+                    "minute_stoppage": int(match.group(2)) if match.group(2) else None,
+                    "penalty": int(marker == "pen."),
+                    "own_goal": int(marker == "o.g."),
+                })
+    return goals
 
 
 def parse_match(box: Tag) -> dict[str, Any]:
@@ -154,6 +226,10 @@ def parse_page_matches(page: str, *, group_name: str = "") -> list[dict[str, Any
         record["group_name"] = group_name
         record["source_page"] = page
         record["source_revision"] = revision
+        # Os gols viajam junto com a partida até o `match_id` existir — ele só é
+        # atribuído depois da ordenação, em `parse_matches`. O nome da coluna não
+        # começa com underscore porque o `itertuples` renomeia essas para `_13`.
+        record["goal_events"] = parse_goals(box)
         records.append(record)
     return records
 
@@ -187,7 +263,37 @@ def parse_matches() -> pd.DataFrame:
         "home_team_score_penalties", "away_team_score_penalties",
         "attendance", "referee", "source_page", "source_revision",
     ]
-    return frame[columns]
+    return frame[columns], build_goals(frame)
+
+
+def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
+    """Espalha os gols que viajaram com cada partida numa tabela própria.
+
+    O `team_side` vira nome de seleção aqui, onde a partida ainda está à mão —
+    depois disso a coluna não teria como ser resolvida sem um join de volta.
+    """
+    rows: list[dict[str, Any]] = []
+    for match in matches.itertuples():
+        for order, goal in enumerate(match.goal_events or [], start=1):
+            rows.append({
+                "tournament_id": TOURNAMENT_ID,
+                "match_id": match.match_id,
+                "match_date": match.match_date,
+                "goal_order": order,
+                "team_name": (match.home_team_name if goal["team_side"] == "home"
+                              else match.away_team_name),
+                "opponent_name": (match.away_team_name if goal["team_side"] == "home"
+                                  else match.home_team_name),
+                "home_away": goal["team_side"],
+                "player_name": goal["player_name"],
+                "minute_regulation": goal["minute_regulation"],
+                "minute_stoppage": goal["minute_stoppage"],
+                "penalty": goal["penalty"],
+                "own_goal": goal["own_goal"],
+                "source_page": match.source_page,
+                "source_revision": match.source_revision,
+            })
+    return pd.DataFrame(rows)
 
 
 def parse_venues() -> pd.DataFrame:
@@ -297,12 +403,13 @@ def main() -> int:
     print("Parsing do HTML em cache (nenhuma requisição de rede)")
 
     tournament = parse_tournament()
-    matches = parse_matches()
+    matches, goals_frame = parse_matches()
     venues = parse_venues()
 
     write(tournament, "tournament_2026.csv")
     write(matches, "matches_2026.csv")
     write(venues, "venues_2026.csv")
+    write(goals_frame, "goals_2026.csv")
 
     # Conferir o parsing contra os totais que o próprio infobox declara.
     print("\nConferência com o infobox:")
@@ -315,6 +422,10 @@ def main() -> int:
         ("partidas", len(matches), expected_matches),
         ("gols", goals, expected_goals),
         ("sedes", len(venues), expected_venues),
+        # Os artilheiros extraídos têm que dar o mesmo total que os placares. É a
+        # conferência que separa "achei nomes" de "achei todos os gols": um
+        # jogador esquecido numa linha some sem erro nenhum.
+        ("gols com autor", len(goals_frame), expected_goals),
     ]
     failed = 0
     for label, got, expected in checks:

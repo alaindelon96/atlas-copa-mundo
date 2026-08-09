@@ -460,3 +460,32 @@ table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15
   /* e o zoom sobe para não ficar embaixo da folha */
   .leaflet-bottom.leaflet-left { margin-left:0; margin-bottom:calc(var(--sheet) + var(--gap) * 2); }
 }
+
+/* ---- artilheiros ---- */
+
+/* Os gols de cada lado, embaixo do placar. O lado adversário fica mais apagado:
+   os dois são fatos da mesma partida, mas só um deles é da seleção que você
+   escolheu, e a hierarquia evita ler a linha errada. */
+.scorers { display:block; font-size:.7rem; color:var(--ink-2); margin-top:.15rem; line-height:1.5; }
+.scorers.against { color:var(--ink-3); }
+.scorer { margin-right:.5rem; white-space:nowrap; }
+.scorer em { font-style:normal; font-family:var(--mono); font-size:.92em; opacity:.8; }
+
+.scorer-list { display:flex; flex-direction:column; margin-top:.35rem; }
+.scorer-row {
+  display:flex; justify-content:space-between; align-items:baseline; gap:.5rem;
+  padding:.24rem .1rem; border-bottom:1px solid var(--rule); font-size:.82rem;
+}
+.scorer-row:last-child { border-bottom:0; }
+.scorer-row b { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+
+/* Botão de percorrer as edições, dentro do rótulo da faixa. */
+.play {
+  margin-left:.4rem; width:1.3rem; height:1.3rem; padding:0;
+  display:inline-grid; place-items:center; vertical-align:-.25em;
+  font-size:.6rem; line-height:1; cursor:pointer;
+  color:var(--accent); background:var(--accent-soft);
+  border:0; border-radius:var(--r-pill);
+}
+.play:hover { filter:brightness(1.08); }
+.play[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); }

@@ -88,7 +88,7 @@
   };
 
   var TIMELINE = null, GOLDEN = null, GEO = null, COLORS = null;
-  var MATCHES = null, VENUES = null;
+  var MATCHES = null, VENUES = null, GOALS = null;
   var map = null, layer = null, venueLayer = null, byTeam = {};
   var current = { records: null, scale: null, metric: null };
 
@@ -546,7 +546,6 @@
 
   function applyURL() {
     var raw = window.location.hash.replace(/^#/, "");
-    if (!raw) return false;
     var params = {};
     raw.split("&").forEach(function (pair) {
       var bits = pair.split("=");
@@ -556,7 +555,17 @@
     var known = {};
     TIMELINE.teams.forEach(function (name) { known[name] = true; });
 
-    if (params.m && metricDef(params.m).key === params.m) state.metric = params.m;
+    /* A URL descreve o estado inteiro, então aplicá-la é **restaurar**, não
+     * mesclar. Zerar antes é o que faz um parâmetro *ausente* significar
+     * alguma coisa: sem isso, voltar de `#t=Brazil&jogos=Sweden` para
+     * `#t=Brazil` deixava o detalhamento aberto, porque "sem `jogos`" não
+     * desligava nada — o botão voltar do navegador ficava preso na tela. */
+    state.team = null;
+    state.versus = null;
+    state.view = null;
+    state.opponent = null;
+
+    state.metric = params.m && metricDef(params.m).key === params.m ? params.m : "goals";
     if (params.t && known[params.t]) state.team = params.t;
     if (params.v && known[params.v] && params.v !== state.team) state.versus = params.v;
     state.mode = params.r === "1" ? "rate" : "total";
@@ -574,6 +583,9 @@
       state.view = "matches";
       state.opponent = params.jogos !== "1" && known[params.jogos] ? params.jogos : null;
     }
+    // A faixa de anos volta ao total quando a URL não a menciona, pelo mesmo
+    // motivo de tudo o mais aqui: ausência é informação.
+    if (!params.y) { state.from = 0; state.to = TIMELINE.years.length - 1; }
     return true;
   }
 
@@ -745,6 +757,7 @@
 
       var pens = row[8];
       out.push({
+        position: position,
         year: row[0],
         stage: MATCHES.stages[row[1]],
         date: row[7],
@@ -759,10 +772,78 @@
     });
 
     out.forEach(function (match) {
+      match.team = team;
       match.result = resultOf(match.goalsFor, match.goalsAgainst,
                               match.pensFor, match.pensAgainst);
     });
     return out.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+
+  /* Os gols, indexados pela posição da partida — a mesma chave que o
+   * `matches.json` usa. O ETL confere que as duas listas estão alinhadas. */
+  var goalIndex = null;
+
+  function goalsOfMatch(position) {
+    if (!goalIndex) {
+      goalIndex = {};
+      GOALS.rows.forEach(function (row) {
+        (goalIndex[row[0]] = goalIndex[row[0]] || []).push(row);
+      });
+    }
+    return goalIndex[position] || [];
+  }
+
+  /* Os artilheiros de um lado da partida, agrupados por jogador.
+   *
+   * Agrupar importa: "Pelé 55', 90'" é uma linha e duas linhas separadas com o
+   * mesmo nome parecem dois jogadores homônimos. As marcas ficam coladas no
+   * minuto que as gerou, porque é o minuto que foi de pênalti — não o jogador. */
+  function scorers(position, teamName) {
+    var byPlayer = [], seen = {};
+    goalsOfMatch(position).forEach(function (row) {
+      if (MATCHES.teams[row[1]] !== teamName) return;
+      var name = GOALS.players[row[2]];
+      var minute = row[3] + (row[4] ? "+" + row[4] : "") + "'";
+      if (row[5] === 1) minute += " (p)";
+      if (row[5] === 2) minute += " (gc)";
+      if (!seen[name]) { seen[name] = { name: name, minutes: [] }; byPlayer.push(seen[name]); }
+      seen[name].minutes.push(minute);
+    });
+    return byPlayer.map(function (player) {
+      return '<span class="scorer">' + player.name + " " +
+             '<em>' + player.minutes.join(", ") + "</em></span>";
+    }).join("");
+  }
+
+  /* Artilheiros de uma seleção na faixa escolhida.
+   *
+   * Gol contra fica de fora: ele é creditado à seleção que *ganhou* o gol, mas
+   * quem chutou joga do outro lado. Contá-lo aqui daria a um adversário uma
+   * linha na lista de artilheiros do time — o oposto do que a lista quer dizer. */
+  function topScorers(team, from, to, limit) {
+    // O índice é preguiçoso e `matchesFor` costuma criá-lo primeiro — mas não
+    // quando a página abre já com um país na URL: aí o painel pede artilheiro
+    // antes de qualquer lista de partidas existir.
+    if (!matchIndex) indexMatches();
+
+    var firstYear = TIMELINE.years[from], lastYear = TIMELINE.years[to];
+    var tally = {}, out = [];
+
+    (matchIndex[team] || []).forEach(function (position) {
+      var row = MATCHES.rows[position];
+      if (row[0] < firstYear || row[0] > lastYear) return;
+      goalsOfMatch(position).forEach(function (goal) {
+        if (goal[5] === 2) return;                       // gol contra
+        if (MATCHES.teams[goal[1]] !== team) return;
+        var name = GOALS.players[goal[2]];
+        if (!tally[name]) { tally[name] = { name: name, goals: 0 }; out.push(tally[name]); }
+        tally[name].goals += 1;
+      });
+    });
+
+    return out.sort(function (a, b) {
+      return b.goals - a.goals || a.name.localeCompare(b.name);
+    }).slice(0, limit || 8);
   }
 
   var STAGE_SHORT = {
@@ -779,12 +860,16 @@
       var score = match.goalsFor + "–" + match.goalsAgainst;
       var pens = match.pensFor === null ? "" :
                  ' <em class="pens">(' + match.pensFor + "–" + match.pensAgainst + " p)</em>";
+      var mine = scorers(match.position, match.team);
+      var theirs = scorers(match.position, match.opponent);
       html += '<div class="match">' +
         '<span class="res res-' + match.result + '">' + match.result + "</span>" +
         '<span class="match-main">' +
           '<b>' + score + pens + "</b> " + (match.home ? "vs " : "em ") + match.opponent +
           '<span class="match-sub">' + match.year + " · " + (STAGE_SHORT[match.stage] || match.stage) +
           (match.venue ? " · " + match.venue.city : "") + "</span>" +
+          (mine ? '<span class="scorers">' + mine + "</span>" : "") +
+          (theirs ? '<span class="scorers against">' + theirs + "</span>" : "") +
         "</span></div>";
     });
     return html + "</div>";
@@ -937,6 +1022,17 @@
         if (y === null) y = -Infinity;
         return y - x || a[0].localeCompare(b[0]);
       });
+
+      var scorersList = topScorers(state.team, state.from, state.to, 8);
+      if (scorersList.length) {
+        html += '<div><div class="sub">Artilheiros · ' + span + "</div>" +
+          '<div class="scorer-list">';
+        scorersList.forEach(function (player) {
+          html += '<div class="scorer-row"><span>' + player.name + "</span>" +
+                  "<b>" + NUM.format(player.goals) + "</b></div>";
+        });
+        html += "</div></div>";
+      }
 
       html += '<button class="back" type="button" data-matches="1">' +
         "Ver as " + NUM.format(totals.matches_played) + " partidas →</button>";
@@ -1198,6 +1294,63 @@
     rate.setAttribute("aria-pressed", String(state.mode === "rate"));
   }
 
+  /* Percorrer as edições.
+   *
+   * O slider já dizia *qual* recorte olhar; o play mostra a **mudança** entre
+   * eles, que é o que uma imagem parada não consegue. Ele desliza a janela que
+   * você escolheu, mantendo a largura: com duas edições selecionadas, caminha de
+   * duas em duas. A faixa completa é o único caso especial — não há para onde
+   * deslizar uma janela que já cobre tudo —, então ela encolhe para uma edição
+   * antes de começar. Sem isso o botão não faria nada justamente no estado
+   * inicial, que é onde a maioria vai clicar nele.
+   */
+  var playTimer = null;
+
+  function playing() { return playTimer !== null; }
+
+  function stopPlay() {
+    if (playTimer) window.clearInterval(playTimer);
+    playTimer = null;
+    var button = document.getElementById("play");
+    button.textContent = "▶";
+    button.setAttribute("aria-pressed", "false");
+    button.title = "Percorrer as edições";
+  }
+
+  function stepPlay() {
+    var last = TIMELINE.years.length - 1;
+    var width = state.to - state.from;
+
+    if (state.to >= last) return stopPlay();   // chegou em 2026
+
+    setYears(state.from + 1, Math.min(last, state.from + 1 + width));
+  }
+
+  function startPlay() {
+    var last = TIMELINE.years.length - 1;
+    // Já no fim, recomeça do início em vez de não fazer nada — é o que um botão
+    // de play faz quando a faixa acabou, e "não faz nada" seria lido como quebra.
+    if (state.from === 0 && state.to === last) setYears(0, 0);
+    else if (state.to >= last) setYears(0, state.to - state.from);
+
+    var button = document.getElementById("play");
+    button.textContent = "⏸";
+    button.setAttribute("aria-pressed", "true");
+    button.title = "Pausar";
+    // 1,1 s por edição: rápido o bastante para as 23 passarem em meio minuto e
+    // lento o bastante para dar tempo de ler o mapa antes da próxima.
+    playTimer = window.setInterval(stepPlay, 1100);
+  }
+
+  /* Move a faixa e mantém os dois sliders em dia. Existe porque o play precisa
+   * mexer no estado sem passar pelos eventos de input dos sliders. */
+  function setYears(from, to) {
+    document.getElementById("year-from").value = from;
+    document.getElementById("year-to").value = to;
+    syncYears();
+    repaint();
+  }
+
   function syncYears() {
     var from = document.getElementById("year-from");
     var to = document.getElementById("year-to");
@@ -1266,6 +1419,10 @@
     });
     versus.addEventListener("change", function () { selectVersus(versus.value); });
 
+    document.getElementById("play").addEventListener("click", function () {
+      if (playing()) stopPlay(); else startPlay();
+    });
+
     document.getElementById("layer-venues").addEventListener("click", function () {
       state.venues = !state.venues;
       this.setAttribute("aria-pressed", String(state.venues));
@@ -1316,7 +1473,13 @@
       var input = document.getElementById(id);
       input.min = 0; input.max = last; input.step = 1;
       input.value = index === 0 ? 0 : last;
-      input.addEventListener("input", function () { syncYears(); repaint(); });
+      input.addEventListener("input", function () {
+        // Mexer no slider durante a animação para a animação: quem arrastou quer
+        // olhar aquele recorte, não ser levado para o próximo em um segundo.
+        stopPlay();
+        syncYears();
+        repaint();
+      });
     });
 
     wirePanels();
@@ -1352,7 +1515,8 @@
     load("data/countries.geojson"),
     load("data/colors.json"),
     load("data/matches.json"),
-    load("data/venues.json")
+    load("data/venues.json"),
+    load("data/goals.json")
   ]).then(function (loaded) {
     TIMELINE = loaded[0];
     GOLDEN = loaded[1];
@@ -1360,6 +1524,7 @@
     COLORS = loaded[3];
     MATCHES = loaded[4];
     VENUES = loaded[5];
+    GOALS = loaded[6];
 
     state.to = TIMELINE.years.length - 1;
     // A URL manda: um link compartilhado precisa abrir na visão que ele

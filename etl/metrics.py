@@ -361,7 +361,7 @@ def build_colors(teams: list[str], last_cup: dict[str, int]) -> dict:
     }
 
 
-def build_match_list(matches: pd.DataFrame, venues: pd.DataFrame) -> dict:
+def build_match_list(matches: pd.DataFrame, venues: pd.DataFrame) -> tuple[dict, list[str]]:
     """As 1.068 partidas, uma a uma — o que o detalhamento abre.
 
     Até aqui o front-end só via agregados: "Brasil 21 gols contra a Suécia em 7
@@ -389,7 +389,9 @@ def build_match_list(matches: pd.DataFrame, venues: pd.DataFrame) -> dict:
     venue_ix = {vid: i for i, vid in enumerate(used)}
 
     rows = []
+    order: list[str] = []
     for match in matches.sort_values("match_date").itertuples():
+        order.append(match.match_id)
         penalties = None
         if match.penalty_shootout and pd.notna(match.home_team_score_penalties):
             penalties = [int(match.home_team_score_penalties),
@@ -416,6 +418,51 @@ def build_match_list(matches: pd.DataFrame, venues: pd.DataFrame) -> dict:
             }
             for vid in used
         ],
+        "rows": rows,
+    }, order
+
+
+def build_goal_list(goals: pd.DataFrame, match_list: dict, order: list[str]) -> dict:
+    """Os 3.028 gols em forma compacta, presos ao índice do `matches.json`.
+
+    Cada linha é `[partida, seleção, jogador, minuto, acréscimo, marca]`, tudo
+    como índice — o nome "Cristiano Ronaldo" aparece uma vez no dicionário e não
+    nas dezenas de linhas dele. A marca é 0 (normal), 1 (pênalti) ou 2 (contra).
+
+    O índice de partida é a **posição no `matches.json`**, não um id: o
+    detalhamento já carrega aquela lista e casar por posição evita mandar 3.028
+    strings de id junto. É o mesmo contrato das sedes, e com a mesma armadilha —
+    se as duas listas saírem de ordem, os gols aparecem na partida errada sem
+    nada acusar. Por isso a ordem é passada de fora, vinda de quem montou o
+    `matches.json`, e conferida em `main`.
+
+    O gol contra é creditado à seleção que **ganhou** o gol, como no placar; o
+    nome que aparece é o de quem chutou. Sem isso a soma não fecharia.
+    """
+    team_ix = {name: i for i, name in enumerate(match_list["teams"])}
+    match_ix = {match_id: i for i, match_id in enumerate(order)}
+
+    players = sorted(goals.player.unique())
+    player_ix = {name: i for i, name in enumerate(players)}
+
+    rows = []
+    for goal in goals.itertuples():
+        if goal.match_id not in match_ix or goal.team not in team_ix:
+            continue
+        rows.append([
+            match_ix[goal.match_id],
+            team_ix[goal.team],
+            player_ix[goal.player],
+            int(goal.minute_regulation),
+            int(goal.minute_stoppage) if pd.notna(goal.minute_stoppage) else 0,
+            2 if goal.own_goal else 1 if goal.penalty else 0,
+        ])
+
+    return {
+        "generated_from": "data/processed/goals.csv",
+        "competition": COMPETITION,
+        "players": players,
+        "marks": ["normal", "pênalti", "contra"],
         "rows": rows,
     }
 
@@ -525,7 +572,8 @@ def main() -> int:
     metrics = build_metrics(long, matches)
     head2head = build_head_to_head(long)
     timeline = build_timeline(long, matches)
-    match_list = build_match_list(matches, venues)
+    match_list, match_order = build_match_list(matches, venues)
+    goal_list = build_goal_list(pd.read_csv(PROCESSED / "goals.csv"), match_list, match_order)
     venue_layer = build_venue_layer(venues, matches)
     try:
         colors = build_colors(
@@ -545,7 +593,7 @@ def main() -> int:
         "teams": metrics,
     }), ("head2head.json", head2head), ("timeline.json", timeline),
             ("colors.json", colors), ("matches.json", match_list),
-            ("venues.json", venue_layer)):
+            ("venues.json", venue_layer), ("goals.json", goal_list)):
         path = WEB_DATA / name
         with path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
@@ -601,6 +649,31 @@ def main() -> int:
     aligned = sum(1 for layer, listed in zip(venue_layer["rows"], match_list["venues"])
                   if layer[5] == listed["name"])
     checks.append(("sedes alinhadas", aligned, len(venue_layer["rows"])))
+
+    # Os gols casam com a partida por POSIÇÃO na lista. Se as duas listas
+    # saírem de ordem, cada gol aparece na partida errada e nada acusa — os
+    # totais continuam certos. Refazer a soma por partida a partir dos índices
+    # e comparar com o placar é o que fecha essa porta.
+    scored = {}
+    for row in goal_list["rows"]:
+        scored[(row[0], row[1])] = scored.get((row[0], row[1]), 0) + 1
+    misplaced = 0
+    same_label = 0
+    for position, row in enumerate(match_list["rows"]):
+        home, away = row[2], row[3]
+        # Alemanha Oriental 1–0 Alemanha Ocidental, 1974: pela decisão editorial
+        # do projeto os dois lados são "Germany", e um gol creditado a "Germany"
+        # nesta partida não tem como dizer a qual das duas pertence. A conferência
+        # pula o caso em vez de fingir que ele não existe — `etl.validate` já o
+        # imprime a cada execução e um teste o trava.
+        if home == away:
+            same_label += 1
+            continue
+        if scored.get((position, home), 0) != row[4]: misplaced += 1
+        if scored.get((position, away), 0) != row[5]: misplaced += 1
+    checks.append(("gols na partida certa", misplaced, 0))
+    checks.append(("partidas seleção × ela mesma", same_label, 1))
+    checks.append(("gols no detalhamento", len(goal_list["rows"]), expected_goals))
     checks.append(("seleções com rampa", len(colors["teams"]), len(timeline["teams"])))
 
     # A claridade tem que ser monótona em toda rampa: é ela que carrega o dado, e

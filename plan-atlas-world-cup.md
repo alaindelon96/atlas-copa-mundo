@@ -28,7 +28,7 @@
 | Visualisation | Leaflet.js | Mapbox GL JS | Lightweight, free, no API key | ✅ implemented (`web/map.js`, 9 metrics) |
 | Publication | GitHub Pages | Netlify/Vercel | Free, integrated with the repository | ⏳ not started |
 | Automation/CI | GitHub Actions | — | Run the ETL pipeline automatically (optional, but adds portfolio value) | ⏳ deferred to v2 |
-| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 73 tests, all offline |
+| Testing | `pytest` | — | Test cleaning/transformation functions | ✅ 82 tests, all offline |
 
 **Verified environment:** Python 3.11.9, git 2.55.0, Windows 11. All dependencies installed and pinned in `requirements.txt`.
 
@@ -292,6 +292,26 @@ Inspired by **SofaScore**, whose team page is built on a match list with a W/D/L
 
 **New files:** `web/data/matches.json` (58 KB, the 1,068 matches) and `web/data/venues.json` (15 KB, the 208 venues with matches).
 
+### Stage 4c — Goalscorers, and the assumption that fell
+
+**Stage 3 concluded that player data would have a 2026 hole and cut the features to "match statistics only".** That was right about Fjelstul, which ends in 2022, and wrong about what was already on disk: the pages `scrape_2026.py` downloaded carry the scorers with minutes. All 104 match boxes were checked — **308 minute marks**, exactly the total the article declares, and the 7 matches with no names listed are all 0–0. The hole never existed; a parser was missing.
+
+| | |
+|---|---|
+| Fjelstul, 1930–2022 | 2,720 goals with scorer, minute, penalty and own-goal flags |
+| Wikipedia, 2026 | 308, extracted from HTML already in `data/raw/scraped/` |
+| **Total** | **3,028** — the same number the model's scorelines already gave |
+
+That agreement is what makes the table **checkable** rather than plausible: it does not invent its own count, it reproduces one the model already produced by another route — and the check is per match, not just on the total.
+
+**Three things the data forced:**
+
+1. **An own goal is credited to the side that gained it.** Both sources agree, and it is what makes the sum match the scoreline; `player_team` keeps the shooter's actual side. Were `team` the player's side, two teams would have their numbers swapped in the same match.
+2. **Reading the list markup lost 6 goals.** Most columns wrap each scorer in an `<li>`, but not all — and one held two players as loose text. The parser now walks the minutes and treats the text between two of them as a change of player, which holds in both shapes.
+3. **Player names are not comparable across sources.** Fjelstul writes the string `"not applicable"` as the given name of anyone with a single name — Brazil's Ronaldo among them. Counting a tournament's top scorer is safe; summing a career across the two sources is not, and the project does not claim it.
+
+**What reached the screen:** scorers per match in the drill-down (the 1958 final shows Vavá, Pelé and Zagallo with their minutes), a top-scorer list for the selected team, and a **play button** on the slider that walks edition by edition — which is why it skips 1942 and 1946, which never happened.
+
 ### Stage 5 — Publish
 
 - [x] Structure as a static site (`web/index.html` + assets)
@@ -444,3 +464,6 @@ atlas-copa-mundo/
 - **2026-08-09** — **switching to SVG solved two problems at once.** The vendored set renders identically on every system and **includes Northern Ireland**, which Unicode has never defined as an emoji and which was therefore the one team condemned to have no flag. The choice of set was measured too: the first candidate weighed 723 KB, with ten coats of arms (Serbia alone at 177 KB) making up 87% of it for detail invisible at 16px; the adopted set does the same job in **146 KB**. An `onerror` falls back to the coloured dot if a file is missing, and the ETL fails if any SVG is absent from disk — because a broken icon raises no error anywhere.
 - **2026-08-09** — **four new features, all from data that already existed:** state in the URL (a view becomes a link), match drill-down (the number opens and shows the rows behind it), comparing two teams (works even for sides that never met) and a venue layer (returns the 252 venues geocoded in Stage 3 that the map never used). The design reference was SofaScore, whose team page is built on a match list with a W/D/L marker per row.
 - **2026-08-09** — **two silent bugs surfaced while building, and both became tests.** (1) The venue layer was sorted by match count while the drill-down indexes venues in CSV order — both lists stayed the same length, so nothing complained, but one stadium's count would have been plotted at another's coordinates. (2) `badge()` escaped single but not double quotes in the flag's `onerror`, ending the attribute early and leaking `'">` as text beside the team name — a bug live since the flags commit.
+- **2026-08-09** — **the project's most consequential assumption fell, and fell with evidence.** Stage 3 cut player features because 2026 would have a hole; the pages already downloaded had all 308 scorers with minutes the whole time. Verified across the 104 match boxes: 308 minute marks, the same total the article declares, and the 7 matches with no names are all 0–0. Added to Fjelstul that gives **3,028 goals with a scorer — exactly the number the model's scorelines already produced**, which allows checking the table match by match rather than trusting it.
+- **2026-08-09** — **the goal parser learned not to trust `<li>`.** The first version read each scorer from a list item and lost 6 goals out of 302 — all in columns Wikipedia left as loose text, one with two players on the same line. It now walks the minutes and treats the text between two of them as a change of player, which holds in both shapes. The check that caught it compares scorers against the declared total, not against the parser itself.
+- **2026-08-09** — **two state bugs found while testing:** `applyURL` merged instead of restoring, so going back from a drill-down to the country view left the drill-down open — an absent parameter turned nothing off and the browser's back button got stuck; and `topScorers` used the match index before it existed, breaking the whole page when opening a link with a country in it. Both live on paths normal use never takes.

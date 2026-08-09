@@ -358,7 +358,7 @@ Publication. See [Roadmap](#roadmap).
 pytest
 ```
 
-73 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+82 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
 two sentinel nulls, and a hand-checked sample of coordinates (a valid schema cannot tell

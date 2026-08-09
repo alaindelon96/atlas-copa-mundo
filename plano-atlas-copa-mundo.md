@@ -28,7 +28,7 @@
 | Visualização | Leaflet.js | Mapbox GL JS | Leve, gratuito, sem chave de API | ✅ implementado (`web/map.js`, 9 métricas) |
 | Publicação | GitHub Pages | Netlify/Vercel | Grátis, integrado ao repositório | ⏳ não iniciado |
 | Automação/CI | GitHub Actions | — | Rodar pipeline de ETL automaticamente (opcional, mas valoriza o portfólio) | ⏳ adiado para v2 |
-| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 73 testes, todos offline |
+| Testes | `pytest` | — | Testar funções de limpeza/transformação | ✅ 82 testes, todos offline |
 
 **Ambiente verificado:** Python 3.11.9, git 2.55.0, Windows 11. Todas as dependências instaladas e fixadas em `requirements.txt`.
 
@@ -292,6 +292,26 @@ Inspiradas no **SofaScore**, cuja página de seleção é construída em cima de
 
 **Novos arquivos:** `web/data/matches.json` (58 KB, as 1.068 partidas) e `web/data/venues.json` (15 KB, as 208 sedes com partida).
 
+### Etapa 4c — Artilheiros e a suposição que caiu
+
+**A Etapa 3 concluiu que dado de jogador teria buraco em 2026 e cortou as features para "só estatística de jogo".** A conclusão estava certa sobre o Fjelstul, que termina em 2022, e errada sobre o que já estava no disco: as páginas que o `scrape_2026.py` baixou trazem os artilheiros com minuto. Foram conferidas as 104 caixas de partida — **308 marcas de minuto**, exatamente o total que o artigo declara, e as 7 partidas sem nome listado são todas 0–0. O buraco nunca existiu; faltava um parser.
+
+| | |
+|---|---|
+| Fjelstul, 1930–2022 | 2.720 gols com autor, minuto, pênalti e gol contra |
+| Wikipédia, 2026 | 308, extraídos de HTML que já estava em `data/raw/scraped/` |
+| **Total** | **3.028** — o mesmo número que os placares do modelo já davam |
+
+Esse encontro é o que torna a tabela **conferível** em vez de plausível: ela não inventa uma contagem própria, ela reproduz uma que o modelo já produzia por outro caminho — e a conferência é por partida, não só de total.
+
+**Três coisas que o dado impôs:**
+
+1. **Gol contra é creditado a quem ganhou o gol.** As duas fontes concordam, e é isso que faz a soma bater com o placar; `player_team` guarda o time de quem chutou. Se `team` fosse o time do jogador, duas seleções teriam o número trocado na mesma partida.
+2. **Ler pela lista perdia 6 gols.** A maioria das colunas embrulha cada artilheiro num `<li>`, mas nem todas — e uma delas tinha dois jogadores em texto solto. O parser passou a andar pelos minutos e tratar o texto entre eles como troca de jogador, o que funciona nos dois formatos.
+3. **Nome de jogador não é comparável entre as fontes.** O Fjelstul grava a string `"not applicable"` no primeiro nome de quem só tem um — o Ronaldo brasileiro entre eles. Contar artilheiro por edição é seguro; somar carreira entre as duas fontes não é, e o projeto não promete isso.
+
+**O que apareceu na tela:** os artilheiros de cada partida no detalhamento (a final de 1958 mostra Vavá, Pelé e Zagallo com os minutos), a lista de artilheiros da seleção escolhida, e um **botão de percorrer as edições** no slider — que caminha de edição em edição e por isso pula 1942 e 1946, que não existiram.
+
 ### Etapa 5 — Publicação
 
 - [x] Estruturar como site estático (`web/index.html` + assets)
@@ -451,3 +471,6 @@ atlas-copa-mundo/
 - **09/08/2026** — **a troca por SVG resolveu dois problemas de uma vez.** O conjunto vendorizado desenha igual em qualquer sistema e **tem a Irlanda do Norte**, que o Unicode nunca criou como emoji e que por isso era a única seleção condenada a ficar sem bandeira. A escolha do conjunto também foi medida: o primeiro candidato pesava 723 KB, com dez brasões (Sérvia sozinha, 177 KB) somando 87% do total para um detalhe invisível a 16 px; o conjunto adotado faz o mesmo trabalho em **146 KB**. Um `onerror` volta ao ponto colorido se algum arquivo faltar, e o ETL falha se algum SVG não existir no disco — porque ícone quebrado não gera erro em lugar nenhum.
 - **09/08/2026** — **quatro funcionalidades novas, todas do dado que já existia:** estado na URL (a visão vira link), detalhamento de partidas (o número abre e mostra as linhas que o formam), comparação de duas seleções (funciona inclusive para quem nunca se enfrentou) e camada de sedes (devolve as 252 sedes geocodificadas na Etapa 3 que o mapa nunca usou). A referência de desenho foi o SofaScore, cuja página de seleção é construída em cima de uma lista de partidas com marcador V/E/D por linha.
 - **09/08/2026** — **dois erros silenciosos apareceram durante a construção, e os dois viraram teste.** (1) A camada de sedes saía ordenada por número de partidas, enquanto o detalhamento indexa sedes na ordem do CSV — as duas listas continuavam do mesmo tamanho, então nada acusava, mas a contagem de um estádio seria plotada na coordenada de outro. (2) O `badge()` escapava aspas simples e não duplas no `onerror` da bandeira, o que encerrava o atributo no meio e vazava `'">` como texto ao lado do nome da seleção — bug que já estava no ar desde o commit das bandeiras.
+- **09/08/2026** — **a suposição mais consequente do projeto caiu, e caiu com prova.** A Etapa 3 cortou features de jogador porque 2026 teria buraco; as páginas já baixadas tinham os 308 artilheiros com minuto o tempo todo. Conferido nas 104 caixas de partida: 308 marcas de minuto, o mesmo total que o artigo declara, e as 7 partidas sem nome são todas 0–0. Somando ao Fjelstul dão **3.028 gols com autor — exatamente o número que os placares do modelo já produziam**, o que permite conferir a tabela partida a partida em vez de confiar nela.
+- **09/08/2026** — **o parser de gols aprendeu a não confiar no `<li>`.** A primeira versão lia cada artilheiro de um item de lista e perdia 6 gols em 302 — todos em colunas que a Wikipédia deixou como texto solto, uma delas com dois jogadores na mesma linha. Passou a andar pelos minutos e tratar o texto entre dois deles como troca de jogador, o que vale nos dois formatos. A conferência que pegou isso compara os gols com autor contra o total declarado, não contra o próprio parser.
+- **09/08/2026** — **dois bugs de estado encontrados ao testar:** `applyURL` mesclava em vez de restaurar, então voltar de um detalhamento para a visão do país deixava o detalhamento aberto — ausência de parâmetro não desligava nada e o botão voltar do navegador ficava preso; e `topScorers` usava o índice de partidas antes de ele existir, o que quebrava a página inteira ao abrir direto num link com país. Os dois só aparecem em caminhos que o uso normal não percorre.
