@@ -329,6 +329,19 @@
     return { fillColor: fill, fillOpacity: 1, color: css("--coast"), weight: 0.6, opacity: 1 };
   }
 
+  /* Uma linha do tooltip.
+   *
+   * `<div>` e não `<em>`, e o motivo é defensivo: `<div>` já é bloco na folha de
+   * estilo do próprio navegador, enquanto `<em>` só quebra linha se a NOSSA
+   * folha disser que quebra. Quando ela não dizia, "247" e "119 partidas"
+   * apareciam colados como "247119 partidas" — um número maior que todos os gols
+   * de todas as Copas, que parecia erro de dado e era erro de estilo. Legibilidade
+   * de número não pode depender de o CSS ter carregado.
+   */
+  function tipLine(text) {
+    return '<div class="tip-line">' + text + "</div>";
+  }
+
   function tooltipFor(team) {
     var def = metricDef(state.metric);
     var rec = state.team && team === state.team ? null : current.records[team];
@@ -336,22 +349,24 @@
     var lines = "<b>" + team + "</b>";
 
     if (state.team && team === state.team) {
-      return lines + "<em>seleção escolhida</em>";
+      return lines + tipLine("seleção escolhida");
     }
     if (!rec) {
-      return lines + "<em>" + (state.team ? "nunca enfrentou " + state.team
-                                          : "sem partidas na faixa") + "</em>";
+      return lines + tipLine(state.team ? "nunca enfrentou " + state.team
+                                        : "sem partidas na faixa");
     }
-    lines += "<em>" + def.label + ": " + format(value, def, state.mode);
+
+    var headline = def.label + ": " + format(value, def, state.mode);
     if (state.mode === "rate" && def.rate && value === null) {
-      lines += " (menos de " + TIMELINE.per_match_floor + " partidas)";
+      headline += " (menos de " + TIMELINE.per_match_floor + " partidas)";
     }
-    lines += "</em>";
+    lines += tipLine(headline);
+
     // "Partidas jogadas" é o contexto de todas as métricas de desempenho — menos
     // das que descrevem o lugar. Numa sede, o número de jogos da seleção não
     // explica nada e ainda sugere uma relação que não existe.
     if (def.key !== "matches_played" && !def.place) {
-      lines += "<em>" + NUM.format(rec.matches_played) + " partidas</em>";
+      lines += tipLine(NUM.format(rec.matches_played) + " partidas");
     }
     return lines;
   }
@@ -463,9 +478,10 @@
         fillColor: accent, fillOpacity: .35
       });
       marker.bindTooltip(
-        "<b>" + row[5] + "</b><em>" + row[6] + " · " + row[7] + "</em><em>" +
-        NUM.format(hosted) + (hosted === 1 ? " partida" : " partidas") +
-        (row[3] === row[4] ? " em " + row[3] : " · " + row[3] + "–" + row[4]) + "</em>",
+        "<b>" + row[5] + "</b>" +
+        tipLine(row[6] + " · " + row[7]) +
+        tipLine(NUM.format(hosted) + (hosted === 1 ? " partida" : " partidas") +
+                (row[3] === row[4] ? " em " + row[3] : " · " + row[3] + "–" + row[4])),
         { className: "atlas-tip", direction: "top" });
       venueLayer.addLayer(marker);
     });
