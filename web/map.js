@@ -54,20 +54,26 @@
    *   h2h   se a métrica existe em confronto direto. "Títulos", "participações"
    *         e "partidas recebidas" não existem: um título não é ganho *contra*
    *         alguém, e uma sede não joga.
+   *   unit  o que a métrica conta *por*. Só as de unidade `match` ganham o
+   *         contexto "N partidas" — no tooltip e na coluna J do ranking. Um
+   *         título não é ganho por partida e uma participação conta torneios,
+   *         não jogos; pôr o número de partidas ao lado deles sugere uma
+   *         proporção que não existe (o Catar recebeu 64 partidas e disputou 6).
    */
   var METRICS = [
-    { key: "goals",            label: "Gols marcados",     kind: "sequential", rate: true,  h2h: true },
-    { key: "conceded",         label: "Gols sofridos",     kind: "sequential", rate: true,  h2h: true },
-    { key: "goal_difference",  label: "Saldo de gols",     kind: "diverging",  rate: true,  h2h: true },
-    { key: "wins",             label: "Vitórias",          kind: "sequential", rate: true,  h2h: true },
-    { key: "win_pct",          label: "Aproveitamento",    kind: "sequential", rate: false, h2h: true, pct: true },
-    { key: "matches_played",   label: "Partidas jogadas",  kind: "sequential", rate: false, h2h: true },
-    // `place`: descreve o LUGAR, não a seleção. Uma sede não joga — o Catar
-    // recebeu 64 partidas e disputou 6 —, então tudo que fala do desempenho da
-    // seleção sai de cena quando esta métrica está escolhida.
-    { key: "matches_received", label: "Partidas recebidas",kind: "sequential", rate: false, h2h: false, place: true },
-    { key: "titles",           label: "Títulos",           kind: "sequential", rate: false, h2h: false },
-    { key: "participations",   label: "Participações",     kind: "sequential", rate: false, h2h: false }
+    { key: "goals",            label: "Gols marcados",     kind: "sequential", rate: true,  h2h: true,  unit: "match" },
+    { key: "conceded",         label: "Gols sofridos",     kind: "sequential", rate: true,  h2h: true,  unit: "match" },
+    { key: "goal_difference",  label: "Saldo de gols",     kind: "diverging",  rate: true,  h2h: true,  unit: "match" },
+    { key: "wins",             label: "Vitórias",          kind: "sequential", rate: true,  h2h: true,  unit: "match" },
+    { key: "win_pct",          label: "Aproveitamento",    kind: "sequential", rate: false, h2h: true,  unit: "match", pct: true },
+    { key: "matches_played",   label: "Partidas jogadas",  kind: "sequential", rate: false, h2h: true,  unit: "match" },
+    // Contadas por torneio, não por partida: um título não é ganho por jogo e
+    // uma participação conta edições. O número de partidas ao lado delas é ruído.
+    { key: "titles",           label: "Títulos",           kind: "sequential", rate: false, h2h: false, unit: "tournament" },
+    { key: "participations",   label: "Participações",     kind: "sequential", rate: false, h2h: false, unit: "tournament" },
+    // Descreve o LUGAR, não a seleção. Uma sede não joga — o Catar recebeu 64
+    // partidas e disputou 6.
+    { key: "matches_received", label: "Partidas recebidas",kind: "sequential", rate: false, h2h: false, unit: "place" }
   ];
 
   var FIELDS = ["goals", "conceded", "goal_difference", "wins", "draws", "losses",
@@ -122,6 +128,17 @@
     return '<img class="flag" src="vendor/flags/' + entry.flag + '" alt="" aria-hidden="true"' +
            ' decoding="async"' +
            " onerror=\"this.outerHTML='" + fallback + "'\">";
+  }
+
+  /* Se a métrica ganha o contexto "N partidas" — no tooltip e na coluna J.
+   *
+   * Duas exclusões, por motivos diferentes. As métricas contadas por torneio ou
+   * por lugar (títulos, participações, partidas recebidas) não têm relação com o
+   * número de jogos, e pôr os dois lado a lado sugere uma proporção inexistente.
+   * "Partidas jogadas" é excluída pelo motivo oposto: o contexto seria ela
+   * mesma, repetida na coluna ao lado. */
+  function showsMatchContext(def) {
+    return def.unit === "match" && def.key !== "matches_played";
   }
 
   function metricDef(key) {
@@ -365,7 +382,7 @@
     // "Partidas jogadas" é o contexto de todas as métricas de desempenho — menos
     // das que descrevem o lugar. Numa sede, o número de jogos da seleção não
     // explica nada e ainda sugere uma relação que não existe.
-    if (def.key !== "matches_played" && !def.place) {
+    if (showsMatchContext(def)) {
       lines += tipLine(NUM.format(rec.matches_played) + " partidas");
     }
     return lines;
@@ -966,7 +983,7 @@
       '<div><div class="sub">Ranking · ' + def.label +
       (state.mode === "rate" && def.rate ? " por partida" : "") + '</div>' +
       '<div class="h2h-scroll"><table><thead><tr><th>#</th><th>Seleção</th><th>' +
-      def.label + "</th>" + (def.place ? "" : "<th>J</th>") + "</tr></thead><tbody>";
+      def.label + "</th>" + (showsMatchContext(def) ? "<th>J</th>" : "") + "</tr></thead><tbody>";
     rows.slice(0, 30).forEach(function (entry, index) {
       var rec = entry[1], value = valueOf(rec, def, state.mode);
       html += '<tr><td>' + (index + 1) + '</td>' +
@@ -974,7 +991,7 @@
         '<td>' + format(value, def, state.mode) + "</td>" +
         // A coluna de jogos sai junto com a linha do tooltip, e pelo mesmo
         // motivo: em "partidas recebidas" ela fala de outra coisa.
-        (def.place ? "" : "<td>" + NUM.format(rec.matches_played) + "</td>") + "</tr>";
+        (showsMatchContext(def) ? "<td>" + NUM.format(rec.matches_played) + "</td>" : "") + "</tr>";
     });
     html += '</tbody></table></div><p class="muted" style="margin-top:.5rem">' +
       'Clique num país do mapa para ver os confrontos diretos dele.</p></div>';
