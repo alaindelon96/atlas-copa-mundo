@@ -40,14 +40,24 @@
   "use strict";
 
   var NUM = new Intl.NumberFormat("pt-BR");
+  /* Ordenação de nomes em português. `localeCompare` sem locale usa o do
+   * navegador, e num navegador em inglês "Áustria" cai depois de "Uzbequistão"
+   * — acento vira um caractere qualquer no fim do alfabeto. */
+  var ORDER = new Intl.Collator("pt-BR", { sensitivity: "base" });
   var RATE = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   var PCT = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
   /* As métricas do mapa. Cada uma declara três coisas que mudam o comportamento:
    *
    *   kind  'sequential' (magnitude, um matiz) ou 'diverging' (polaridade, dois
-   *         matizes com cinza no meio). Só o saldo é divergente — é a única com
-   *         lado negativo, e uma rampa sequencial esconderia o sinal.
+   *         matizes com cinza no meio). Duas são divergentes, e as duas têm um
+   *         meio que significa alguma coisa: o saldo em 0 (marcou tanto quanto
+   *         sofreu) e o aproveitamento em 50% (ganhou tanto quanto não ganhou).
+   *         Numa rampa sequencial esse meio some — 49% e 51% viram dois tons
+   *         quase iguais do mesmo matiz, e o lado de cada um deixa de existir.
+   *   pivot onde fica o meio da barra divergente. Ausente é 0, que é o do saldo;
+   *         o aproveitamento declara 50 porque a métrica não tem lado negativo,
+   *         o que ela tem é um ponto de virada.
    *   rate  se a leitura "por partida" faz sentido. Aproveitamento já é uma
    *         taxa; partidas jogadas por partida seria 1; título por partida não
    *         significa nada. Nesses casos o botão desliga em vez de mentir.
@@ -65,7 +75,7 @@
     { key: "conceded",         label: "Gols sofridos",     kind: "sequential", rate: true,  h2h: true,  unit: "match" },
     { key: "goal_difference",  label: "Saldo de gols",     kind: "diverging",  rate: true,  h2h: true,  unit: "match" },
     { key: "wins",             label: "Vitórias",          kind: "sequential", rate: true,  h2h: true,  unit: "match" },
-    { key: "win_pct",          label: "Aproveitamento",    kind: "sequential", rate: false, h2h: true,  unit: "match", pct: true },
+    { key: "win_pct",          label: "Aproveitamento",    kind: "diverging",  rate: false, h2h: true,  unit: "match", pct: true, pivot: 50 },
     { key: "matches_played",   label: "Partidas jogadas",  kind: "sequential", rate: false, h2h: true,  unit: "match" },
     // Contadas por torneio, não por partida: um título não é ganho por jogo e
     // uma participação conta edições. O número de partidas ao lado delas é ruído.
@@ -88,7 +98,7 @@
   };
 
   var TIMELINE = null, GOLDEN = null, GEO = null, COLORS = null;
-  var MATCHES = null, VENUES = null, GOALS = null;
+  var MATCHES = null, VENUES = null, GOALS = null, NAMES = null;
   var map = null, layer = null, venueLayer = null, byTeam = {};
   var current = { records: null, scale: null, metric: null };
 
@@ -96,6 +106,58 @@
 
   function css(name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /* O nome de uma seleção como a página o mostra: em português.
+   *
+   * A CHAVE continua em inglês, em todo lugar — é a chave do dado (a propriedade
+   * `team` do GeoJSON, os índices do `timeline.json`, o `t=` da URL). Traduzir a
+   * chave quebraria os links já compartilhados e obrigaria a destraduzir em cada
+   * join; traduzir só o rótulo não custa nada. Por isso `pt()` aparece na saída
+   * — tooltip, tabela, seletor — e nunca numa comparação ou numa busca.
+   *
+   * O fallback devolve o nome cru: se `names.json` não carregar, a página mostra
+   * "Germany" em vez de quebrar. */
+  function pt(team) {
+    return (NAMES && NAMES.teams[team]) || team;
+  }
+
+  /* Ordem alfabética pelo rótulo mostrado — que é o único que a pessoa vê. Em
+   * inglês, Alemanha vem antes de Argentina; em português, é o contrário. */
+  function byName(a, b) {
+    return ORDER.compare(pt(a), pt(b));
+  }
+
+  /* Nome de país dentro de uma frase precisa de artigo — e em português o
+   * artigo é propriedade do nome, não regra: "a Alemanha", "o Brasil", "os
+   * Estados Unidos", mas "Portugal" e "Cuba" sem nenhum. A tabela curada é
+   * quem sabe; o ETL só manda quem tem.
+   *
+   * `theTeam` é o nome com artigo ("a Alemanha"); `atTeam` é o mesmo com a
+   * preposição contraída ("na Suécia", "em Portugal"). Sem isso o detalhamento
+   * dizia "em Suécia". */
+  var CONTRACTION_EM = { o: "no", a: "na", os: "nos", as: "nas" };
+
+  function article(team) {
+    return (NAMES && NAMES.articles && NAMES.articles[team]) || "";
+  }
+
+  function theTeam(team) {
+    var word = article(team);
+    return word ? word + " " + pt(team) : pt(team);
+  }
+
+  /* O lado visitante do detalhamento: "na Suécia", "no Japão", "em Portugal". */
+  function atTeam(team) {
+    return (CONTRACTION_EM[article(team)] || "em") + " " + pt(team);
+  }
+
+  /* "Os Estados Unidos aparecem", "o Brasil aparece". O número vem do artigo —
+   * é a única marca de plural que a tabela carrega, e é do que a única frase da
+   * legenda com verbo precisa. */
+  function plural(team) {
+    var word = article(team);
+    return word === "os" || word === "as";
   }
 
   /* O marcador de uma seleção: a bandeira dela.
@@ -295,9 +357,13 @@
     var theme = darkMode() ? "dark" : "light";
 
     if (def.kind === "diverging") {
+      // A extensão é medida A PARTIR DO PIVÔ, não do zero: no aproveitamento o
+      // zero é o pior resultado possível, não o meio, e medir dali jogaria toda
+      // a distribuição para um lado só da barra.
+      var pivot = def.pivot || 0;
       var extent = 0;
-      values.forEach(function (x) { extent = Math.max(extent, Math.abs(x)); });
-      return { kind: "diverging", extent: extent,
+      values.forEach(function (x) { extent = Math.max(extent, Math.abs(x - pivot)); });
+      return { kind: "diverging", pivot: pivot, extent: extent,
                negative: COLORS.diverging[theme].negative,
                positive: COLORS.diverging[theme].positive };
     }
@@ -311,8 +377,9 @@
     if (value === null || value === undefined) return null;
     if (scale.kind === "diverging") {
       if (!scale.extent) return sample(scale.positive, 0);
-      var arm = value < 0 ? scale.negative : scale.positive;
-      return sample(arm, Math.sqrt(Math.abs(value) / scale.extent));
+      var delta = value - scale.pivot;
+      var arm = delta < 0 ? scale.negative : scale.positive;
+      return sample(arm, Math.sqrt(Math.abs(delta) / scale.extent));
     }
     if (!scale.max) return sample(scale.stops, 0);
     return sample(scale.stops, Math.sqrt(Math.max(0, value) / scale.max));
@@ -363,13 +430,13 @@
     var def = metricDef(state.metric);
     var rec = state.team && team === state.team ? null : current.records[team];
     var value = valueOf(rec, def, state.mode);
-    var lines = "<b>" + team + "</b>";
+    var lines = "<b>" + pt(team) + "</b>";
 
     if (state.team && team === state.team) {
       return lines + tipLine("seleção escolhida");
     }
     if (!rec) {
-      return lines + tipLine(state.team ? "nunca enfrentou " + state.team
+      return lines + tipLine(state.team ? "nunca enfrentou " + theTeam(state.team)
                                         : "sem partidas na faixa");
     }
 
@@ -465,9 +532,21 @@
    * vale para a faixa inteira. Os dois arquivos listam as sedes na mesma ordem;
    * é contrato conferido no ETL, não coincidência.
    *
-   * O raio cresce com a raiz da contagem, não com ela: área é o que o olho
-   * compara num círculo, e área cresce com o quadrado do raio. Sem a raiz, uma
-   * sede com 24 partidas pareceria vinte e quatro vezes maior que uma com uma. */
+   * **Todos os alfinetes têm o mesmo tamanho**, o menor. A versão anterior
+   * dimensionava a marca pela contagem de partidas, e num alfinete isso custa
+   * mais do que rende: 208 deles se amontoam onde as Copas se repetiram (a
+   * Europa e o México são um bloco só), e os grandes cobrem os pequenos —
+   * escondendo justamente as sedes que a camada existe para mostrar. A
+   * quantidade continua onde ela é exata: no tooltip, em número. Aqui o
+   * alfinete responde só "aqui teve jogo", que é a pergunta do mapa.
+   *
+   * A marca é um alfinete, e ele mora no `markerPane` — que é a correção de um
+   * bug real: como `circleMarker`, as sedes eram vetores do MESMO `overlayPane`
+   * dos países, e o `bringToFront()` do país sob o mouse reordenava o SVG
+   * inteiro e enterrava os pinos. Como a ordem ficava gravada na árvore, tirar o
+   * mouse não desfazia: a sede sumia até recarregar. Panes separados tornam a
+   * sobreposição impossível em vez de remediável — o `markerPane` (z 600) está
+   * sempre acima do `overlayPane` (z 400). */
   function venueCounts(from, to) {
     var firstYear = TIMELINE.years[from], lastYear = TIMELINE.years[to];
     var counts = {};
@@ -478,25 +557,61 @@
     return counts;
   }
 
+  /* O desenho do alfinete: cabeça esférica vermelha, agulha metálica, ponta no
+   * pé do viewBox — o alfinete de mapa de verdade, não a gota de aplicativo.
+   *
+   * A ordem importa: a agulha é desenhada ANTES da cabeça, para o topo dela
+   * desaparecer atrás da esfera em vez de cruzá-la. O brilho é uma elipse
+   * branca no canto superior esquerdo — é o que faz a cabeça ler como esfera e
+   * não como um círculo chapado.
+   *
+   * As cores saem dos tokens do tema COM RESERVA literal (`var(--pin,#E01B24)`).
+   * A reserva não é excesso de zelo: o SVG sem `fill` resolvido cai no preto
+   * padrão, e uma folha de estilo em cache já entregou 208 alfinetes pretos sem
+   * um erro sequer no console. O contorno na cor da costa separa a agulha fina
+   * do país embaixo dela — sem ele, ela some sobre um país escuro. */
+  var PIN_BOX_W = 28, PIN_BOX = 43;   // o viewBox, com a folga do traço
+  var PIN_TIP = 41.4 / 43;            // onde a ponta cai dentro dele
+  var PIN_WIDTH = 14;                 // igual para todas as sedes: ver drawVenues
+
+  var PIN = '<svg viewBox="-2 -1 28 43" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+    '<path d="M10.7 15.5 13.3 15.5 12.3 40.4a.32.32 0 0 1-.6 0z"' +
+    ' style="fill:var(--pin-needle,#8A97A5);stroke:var(--coast,#FFF);stroke-width:.7"/>' +
+    '<circle cx="12" cy="11" r="10"' +
+    ' style="fill:var(--pin,#E01B24);stroke:var(--coast,#FFF);stroke-width:1.4"/>' +
+    '<ellipse cx="8.3" cy="7.2" rx="3.4" ry="2.3" transform="rotate(-38 8.3 7.2)"' +
+    ' fill="#FFF" opacity=".45"/></svg>';
+
   function drawVenues() {
     if (venueLayer) { map.removeLayer(venueLayer); venueLayer = null; }
     if (!state.venues) return;
 
     var counts = venueCounts(state.from, state.to);
-    var accent = css("--accent");
     venueLayer = L.layerGroup();
 
     VENUES.rows.forEach(function (row, index) {
       var hosted = counts[index];
       if (!hosted) return;   // sede fora da faixa de anos escolhida
-      var marker = L.circleMarker([row[0], row[1]], {
-        radius: 3 + Math.sqrt(hosted) * 1.9,
-        color: accent, weight: 1.5, opacity: .9,
-        fillColor: accent, fillOpacity: .35
+      var width = PIN_WIDTH;
+      var height = Math.round(width * PIN_BOX / PIN_BOX_W);
+      var marker = L.marker([row[0], row[1]], {
+        keyboard: false,
+        icon: L.divIcon({
+          className: "venue-pin",
+          html: PIN,
+          iconSize: [width, height],
+          // A PONTA da agulha é o lugar, e ela não fica no pé da caixa — o
+          // viewBox tem uma folga embaixo para o traço não sair cortado. Ancorar
+          // no pé deslocaria toda sede alguns pixels para o norte.
+          iconAnchor: [width / 2, height * PIN_TIP],
+          tooltipAnchor: [0, -height * PIN_TIP]
+        })
       });
       marker.bindTooltip(
         "<b>" + row[5] + "</b>" +
-        tipLine(row[6] + " · " + row[7]) +
+        // O país da sede é o mesmo rótulo do mapa; a cidade e o estádio são
+        // nomes próprios e ficam como estão.
+        tipLine(row[6] + " · " + pt(row[7])) +
         tipLine(NUM.format(hosted) + (hosted === 1 ? " partida" : " partidas") +
                 (row[3] === row[4] ? " em " + row[3] : " · " + row[3] + "–" + row[4])),
         { className: "atlas-tip", direction: "top" });
@@ -650,15 +765,24 @@
     }
 
     if (scale.kind === "diverging") {
-      // Barra espelhada: o zero fica no meio e cada braço cresce para fora, de
-      // modo que −15 e +15 ficam à mesma distância do centro.
+      // Barra espelhada: o pivô fica no meio e cada braço cresce para fora, de
+      // modo que −15 e +15 (ou 30% e 70%) ficam à mesma distância do centro.
       gradient = gradientOf(scale.negative.slice().reverse(), 0, 0.5) + ", " +
                  gradientOf(scale.positive, 0.5, 1);
-      mark(0.5, "0");
+      mark(0.5, edge(scale.pivot));
       niceTicks(scale.extent, 3).slice(1).forEach(function (value) {
         var offset = 0.5 * Math.sqrt(value / scale.extent);
-        mark(0.5 - offset, "−" + edge(value));
-        mark(0.5 + offset, "+" + edge(value));
+        // Com pivô em zero a marca é a distância COM SINAL ("−50", "+50"): o
+        // sinal é a própria leitura do saldo. Com pivô em 50% ela é o valor de
+        // fato ("30,0%", "70,0%") — "−20%" ali seria um aproveitamento que não
+        // existe.
+        if (scale.pivot) {
+          mark(0.5 - offset, edge(scale.pivot - value));
+          mark(0.5 + offset, edge(scale.pivot + value));
+        } else {
+          mark(0.5 - offset, "−" + edge(value));
+          mark(0.5 + offset, "+" + edge(value));
+        }
       });
     } else {
       gradient = gradientOf(scale.stops, 0, 1);
@@ -678,18 +802,22 @@
                     "abre sem que nenhuma ordem se inverta. As marcas se apertam " +
                     "à direita justamente por isso."];
     if (scale.kind === "diverging") {
-      messages.push("O saldo mantém os dois polos fixos mesmo com uma seleção escolhida: " +
-                    "se o lado positivo mudasse de cor a cada país, “negativo” deixaria " +
-                    "de ter cor.");
-    } else if (state.team) {
-      messages.push("A rampa é a cor de " + state.team + ".");
+      messages.push("O meio da barra é " + edge(scale.pivot) +
+                    ": vermelho abaixo, azul acima. Os dois polos ficam fixos mesmo com " +
+                    "uma seleção escolhida — se um dos lados mudasse de cor a cada país, " +
+                    "o mapa deixaria de ter lado.");
     }
     if (state.mode === "rate" && def.rate) {
       messages.push("Seleções com menos de " + TIMELINE.per_match_floor +
                     " partidas na faixa saem do mapa: a média não seria comparável.");
     }
     if (state.team) {
-      messages.push(state.team + " aparece contornada, não pintada — ninguém joga contra si mesmo.");
+      // "Contornada, não pintada" concordava em gênero com a seleção — e virava
+      // erro em Brasil, Japão, Catar. Sem particípio, sobra o verbo, que só
+      // precisa concordar em número.
+      messages.push("No mapa, " + theTeam(state.team) +
+                    (plural(state.team) ? " aparecem" : " aparece") +
+                    " só com contorno, sem preenchimento — ninguém joga contra si mesmo.");
     }
     if (state.swapped) {
       messages.push("“" + state.swapped + "” não existe em confronto direto; a métrica " +
@@ -865,7 +993,8 @@
       html += '<div class="match">' +
         '<span class="res res-' + match.result + '">' + match.result + "</span>" +
         '<span class="match-main">' +
-          '<b>' + score + pens + "</b> " + (match.home ? "vs " : "em ") + match.opponent +
+          '<b>' + score + pens + "</b> " +
+          (match.home ? "vs " + pt(match.opponent) : atTeam(match.opponent)) +
           '<span class="match-sub">' + match.year + " · " + (STAGE_SHORT[match.stage] || match.stage) +
           (match.venue ? " · " + match.venue.city : "") + "</span>" +
           (mine ? '<span class="scorers">' + mine + "</span>" : "") +
@@ -904,8 +1033,8 @@
     var left = totals[state.team], right = totals[state.versus];
 
     if (!left || !right) {
-      var quem = !left ? state.team : state.versus;
-      return '<div class="sub">' + span + "</div><h2>" + state.team + " × " + state.versus +
+      var quem = pt(!left ? state.team : state.versus);
+      return '<div class="sub">' + span + "</div><h2>" + pt(state.team) + " × " + pt(state.versus) +
              '</h2><p class="empty">' + quem +
              " não disputou nenhuma partida nesta faixa de edições.</p>";
     }
@@ -919,8 +1048,8 @@
     ];
 
     var html = '<div class="sub">' + span + "</div>" +
-      "<h2>" + badge(state.team, null) + state.team + " <span class='vs'>×</span> " +
-      badge(state.versus, null) + state.versus + "</h2>" +
+      "<h2>" + badge(state.team, null) + pt(state.team) + " <span class='vs'>×</span> " +
+      badge(state.versus, null) + pt(state.versus) + "</h2>" +
       '<table class="compare"><tbody>';
 
     lines.forEach(function (line) {
@@ -945,8 +1074,8 @@
             (duels.length === 1 ? " partida" : " partidas") + "</div>";
     if (duels.length) {
       var sums = tally(duels);
-      html += '<p class="muted">' + state.team + " " + sums.wins + "–" + sums.draws + "–" +
-              sums.losses + " " + state.versus + " · " + sums.goals + "–" + sums.conceded +
+      html += '<p class="muted">' + pt(state.team) + " " + sums.wins + "–" + sums.draws + "–" +
+              sums.losses + " " + pt(state.versus) + " · " + sums.goals + "–" + sums.conceded +
               " em gols.</p>" + matchRows(duels);
     } else {
       html += '<p class="empty">Nunca se enfrentaram em Copas do Mundo.</p>';
@@ -962,8 +1091,8 @@
     // A barra do cartão diz o que ele contém mesmo recolhido — é a única pista
     // que sobra quando o painel está fechado.
     document.getElementById("side-title").textContent =
-      state.versus ? "⚔️ " + state.team + " × " + state.versus
-      : state.team ? "📋 " + state.team : "📋 Ranking";
+      state.versus ? "⚔️ " + pt(state.team) + " × " + pt(state.versus)
+      : state.team ? "📋 " + pt(state.team) : "📋 Ranking";
 
     // --- detalhamento: as partidas que formam o número -----------------
     if (state.view === "matches" && state.team) {
@@ -972,8 +1101,8 @@
       panel.innerHTML =
         '<div class="sub">' + span + '</div>' +
         '<button class="back" type="button" data-back="1">← voltar</button>' +
-        '<h2>' + badge(state.team, null) + state.team +
-        (state.opponent ? " × " + state.opponent : "") + "</h2>" +
+        '<h2>' + badge(state.team, null) + pt(state.team) +
+        (state.opponent ? " × " + pt(state.opponent) : "") + "</h2>" +
         '<div class="tiles">' +
           tile(NUM.format(list.length), "Partidas") +
           tile(sums.wins + "–" + sums.draws + "–" + sums.losses, "V–E–D") +
@@ -991,18 +1120,15 @@
     if (state.team) {
       var totals = aggregate(state.from, state.to)[state.team];
       if (!totals) {
-        panel.innerHTML = '<div class="sub">' + span + '</div><h2>' + state.team + '</h2>' +
+        panel.innerHTML = '<div class="sub">' + span + '</div><h2>' + pt(state.team) + '</h2>' +
           '<p class="empty">Não disputou nenhuma partida nesta faixa de edições.</p>';
         return;
       }
-      // O ponto colorido não é enfeite: ele diz de onde veio a cor do mapa. A
-      // regra da tabela é "a camisa da última Copa que a seleção disputou", e o
-      // ano ao lado é o que torna isso verificável em vez de decorativo.
-      var identity = COLORS.teams[state.team];
+      // A cor da camisa continua sendo a rampa do mapa (`reference/team_colors.csv`,
+      // com o `last_cup` conferido no ETL) — ela só não se anuncia na tela: o
+      // painel é sobre os números da seleção, não sobre a origem do amarelo.
       html = '<div class="sub">' + span + '</div>' +
-        '<h2>' + badge(state.team, null) + state.team + '</h2>' +
-        (identity ? '<div class="sub" style="margin-top:-.5rem">Cor da camisa em ' +
-                    identity.last_cup + '</div>' : '') +
+        '<h2>' + badge(state.team, null) + pt(state.team) + '</h2>' +
         '<div class="tiles">' +
           tile(NUM.format(totals.goals), "Gols") +
           tile(NUM.format(totals.conceded), "Sofridos") +
@@ -1020,7 +1146,7 @@
         var x = valueOf(a[1], def, state.mode), y = valueOf(b[1], def, state.mode);
         if (x === null) x = -Infinity;
         if (y === null) y = -Infinity;
-        return y - x || a[0].localeCompare(b[0]);
+        return y - x || byName(a[0], b[0]);
       });
 
       var scorersList = topScorers(state.team, state.from, state.to, 8);
@@ -1044,8 +1170,10 @@
         var rec = entry[1], value = valueOf(rec, def, state.mode);
         // A linha inteira abre o detalhamento daquele confronto: é o gesto que
         // liga "21 gols em 7 jogos" às sete partidas que produziram o número.
+        // `data-opponent` guarda a chave em inglês — é ela que volta para o
+        // estado e para a URL. Só o texto da célula é traduzido.
         html += '<tr class="drill" data-opponent="' + entry[0] + '" tabindex="0">' +
-          '<td>' + badge(entry[0], value) + entry[0] + '</td>' +
+          '<td>' + badge(entry[0], value) + pt(entry[0]) + '</td>' +
           '<td>' + format(value, def, state.mode) + '</td>' +
           '<td>' + NUM.format(rec.matches_played) + '</td>' +
           '<td>' + rec.wins + '–' + rec.draws + '–' + rec.losses + '</td></tr>';
@@ -1063,7 +1191,7 @@
       var x = valueOf(a[1], def, state.mode), y = valueOf(b[1], def, state.mode);
       if (x === null) x = -Infinity;
       if (y === null) y = -Infinity;
-      return y - x || a[0].localeCompare(b[0]);
+      return y - x || byName(a[0], b[0]);
     });
 
     var painted = rows.filter(function (entry) {
@@ -1083,7 +1211,7 @@
     rows.slice(0, 30).forEach(function (entry, index) {
       var rec = entry[1], value = valueOf(rec, def, state.mode);
       html += '<tr><td>' + (index + 1) + '</td>' +
-        '<td>' + badge(entry[0], value) + entry[0] + '</td>' +
+        '<td>' + badge(entry[0], value) + pt(entry[0]) + '</td>' +
         '<td>' + format(value, def, state.mode) + "</td>" +
         // A coluna de jogos sai junto com a linha do tooltip, e pelo mesmo
         // motivo: em "partidas recebidas" ela fala de outra coisa.
@@ -1395,11 +1523,13 @@
     // e no dado masculino todos jogaram, mas a conferência é barata.
     var played = {};
     TIMELINE.rows.forEach(function (row) { played[TIMELINE.teams[row[1]]] = 1; });
-    Object.keys(played).sort(function (a, b) { return a.localeCompare(b); })
+    // O `value` é a chave em inglês (é ela que vai para o estado e para a URL);
+    // o rótulo e a ordem alfabética são os do português.
+    Object.keys(played).sort(byName)
       .forEach(function (name) {
         var option = document.createElement("option");
         option.value = name;
-        option.textContent = name;
+        option.textContent = pt(name);
         team.appendChild(option);
       });
     team.addEventListener("change", function () { select(team.value); });
@@ -1414,7 +1544,7 @@
     Array.prototype.slice.call(team.options, 1).forEach(function (option) {
       var copy = document.createElement("option");
       copy.value = option.value;
-      copy.textContent = option.value;
+      copy.textContent = option.textContent;
       versus.appendChild(copy);
     });
     versus.addEventListener("change", function () { selectVersus(versus.value); });
@@ -1516,7 +1646,8 @@
     load("data/colors.json"),
     load("data/matches.json"),
     load("data/venues.json"),
-    load("data/goals.json")
+    load("data/goals.json"),
+    load("data/names.json")
   ]).then(function (loaded) {
     TIMELINE = loaded[0];
     GOLDEN = loaded[1];
@@ -1525,6 +1656,7 @@
     MATCHES = loaded[4];
     VENUES = loaded[5];
     GOALS = loaded[6];
+    NAMES = loaded[7];
 
     state.to = TIMELINE.years.length - 1;
     // A URL manda: um link compartilhado precisa abrir na visão que ele

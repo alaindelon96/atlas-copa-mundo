@@ -37,6 +37,12 @@
   --absent:#DAE2E8;
   --ocean:#E4EBF0; --coast:#FFFFFF;
 
+  /* O alfinete das sedes: cabeça vermelha e agulha metálica. Vermelho e NÃO
+     `--accent`: o verde da interface também pinta botões e links, e um marcador
+     na cor dos controles se lê como controle. O vermelho de alfinete é
+     convenção de localização em mapa. */
+  --pin:#E01B24; --pin-needle:#8A97A5;
+
   --shadow-1:0 1px 2px rgba(12,22,32,.06);
   --shadow-2:0 4px 10px rgba(12,22,32,.08), 0 18px 40px -18px rgba(12,22,32,.35);
   --glow:0 0 0 3px rgba(0,163,122,.18);
@@ -59,6 +65,7 @@
     --warn:#FF7A45; --warn-soft:#3A1B0E;
     --absent:#1E2836;
     --ocean:#0A0F16; --coast:#111823;
+    --pin:#FF4D4D; --pin-needle:#C3CDD8;
     --shadow-1:0 1px 2px rgba(0,0,0,.5);
     --shadow-2:0 4px 10px rgba(0,0,0,.45), 0 18px 44px -18px rgba(0,0,0,.9);
     --glow:0 0 0 3px rgba(18,199,154,.22);
@@ -75,6 +82,7 @@
   --warn:#FF7A45; --warn-soft:#3A1B0E;
   --absent:#1E2836;
   --ocean:#0A0F16; --coast:#111823;
+  --pin:#FF4D4D; --pin-needle:#C3CDD8;
   --shadow-1:0 1px 2px rgba(0,0,0,.5);
   --shadow-2:0 4px 10px rgba(0,0,0,.45), 0 18px 44px -18px rgba(0,0,0,.9);
   --glow:0 0 0 3px rgba(18,199,154,.22);
@@ -90,6 +98,7 @@
   --warn:#D9541F; --warn-soft:#FDEBE2;
   --absent:#DAE2E8;
   --ocean:#E4EBF0; --coast:#FFFFFF;
+  --pin:#E01B24; --pin-needle:#8A97A5;
   --shadow-1:0 1px 2px rgba(12,22,32,.06);
   --shadow-2:0 4px 10px rgba(12,22,32,.08), 0 18px 40px -18px rgba(12,22,32,.35);
   --glow:0 0 0 3px rgba(0,163,122,.18);
@@ -409,6 +418,29 @@ table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15
    aqui é aparência. */
 .atlas-tip .tip-line { font-family:var(--mono);
   font-variant-numeric:tabular-nums; font-size:.74rem; color:var(--ink-2); line-height:1.45; }
+
+/* ---- O alfinete das sedes ----
+ *
+ * Um `divIcon` do Leaflet, e não um `circleMarker`: círculo é uma forma que o
+ * mapa já usa para valor (área ∝ quantidade), e as sedes não são um valor a
+ * mais no coroplético — são um lugar. O alfinete é a convenção de "aqui", e
+ * como ele mora no `markerPane`, fica ACIMA dos polígonos: o `bringToFront()`
+ * do país sob o mouse reordena só o `overlayPane` e não alcança os pinos.
+ *
+ * **As cores do alfinete estão no SVG, em `map.js`, e não aqui** — como
+ * `fill:var(--pin, #E01B24)`, com a cor literal de reserva. Os tokens acima
+ * continuam mandando (é o que troca a cor entre os temas), mas se esta folha
+ * não chegar — cache velho, uma requisição perdida —, o `var()` cai na reserva
+ * e o alfinete continua vermelho. Sem a reserva ele nasce PRETO, que foi
+ * exatamente o que aconteceu: o SVG sem `fill` resolvido usa o preto padrão, e
+ * o mapa ganhou 208 gotas pretas sem nenhum erro no console.
+ *
+ * O que sobra aqui é o que o `var()` não resolve: o `divIcon` do Leaflet vem com
+ * fundo branco e borda, e as duas precisam sair, senão cada alfinete aparece
+ * dentro de um quadradinho. */
+.venue-pin { background:none; border:0; }
+.venue-pin svg { display:block; width:100%; height:100%;
+  filter:drop-shadow(0 2px 3px rgba(12,22,32,.45)); }
 
 /* O zoom fica no rodapé, deslocado para a direita do cartão da legenda — que é
    o único elemento que disputa aquele canto. Em tela estreita a legenda some e o

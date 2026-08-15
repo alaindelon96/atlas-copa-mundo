@@ -6,6 +6,7 @@ Transforma as tabelas modeladas (`etl.model`) no que o front-end consome:
     web/data/head2head.json  matriz de confrontos diretos
     web/data/timeline.json   a tabela longa em forma compacta (Etapa 4)
     web/data/colors.json     a rampa de cor de cada seleção (Etapa 4)
+    web/data/names.json      o nome de cada seleção em português (Etapa 4)
 
 **Escopo: Copa masculina**, herdado de `etl.model` — este módulo não filtra
 nada, ele lê as tabelas do modelo. Por isso nenhum dos dois JSONs tem dimensão
@@ -361,6 +362,59 @@ def build_colors(teams: list[str], last_cup: dict[str, int]) -> dict:
     }
 
 
+def build_names(teams: list[str]) -> dict:
+    """O nome de cada seleção em português, para a interface.
+
+    A chave continua sendo o nome em inglês — ele é a chave do dado em todo o
+    resto do projeto (`matches_clean.csv`, a propriedade `team` do GeoJSON, o
+    parâmetro `t=` da URL), e traduzir a chave obrigaria a retraduzir de volta em
+    cada join. O que muda é só o rótulo: a página é em português e mostrava
+    "Germany" ao lado de "Gols marcados".
+
+    A tradução é curada em `reference/team_names.csv`, e não tirada do
+    `NAME_PT` do Natural Earth, por dois motivos. O primeiro é que ele descreve
+    países e o dado descreve seleções: "Republic of Ireland" e "Chinese Taipei"
+    não são nomes de país, e a Bélgica ocupa três unidades de mapa cujos nomes
+    em português são "Flandres", "Valônia" e "Bruxelas" — nenhum deles é a
+    seleção. O segundo é que o `NAME_PT` é português europeu em vários casos
+    (Chéquia, Irão), e a página é pt-BR.
+    """
+    table = pd.read_csv(REFERENCE / "team_names.csv", keep_default_na=False)
+    names = dict(zip(table.team_name, table.name_pt))
+    # O artigo é o que separa "a cor de Alemanha" de "a cor da Alemanha". Ele é
+    # propriedade do nome, não regra derivável: Portugal e Cuba não levam artigo,
+    # o Brasil leva "o", os Estados Unidos levam "os". Fica na mesma linha do
+    # nome porque é a mesma decisão editorial.
+    articles = dict(zip(table.team_name, table.artigo))
+
+    unknown = sorted({a for a in articles.values()} - {"", "o", "a", "os", "as"})
+    if unknown:
+        raise ValueError(f"artigo desconhecido em reference/team_names.csv: {unknown}")
+
+    missing = sorted(set(teams) - set(names))
+    if missing:
+        raise ValueError(f"sem nome em reference/team_names.csv: {', '.join(missing)}")
+
+    # Dois rótulos iguais seriam duas linhas idênticas no ranking, com números
+    # diferentes — o tipo de erro que parece dado errado e é rótulo errado.
+    seen: dict[str, str] = {}
+    clashes = []
+    for team in teams:
+        other = seen.setdefault(names[team], team)
+        if other != team:
+            clashes.append(f"{other} e {team} → {names[team]}")
+    if clashes:
+        raise ValueError("nome em português repetido: " + "; ".join(clashes))
+
+    return {
+        "generated_from": "reference/team_names.csv",
+        "teams": {team: names[team] for team in teams},
+        # Só quem tem artigo entra: no front-end a ausência já significa "sem
+        # artigo", e 15 chaves com string vazia seriam peso morto no download.
+        "articles": {team: articles[team] for team in teams if articles[team]},
+    }
+
+
 def build_match_list(matches: pd.DataFrame, venues: pd.DataFrame) -> tuple[dict, list[str]]:
     """As 1.068 partidas, uma a uma — o que o detalhamento abre.
 
@@ -584,6 +638,12 @@ def main() -> int:
         print(f"ERRO: {error}")
         return 1
 
+    try:
+        names = build_names(timeline["teams"])
+    except ValueError as error:
+        print(f"ERRO: {error}")
+        return 1
+
     for name, payload in (("metrics.json", {
         "generated_from": "data/processed/team_matches.csv",
         # O front-end não deve inferir o escopo contando linhas.
@@ -593,7 +653,8 @@ def main() -> int:
         "teams": metrics,
     }), ("head2head.json", head2head), ("timeline.json", timeline),
             ("colors.json", colors), ("matches.json", match_list),
-            ("venues.json", venue_layer), ("goals.json", goal_list)):
+            ("venues.json", venue_layer), ("goals.json", goal_list),
+            ("names.json", names)):
         path = WEB_DATA / name
         with path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, ensure_ascii=False, separators=(",", ":"))
@@ -675,6 +736,7 @@ def main() -> int:
     checks.append(("partidas seleção × ela mesma", same_label, 1))
     checks.append(("gols no detalhamento", len(goal_list["rows"]), expected_goals))
     checks.append(("seleções com rampa", len(colors["teams"]), len(timeline["teams"])))
+    checks.append(("seleções com nome em pt", len(names["teams"]), len(timeline["teams"])))
 
     # A claridade tem que ser monótona em toda rampa: é ela que carrega o dado, e
     # é ela que mantém a rampa legível para quem não distingue matizes. Uma cor

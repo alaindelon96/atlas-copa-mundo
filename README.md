@@ -295,6 +295,7 @@ page tells you so if it happens.
 | `web/data/` | Everything the page fetches — 2.0 MB, of which `countries.geojson` is 1.7 MB |
 | `etl/color.py` | Turns a shirt colour into a sequential ramp, in OKLab |
 | `reference/team_colors.csv` | Each team's curated colour, with the exceptions reasoned |
+| `reference/team_names.csv` | Each team's Portuguese name and article, with the editorial calls reasoned |
 
 **The year slider cost a rule, so the rule became a check.** Every other number on the
 map is pre-computed in Python, on the principle that a wrong number is always an ETL
@@ -339,10 +340,13 @@ more than a brighter Brazil with a bigger number.
   first tenth of the ramp. The root opens the bottom out without inverting any ordering.
   What it distorts is proportion — so the legend marks real values at `sqrt(v/max)`, and
   the marks visibly bunch up on the right.
-- **Goal difference gets a diverging ramp** (red ↔ blue) with two *fixed* poles, even
-  when a team is selected. It is the only metric with a negative side, and if the
-  positive pole followed the team's colour, "negative" would change colour with every
-  country.
+- **Two metrics get a diverging ramp** (red ↔ blue) with two *fixed* poles, even when a
+  team is selected — if the positive pole followed the team's colour, "negative" would
+  change colour with every country. Goal difference pivots on **0**, win percentage on
+  **50%**: both have a middle that means something, and a sequential ramp erases it, since
+  49% and 51% become two near-identical shades of one hue. The pivot is declared per metric
+  (`pivot` in `METRICS`), and the extent is measured *from it* — measuring win percentage
+  from zero would push the whole distribution onto one arm of the bar.
 - **Zero and "no data" are different colours.** China, Trinidad and Tobago, and Zaire in
   1974 have never scored a World Cup goal. That is a fact worth showing, not an absence
   — which is why the weakest step of every ramp keeps a trace of the hue instead of
@@ -379,6 +383,25 @@ not the double one in the flag's `onerror`, which closed the attribute early and
 as text next to the team name — live since the flags commit; and `styleFor()` still asked for
 two CSS variables that the restyle had removed, so the selected country came through unfilled.
 
+A third one showed up later and was not silent at all: **hovering a country made the venues
+disappear for good.** As `circleMarker`s the venues were vectors in the *same* `overlayPane`
+as the countries, so the `bringToFront()` that draws the hover outline reordered the whole
+SVG and buried them — and because the order was now written into the tree, mouseout could not
+undo it. The venues are `divIcon` pins now, in the `markerPane` (z-index 600 against the
+overlay's 400), which makes the overlap impossible rather than recoverable. The marker is a
+red map pin instead of a circle, for a reason beyond taste: on this map a circle already means
+*quantity* (area ∝ matches), and a venue is not another value on the choropleth — it is a
+place. Its tip, not its centre, sits on the coordinate.
+
+**Every pin is the same size.** Scaling it by match count is the obvious move and it costs
+more than it returns here: 208 venues bunch up wherever the World Cup came back — Europe and
+Mexico read as one clump — and the big pins bury the small ones, hiding exactly the venues the
+layer exists to show. The count stays where it is exact, in the tooltip.
+
+The pin's colours live in the SVG as `fill:var(--pin,#E01B24)`, with the literal as a fallback.
+That is not belt-and-braces: an SVG with no resolved `fill` falls back to **black**, and one
+cached stylesheet already turned all 208 pins black without a single console error.
+
 ### Stage 4c — Top scorers, and the assumption that fell ✅
 
 **Stage 3 concluded that player-level data would have a hole in 2026, and cut the project's
@@ -414,6 +437,41 @@ On screen: each match's scorers in the detail view (the 1958 final comes out wit
 and Zagallo at the right minutes), a scorer list for the selected team (Ronaldo 15, Pelé 12 for
 Brazil; Mbappé 10 in 2026), and a **play button on the slider** that walks the window across the
 editions keeping the chosen width — which is why it skips 1942 and 1946, which never happened.
+
+### Stage 4d — The page speaks Portuguese ✅
+
+The interface was written in pt-BR from the first commit and the country names were not:
+the panel read "Germany" next to "Gols marcados". The fix is a label layer, not a rename —
+**the key stays English everywhere** (`team` in the GeoJSON, the `timeline.json` indices,
+the `t=` parameter in the URL), so links already shared keep opening the view they describe
+and no join has to translate back. `pt()` appears in output only: tooltip, table, picker.
+
+The 83 names are curated in [`reference/team_names.csv`](reference/team_names.csv) and
+shipped as `web/data/names.json` (3 KB). Natural Earth's `NAME_PT` was the obvious shortcut
+and it does not fit: it names *countries*, and the data names *teams* — "Republic of
+Ireland" and "Chinese Taipei" are not country names, and Belgium is three map units called
+Flandres, Valônia and Bruxelas, none of which is the team. It is also European Portuguese
+in places (Chéquia, Irão) on a pt-BR page.
+
+- **The article is part of the name.** Portuguese contracts it: ***na** Suécia*, ***no**
+  Japão*, but *em Portugal*. It cannot be derived, so the CSV carries a column for it and
+  the ETL rejects anything that is not `o`, `a`, `os`, `as` or empty. It fixes the away line
+  in the match list, which read "em Suécia", and the legend, which read "Estados Unidos
+  aparece".
+- **Sorting moved to the label.** `localeCompare` without a locale uses the browser's, and in
+  an English one "Áustria" lands after "Uzbequistão". The picker and the rankings order
+  through an explicit pt-BR collator.
+- **One sentence lost its participle.** The legend said "*Alemanha aparece contornada*",
+  which agreed in gender with the team and was already wrong for Brasil, Japão and Catar.
+  Rewritten without it, only number has to agree — and that comes from the article.
+- **Two teams cannot share a label.** Republic of Ireland and Northern Ireland are separate
+  teams with separate polygons; shortening both to "Irlanda" would merge them on screen
+  without merging anything in the data. The ETL raises on a repeated name, and a test locks it.
+
+Editorial calls are reasoned in the CSV's `note` column, as in `team_colors.csv`: Netherlands
+is **Holanda**, the name Brazilian sports press uses and the one the repository's own comments
+already used; Republic of Ireland is plain **Irlanda**, unambiguous because Northern Ireland
+is its own polygon; Czech Republic is **República Tcheca**, the Brazilian spelling.
 
 ### Stage 5 — Publish ✅
 
