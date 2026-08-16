@@ -210,6 +210,57 @@ def build_team_matches(matches: pd.DataFrame) -> pd.DataFrame:
     return long.sort_values(["match_date", "match_id", "home_away"]).reset_index(drop=True)
 
 
+def bridge_player_ids(historic: pd.DataFrame, modern: pd.DataFrame) -> pd.Series:
+    """O id de jogador de 2026: emprestado do Fjelstul quando dá, novo quando não.
+
+    **Sem isto, "artilheiro de todos os tempos" é uma conta falsa.** O Fjelstul
+    tem `player_id` e a Wikipédia não, então a única identidade em comum entre
+    as fontes é o nome — e nome não identifica ninguém. Com o nome como chave, o
+    Ronaldo brasileiro (15 gols, 1998–2006) somava com um Ronaldo português de
+    2026 e virava um artilheiro de 18 gols que nunca existiu, à frente do Klose,
+    que é o recorde de verdade com 16.
+
+    A regra é **mesmo nome E mesma seleção**, e é a mais forte que o dado
+    sustenta. Ela acerta os três — e são só três — nomes que aparecem nas duas
+    fontes:
+
+        Casemiro   Brasil 2022  +  Brasil 2026   -> mesma pessoa, une
+        Neymar     Brasil 2014-2022 + Brasil 2026 -> mesma pessoa, une
+        Ronaldo    Brasil 1998-2006 | Portugal 2026 -> pessoas diferentes, separa
+
+    Quem não casa ganha um id sintético `W-000`, que é o caso dos 2026 estreantes.
+
+    **Homônimo dentro do próprio Fjelstul não é ponte, é abstenção.** Cinco
+    nomes de lá têm dois `player_id` cada (Oscar e Júnior no Brasil, Juanito e
+    Andoni Goikoetxea na Espanha, József Tóth na Hungria) — jogadores diferentes,
+    décadas diferentes, mesmo nome e mesma seleção. Se um nome de 2026 casar com
+    um desses, não há como saber com qual dos dois, e a função **recusa a ponte**
+    em vez de escolher: um id novo separa um jogador que talvez fosse o mesmo, o
+    que subestima um total; um id errado credita gols a quem não os fez.
+    """
+    ambiguous = (
+        historic.groupby(["player", "player_team"]).player_id.nunique()
+        .pipe(lambda counts: set(counts[counts > 1].index))
+    )
+    known = (
+        historic[~historic.set_index(["player", "player_team"]).index.isin(ambiguous)]
+        .drop_duplicates(["player", "player_team"])
+        .set_index(["player", "player_team"]).player_id.to_dict()
+    )
+
+    minted: dict[tuple[str, str], str] = {}
+
+    def identify(row: pd.Series) -> str:
+        key = (row.player, row.player_team)
+        if key in known:
+            return known[key]
+        if key not in minted:
+            minted[key] = f"W-{len(minted):03d}"
+        return minted[key]
+
+    return modern.apply(identify, axis=1)
+
+
 def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
     """Os 3.028 gols, com autor e minuto — duas fontes num formato só.
 
@@ -233,10 +284,16 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
     - **Nome de jogador não é comparável entre as fontes.** O Fjelstul separa
       `given_name` e `family_name` e grava a string `"not applicable"` para quem
       só tem um nome — o Ronaldo brasileiro entre eles. A Wikipédia traz o nome
-      curto que a caixa de partida exibe ("Mbappé"). Como não há id de jogador em
-      2026, os dois lados ficam num campo só, `player`, e o projeto não promete
-      que "Ronaldo" de 1998 e "Ronaldo" de 2026 sejam a mesma pessoa. Contar
-      artilheiro por edição é seguro; somar carreira entre fontes não é.
+      curto que a caixa de partida exibe ("Mbappé"). O rótulo mostrado sai desses
+      dois lados num campo só, `player`, e continua não sendo identidade.
+
+      **Quem identifica é `player_id`**, e é por isso que ele existe: o Fjelstul
+      tem o dele, a Wikipédia não tem nenhum, e `bridge_player_ids` decide caso a
+      caso qual jogador de 2026 é alguém que já jogou. Enquanto a soma era feita
+      por nome, o Ronaldo brasileiro (15 gols) somava com um Ronaldo português de
+      2026 (3) e a página anunciava um artilheiro de 18 — recorde inexistente, na
+      frente do Klose, que tem o de verdade com 16. Somar carreira entre fontes
+      agora é seguro; o que continua não sendo é somar por nome.
     """
     succession = pd.read_csv(REFERENCE / "team_succession.csv")
     labels = dict(zip(succession.historic_name, succession.display_name))
@@ -251,6 +308,7 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
     historic["player"] = historic.apply(full_name, axis=1)
     historic["team"] = historic.team_name.map(lambda name: labels.get(name, name))
     historic["player_team"] = historic.player_team_name.map(lambda name: labels.get(name, name))
+    historic["player_id"] = historic.player_id
     historic["source"] = "fjelstul"
 
     modern = pd.read_csv(INTERIM / "goals_2026.csv")
@@ -263,8 +321,9 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
         lambda row: row.opponent_name if row.own_goal else row.team_name, axis=1)
     modern["player_team"] = modern.player_team.map(lambda name: labels.get(name, name))
     modern["source"] = "wikipedia"
+    modern["player_id"] = bridge_player_ids(historic, modern)
 
-    columns = ["match_id", "team", "player_team", "player",
+    columns = ["match_id", "team", "player_team", "player", "player_id",
                "minute_regulation", "minute_stoppage", "penalty", "own_goal", "source"]
     goals = pd.concat([historic[columns], modern[columns]], ignore_index=True)
 
@@ -275,7 +334,7 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
     goals["minute"] = goals.minute_regulation + goals.minute_stoppage.fillna(0).astype(int)
 
     ordered = ["match_id", "tournament_id", "year", "stage", "match_date",
-               "team", "player_team", "player",
+               "team", "player_team", "player", "player_id",
                "minute", "minute_regulation", "minute_stoppage",
                "penalty", "own_goal", "source"]
     return goals[ordered].sort_values(["match_date", "match_id", "minute"]).reset_index(drop=True)

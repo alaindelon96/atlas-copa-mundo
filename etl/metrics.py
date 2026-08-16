@@ -386,6 +386,13 @@ def build_names(teams: list[str]) -> dict:
     # o Brasil leva "o", os Estados Unidos levam "os". Fica na mesma linha do
     # nome porque é a mesma decisão editorial.
     articles = dict(zip(table.team_name, table.artigo))
+    # O trigrama FIFA — BRA, ARG, GER —, que é como o placar de uma transmissão
+    # nomeia as duas seleções. Curado, e não derivado das três primeiras letras
+    # do nome: "Croácia" e "Costa Rica" dariam "CRO" e "COS" por acaso, mas
+    # "Alemanha" daria "ALE" e "Holanda" daria "HOL", que não são os códigos que
+    # apareceram na tela de ninguém em nenhuma Copa. O padrão vale mais que a
+    # regra porque é ele que o torcedor reconhece.
+    siglas = dict(zip(table.team_name, table.sigla))
 
     unknown = sorted({a for a in articles.values()} - {"", "o", "a", "os", "as"})
     if unknown:
@@ -394,6 +401,28 @@ def build_names(teams: list[str]) -> dict:
     missing = sorted(set(teams) - set(names))
     if missing:
         raise ValueError(f"sem nome em reference/team_names.csv: {', '.join(missing)}")
+
+    malformed = sorted(
+        team for team in teams
+        if not (len(siglas[team]) == 3 and siglas[team].isupper() and siglas[team].isalpha())
+    )
+    if malformed:
+        raise ValueError(
+            "sigla fora do formato de três maiúsculas em reference/team_names.csv: "
+            + ", ".join(malformed)
+        )
+
+    # Duas seleções com a mesma sigla seriam dois placares idênticos com
+    # resultados diferentes — o mesmo modo de falha do nome repetido, e mais
+    # difícil de perceber, porque a sigla é curta demais para estranhar.
+    repeated: dict[str, str] = {}
+    collisions = []
+    for team in teams:
+        other = repeated.setdefault(siglas[team], team)
+        if other != team:
+            collisions.append(f"{other} e {team} → {siglas[team]}")
+    if collisions:
+        raise ValueError("sigla repetida: " + "; ".join(collisions))
 
     # Dois rótulos iguais seriam duas linhas idênticas no ranking, com números
     # diferentes — o tipo de erro que parece dado errado e é rótulo errado.
@@ -412,6 +441,7 @@ def build_names(teams: list[str]) -> dict:
         # Só quem tem artigo entra: no front-end a ausência já significa "sem
         # artigo", e 15 chaves com string vazia seriam peso morto no download.
         "articles": {team: articles[team] for team in teams if articles[team]},
+        "siglas": {team: siglas[team] for team in teams},
     }
 
 
@@ -492,12 +522,37 @@ def build_goal_list(goals: pd.DataFrame, match_list: dict, order: list[str]) -> 
 
     O gol contra é creditado à seleção que **ganhou** o gol, como no placar; o
     nome que aparece é o de quem chutou. Sem isso a soma não fecharia.
+
+    **O índice de jogador é a pessoa, não o nome.** Ele vem do `player_id` que
+    `etl.model.bridge_player_ids` resolve, e não de `player.unique()` como antes:
+    por nome, o Ronaldo brasileiro (15 gols) e um Ronaldo português de 2026 (3)
+    viravam uma entrada só de 18 gols — um recorde que não existe, à frente do
+    Klose, que tem o de verdade com 16. Dois jogadores homônimos aparecem aqui
+    como duas entradas com o mesmo rótulo, e é o `player_teams` que os separa na
+    tela.
+
+    `player_teams` existe para o front-end não ter que adivinhar de que seleção
+    é um artilheiro: a coluna `team` da linha do gol é a **creditada**, que num
+    gol contra é a adversária de quem chutou.
     """
     team_ix = {name: i for i, name in enumerate(match_list["teams"])}
     match_ix = {match_id: i for i, match_id in enumerate(order)}
 
-    players = sorted(goals.player.unique())
-    player_ix = {name: i for i, name in enumerate(players)}
+    identities = (goals[["player_id", "player", "player_team"]]
+                  .drop_duplicates("player_id")
+                  .sort_values(["player", "player_id"])
+                  .reset_index(drop=True))
+
+    split = goals.groupby("player_id").player.nunique()
+    if (split > 1).any():
+        raise ValueError(
+            "player_id com mais de um nome em data/processed/goals.csv: "
+            + ", ".join(sorted(split[split > 1].index))
+        )
+
+    players = identities.player.tolist()
+    player_teams = [team_ix.get(name, -1) for name in identities.player_team]
+    player_ix = dict(zip(identities.player_id, range(len(identities))))
 
     rows = []
     for goal in goals.itertuples():
@@ -506,7 +561,7 @@ def build_goal_list(goals: pd.DataFrame, match_list: dict, order: list[str]) -> 
         rows.append([
             match_ix[goal.match_id],
             team_ix[goal.team],
-            player_ix[goal.player],
+            player_ix[goal.player_id],
             int(goal.minute_regulation),
             int(goal.minute_stoppage) if pd.notna(goal.minute_stoppage) else 0,
             2 if goal.own_goal else 1 if goal.penalty else 0,
@@ -516,6 +571,13 @@ def build_goal_list(goals: pd.DataFrame, match_list: dict, order: list[str]) -> 
         "generated_from": "data/processed/goals.csv",
         "competition": COMPETITION,
         "players": players,
+        "player_teams": player_teams,
+        # O id vai junto porque a URL da página de um jogador precisa apontar
+        # para a PESSOA. Por nome, `art=Ronaldo` seria ambíguo exatamente no
+        # caso que a identidade existe para separar; por posição na lista, o
+        # link quebraria calado se o dado fosse regerado com um artilheiro a
+        # mais. São ~13 KB num arquivo de 86 KB.
+        "player_ids": identities.player_id.tolist(),
         "marks": ["normal", "pênalti", "contra"],
         "rows": rows,
     }

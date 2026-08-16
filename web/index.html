@@ -2,9 +2,34 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Atlas da Copa do Mundo — 1930–2026</title>
 <meta name="description" content="Mapa-múndi coroplético com o histórico da Copa do Mundo masculina: 1.068 partidas, 83 seleções, 23 edições.">
+<meta name="theme-color" content="#0B120E">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<!-- O que WhatsApp, X e Telegram mostram quando alguém cola o link — e no
+     Brasil o link circula justamente por lá. Sem estas linhas o prévia era a
+     URL crua. Falta a `og:image`, e a falta é deliberada: gerar o cartão de
+     1200×630 exigiria um renderizador de imagem no pipeline (Pillow, cairosvg)
+     por causa de um único arquivo estático. Sem ela a prévia é só texto, com
+     título e descrição — que é o que estas linhas garantem. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Atlas da Copa do Mundo">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Atlas da Copa do Mundo — 1930 a 2026">
+<meta property="og:description" content="Todas as Copas do Mundo no mapa: 23 edições, 1.068 partidas, 3.028 gols e 83 seleções, com placar, artilheiros e confronto direto.">
+<meta property="og:url" content="https://alaindelon96.github.io/atlas-copa-mundo/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Atlas da Copa do Mundo — 1930 a 2026">
+<meta name="twitter:description" content="Todas as Copas do Mundo no mapa: 23 edições, 1.068 partidas, 3.028 gols e 83 seleções.">
+<!-- A fonte da interface inteira é a primeira coisa que a página desenha, e o
+     `@font-face` só é descoberto depois que o CSS chega — dois passos em série.
+     O preload encurta para um. `crossorigin` é obrigatório mesmo sendo arquivo
+     local: fonte é sempre buscada em modo CORS, e sem o atributo o navegador
+     baixa duas vezes. Só o subconjunto latino: o latin-ext existe para nomes de
+     jogador (Šuker, Łukasz) e o `unicode-range` só o busca quando aparece um. -->
+<link rel="preload" href="vendor/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="vendor/leaflet.css">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -13,20 +38,60 @@
 <!-- O mapa ocupa a janela inteira; tudo o mais flutua por cima. -->
 <div id="map" role="application" aria-label="Mapa-múndi coroplético"></div>
 
+<!-- A faixa da marca.
+     Ela não existia: o `<h1>` era só para leitor de tela, sob a ideia de que o
+     mapa é o próprio título. Isso funciona para quem já sabe onde chegou e falha
+     para todo o resto — um mapa colorido sem cabeçalho não diz de que assunto
+     ele é, e é justamente o cabeçalho que ge.globo, Lance! e CazéTV usam para
+     dizer isso em meio segundo. Ela é preta, e não verde como a dessas três,
+     por um motivo que só existe aqui: metade da tela é dado colorido, e uma
+     barra verde por cima de um mapa que às vezes fica verde (Nigéria, Argélia,
+     México) confundiria marca com escala. O verde e o amarelo entram na marca e
+     na faixa de 3px, onde não disputam com nada. -->
+<header class="masthead">
+  <h1 class="brand">
+    <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="11.2" fill="var(--accent-vivid)"></circle>
+      <g fill="none" stroke="rgba(255,255,255,.65)" stroke-width="1.15">
+        <ellipse cx="12" cy="12" rx="5" ry="11.2"></ellipse>
+        <path d="M1.4 8.5h21.2M1.4 15.5h21.2"></path>
+      </g>
+      <path d="M12 7.4 16.38 10.58 14.7 15.72 9.3 15.72 7.63 10.58Z"
+            fill="var(--gold)" stroke="rgba(4,20,10,.55)" stroke-width=".7"
+            stroke-linejoin="round"></path>
+    </svg>
+    <span class="brand-name">Atlas <b>da Copa</b></span>
+  </h1>
+
+  <!-- O recorte que está no ar, na faixa da marca — o mesmo texto que o painel
+       repete lá embaixo. Ele fica aqui porque é o estado global da página: com
+       os cartões recolhidos, some tudo menos isto. -->
+  <p class="masthead-span"><b id="head-span">1930–2026</b><span id="head-count"></span></p>
+
+  <div class="masthead-actions">
+    <button id="panels" class="icon-btn" type="button"
+            aria-pressed="false" title="Recolher todos os painéis">
+      <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+        <rect x="2.5" y="3.5" width="15" height="13" rx="2.5" fill="none"
+              stroke="currentColor" stroke-width="1.6"></rect>
+        <path d="M12 3.5v13" stroke="currentColor" stroke-width="1.6"></path>
+      </svg>
+      <span class="sr-only">Recolher todos os painéis</span>
+    </button>
+    <button id="theme" class="icon-btn" type="button" title="Alternar tema">
+      <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+        <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+        <path d="M10 3.5a6.5 6.5 0 0 1 0 13Z" fill="currentColor"></path>
+      </svg>
+      <span class="sr-only">Alternar tema</span>
+    </button>
+  </div>
+</header>
+
 <!-- A camada de interface não recebe ponteiro; só os painéis dentro dela
      recebem. Sem isso, o espaço vazio entre os cartões engoliria o arrasto do
      mapa e metade da tela deixaria de ser mapa. -->
 <div class="ui">
-
-  <!-- O título fica só para leitor de tela e para a aba: na tela, o mapa é o
-       título. Quem chega aqui já sabe o que está olhando. -->
-  <h1 class="sr-only">Atlas da Copa do Mundo — 1930 a 2026</h1>
-
-  <div class="toolbar">
-    <button id="panels" class="icon-btn hud" type="button"
-            aria-pressed="false" title="Recolher todos os painéis">⤢</button>
-    <button id="theme" class="icon-btn hud" type="button" title="Alternar tema">◐</button>
-  </div>
 
   <!-- Cada cartão recolhe sozinho, e recolhido vira só a sua barra de título —
        nunca some de vez. Um painel que desaparece por inteiro precisa de um
@@ -34,43 +99,70 @@
        caminho de volta. -->
   <section class="hud card controls" id="card-controls" aria-label="Controles do mapa">
     <div class="card-head">
-      <span class="card-title">🎛️ Controles</span>
+      <span class="card-title">Controles</span>
       <button class="card-toggle" type="button" data-card="controls"
               aria-expanded="true" aria-controls="body-controls" title="Recolher">▾</button>
     </div>
     <div class="card-body" id="body-controls">
       <div class="field">
-        <label for="metric">📊 Métrica</label>
+        <label for="metric">Métrica</label>
         <select id="metric"></select>
       </div>
 
-      <div class="field">
-        <label for="team">🌍 País selecionado</label>
-        <select id="team"></select>
-      </div>
+      <!-- Os dois seletores de seleção são caixas de busca, não `<select>`.
+           São 83 países em ordem alfabética: achar a Coreia do Sul numa lista
+           dessas é rolagem, e quem sabe o que procura já sabe digitar. A caixa
+           aceita o nome ("coreia"), a sigla ("KOR") e ignora acento, que é
+           exatamente como um placar de transmissão nomeia um time.
 
+           A lista de opções é construída em `map.js` e vive presa ao `<body>`,
+           não aqui dentro: o cartão tem `overflow` para poder rolar em tela
+           baixa, e uma lista desenhada dentro dele seria cortada na primeira
+           linha. -->
       <div class="field">
-        <label for="versus">⚔️ Comparar com</label>
-        <select id="versus"></select>
-      </div>
-
-      <div class="field">
-        <span class="legend" id="layers-label">🗺️ Camadas</span>
-        <div class="segmented" role="group" aria-labelledby="layers-label">
-          <button type="button" id="layer-venues" aria-pressed="false">🏟️ Sedes</button>
+        <label for="team">Seleção</label>
+        <div class="combo" data-combo="team">
+          <input id="team" type="text" role="combobox" autocomplete="off"
+                 spellcheck="false" aria-expanded="false" aria-autocomplete="list"
+                 aria-controls="team-list" placeholder="Todas — visão global">
+          <button type="button" class="combo-clear" tabindex="-1"
+                  aria-label="Limpar seleção" hidden>×</button>
         </div>
       </div>
 
       <div class="field">
-        <span class="legend" id="mode-label">⚖️ Leitura</span>
-        <div class="segmented" role="group" aria-labelledby="mode-label">
-          <button type="button" id="mode-total" aria-pressed="true">Total</button>
-          <button type="button" id="mode-rate" aria-pressed="false">Por partida</button>
+        <label for="versus">Comparar com</label>
+        <div class="combo" data-combo="versus">
+          <input id="versus" type="text" role="combobox" autocomplete="off"
+                 spellcheck="false" aria-expanded="false" aria-autocomplete="list"
+                 aria-controls="versus-list" placeholder="Ninguém — sem comparação">
+          <button type="button" class="combo-clear" tabindex="-1"
+                  aria-label="Limpar comparação" hidden>×</button>
+        </div>
+      </div>
+
+      <!-- Leitura e camadas dividem a linha: são os dois interruptores do mapa,
+           e empilhados custavam uma faixa de ~55px que, numa janela de 720px,
+           era exatamente o que faltava para o slider de anos caber no cartão. -->
+      <div class="field-row">
+        <div class="field">
+          <span class="legend" id="mode-label">Leitura</span>
+          <div class="segmented" role="group" aria-labelledby="mode-label">
+            <button type="button" id="mode-total" aria-pressed="true">Total</button>
+            <button type="button" id="mode-rate" aria-pressed="false">Por partida</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="legend" id="layers-label">Camadas</span>
+          <div class="segmented" role="group" aria-labelledby="layers-label">
+            <button type="button" id="layer-venues" aria-pressed="false">Sedes</button>
+          </div>
         </div>
       </div>
 
       <div class="field">
-        <span class="legend" id="years-label">🗓️ Faixa de edições
+        <span class="legend" id="years-label">Faixa de edições
           <button type="button" id="play" class="play" aria-pressed="false"
                   title="Percorrer as edições">▶</button>
         </span>
@@ -106,7 +198,8 @@
           Dados: Fjelstul World Cup Database (CC&nbsp;BY-SA&nbsp;4.0) para 1930–2022;
           Wikipédia em inglês (CC&nbsp;BY-SA&nbsp;4.0) para 2026; fronteiras:
           Natural Earth (domínio público). Cores das seleções curadas em
-          <code>reference/team_colors.csv</code>.
+          <code>reference/team_colors.csv</code>. Tipografia: Archivo
+          (SIL&nbsp;OFL&nbsp;1.1).
         </div>
       </details>
     </div>
@@ -114,13 +207,16 @@
 
   <aside class="hud card side" id="card-side">
     <div class="card-head">
-      <span class="card-title" id="side-title">📋 Resumo</span>
+      <span class="card-title" id="side-title">Resumo</span>
       <button class="card-toggle" type="button" data-card="side"
               aria-expanded="true" aria-controls="panel" title="Recolher">▾</button>
     </div>
     <div class="card-body" id="panel" aria-live="polite"></div>
   </aside>
 
+  <!-- O aviso da autoconferência é um cartão amarelo: em futebol amarelo é
+       exatamente isto — advertência, o jogo continua. Vermelho aqui seria
+       exagero (a página não parou) e verde diria o contrário do que ele diz. -->
   <div id="alarm" class="hud alarm" role="status">
     <b>Conferência</b>
     <span id="alarm-text"></span>

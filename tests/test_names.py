@@ -89,6 +89,39 @@ def test_as_decisoes_editoriais_estao_justificadas(table):
         assert note.strip(), f"{team} sem justificativa"
 
 
+# --- a sigla do placar ----------------------------------------------------
+
+
+def test_toda_sigla_tem_tres_maiusculas(table):
+    """O placar reserva uma caixa de largura fixa para ela; quatro letras
+    estouram a caixa e duas deixam o placar torto."""
+    bad = table.team_name[~table.sigla.str.fullmatch(r"[A-Z]{3}")].tolist()
+    assert bad == []
+
+
+def test_nenhuma_sigla_se_repete(table):
+    """Duas seleções com a mesma sigla seriam dois placares idênticos com
+    resultados diferentes — e a sigla é curta demais para alguém estranhar."""
+    repeated = table.sigla[table.sigla.duplicated()].tolist()
+    assert repeated == []
+
+
+def test_as_siglas_sao_as_da_fifa_e_nao_as_do_portugues(table):
+    """A sigla é o trigrama FIFA, o que aparece no placar da transmissão.
+
+    Derivar das três primeiras letras do nome em português daria "ALE", "HOL",
+    "ING" e "SUI" — os três primeiros nunca apareceram numa tela de Copa, e o
+    quarto colidiria com a Suíça. O padrão vale mais que a regra porque é ele
+    que o torcedor reconhece.
+    """
+    expected = {"Germany": "GER", "Netherlands": "NED", "England": "ENG",
+                "Switzerland": "SUI", "Sweden": "SWE", "South Korea": "KOR",
+                "Saudi Arabia": "KSA", "South Africa": "RSA",
+                "Ivory Coast": "CIV", "United States": "USA"}
+    for team, sigla in expected.items():
+        assert table.loc[table.team_name == team, "sigla"].iloc[0] == sigla
+
+
 # --- o arquivo gerado -----------------------------------------------------
 
 
@@ -116,6 +149,13 @@ def test_so_quem_tem_artigo_entra_no_json(names):
     assert names["articles"]["United States"] == "os"
     assert "Portugal" not in names["articles"]
     assert all(value in ARTICLES - {""} for value in names["articles"].values())
+
+
+def test_o_json_traz_a_sigla_de_toda_selecao(names, teams):
+    """Sem sigla o placar cai para o nome inteiro e a linha quebra em duas."""
+    assert sorted(names["siglas"]) == sorted(teams)
+    assert names["siglas"]["Brazil"] == "BRA"
+    assert names["siglas"]["Germany"] == "GER"
 
 
 def test_selecao_sem_nome_para_o_etl():

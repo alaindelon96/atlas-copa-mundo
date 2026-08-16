@@ -9,7 +9,7 @@ inconsistent records, relational modelling, validation, and publication.
 > ### Status: stage 5 of 5
 > The pipeline runs end to end, **the map works**, and it is published —
 > **[alaindelon96.github.io/atlas-copa-mundo](https://alaindelon96.github.io/atlas-copa-mundo/)**.
-> Locally: `python -m http.server 8000 --directory web`. This README describes what is
+> Locally: `python serve.py`. This README describes what is
 > built, not what is planned — see [Roadmap](#roadmap).
 
 ---
@@ -18,7 +18,7 @@ inconsistent records, relational modelling, validation, and publication.
 
 | | |
 |---|---|
-| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, an interactive choropleth map with match detail, two-team comparison, a venue layer and shareable URLs — deployed to GitHub Pages by a workflow |
+| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, an interactive choropleth map with match detail, two-team comparison, a venue layer, an all-time scorer table with a page per player, searchable team pickers, ready-made questions and shareable URLs — deployed to GitHub Pages by a workflow |
 | **Data on hand** | `data/processed/` — 1,068 men's matches, 3,028 goals with scorer and minute, 23 tournaments, 83 teams, 208 geocoded venues, 1930–2026. Schema: [`docs/schema.md`](docs/schema.md) |
 | **Not built yet** | Scheduled re-runs of the pipeline in CI — deferred to v2 |
 | **Known gap** | Attendance exists only for 2026 (Fjelstul carries none) — and is deliberately not a feature |
@@ -279,23 +279,32 @@ behaviour — **the label wins** — and made the consequence loud instead of hi
 ### Stage 4 — The map ✅
 
 ```bash
-python -m http.server 8000 --directory web
+python serve.py
 ```
 
 Then open http://localhost:8000. The page needs a real HTTP server: opening
 `index.html` off disk trips the browser's origin policy and the JSON fetch fails — the
 page tells you so if it happens.
 
+[`serve.py`](serve.py) exists for one line — `protocol_version = "HTTP/1.1"`. The
+obvious `python -m http.server --directory web` served everything except the file that
+matters most: `SimpleHTTPRequestHandler` speaks HTTP/1.0 and closes the connection after
+each response, the page requests eight JSON payloads in parallel and reuses connections,
+and on Windows the combination dropped `countries.geojson` (1.7 MB) mid-transfer —
+`ERR_CONNECTION_RESET` after ~19 s, truncated. The map opened with no countries on it
+and nothing in the console pointing at the server.
+
 | File | Role |
 |---|---|
 | `web/index.html` | The shell: a full-window map with the panels floating over it |
 | `web/map.js` | Aggregates, classifies, paints — and checks itself against the pipeline |
-| `web/style.css` | Chrome inherited from `docs/panorama.html` + the two colour ramps |
-| `web/vendor/` | Leaflet 1.9.4 and 83 flag SVGs, vendored rather than pulled from a CDN |
-| `web/data/` | Everything the page fetches — 2.0 MB, of which `countries.geojson` is 1.7 MB |
+| `web/style.css` | The chrome: palette, typography, scoreboard, cards — see Stage 4e |
+| `web/vendor/` | Leaflet 1.9.4, 83 flag SVGs and the Archivo variable font, vendored rather than pulled from a CDN |
+| `serve.py` | Local HTTP/1.1 server — the stock `http.server` truncates the 1.7 MB GeoJSON |
+| `web/data/` | Everything the page fetches — 2.1 MB, of which `countries.geojson` is 1.7 MB |
 | `etl/color.py` | Turns a shirt colour into a sequential ramp, in OKLab |
 | `reference/team_colors.csv` | Each team's curated colour, with the exceptions reasoned |
-| `reference/team_names.csv` | Each team's Portuguese name and article, with the editorial calls reasoned |
+| `reference/team_names.csv` | Each team's Portuguese name, article and FIFA trigram, with the editorial calls reasoned |
 
 **The year slider cost a rule, so the rule became a check.** Every other number on the
 map is pre-computed in Python, on the principle that a wrong number is always an ETL
@@ -447,7 +456,7 @@ the `t=` parameter in the URL), so links already shared keep opening the view th
 and no join has to translate back. `pt()` appears in output only: tooltip, table, picker.
 
 The 83 names are curated in [`reference/team_names.csv`](reference/team_names.csv) and
-shipped as `web/data/names.json` (3 KB). Natural Earth's `NAME_PT` was the obvious shortcut
+shipped as `web/data/names.json` (4 KB). Natural Earth's `NAME_PT` was the obvious shortcut
 and it does not fit: it names *countries*, and the data names *teams* — "Republic of
 Ireland" and "Chinese Taipei" are not country names, and Belgium is three map units called
 Flandres, Valônia and Bruxelas, none of which is the team. It is also European Portuguese
@@ -473,6 +482,191 @@ is **Holanda**, the name Brazilian sports press uses and the one the repository'
 already used; Republic of Ireland is plain **Irlanda**, unambiguous because Northern Ireland
 is its own polygon; Czech Republic is **República Tcheca**, the Brazilian spelling.
 
+### Stage 4e — The interface speaks football ✅
+
+Speaking Portuguese was not the same as *looking* like something a Brazilian football
+fan would open. The page was a data atlas — emerald accent, monospaced small-caps
+labels, no masthead at all, because the `<h1>` was screen-reader only on the theory that
+the map is its own title. That works for a reader who already knows where they landed
+and fails for everyone arriving from a shared link.
+
+The three references the audience actually uses solve it the same way, with the same
+palette:
+
+| | Chrome | Accent | Live |
+|---|---|---|---|
+| **ge.globo** | green `#06AA48` navigation bar | uppercase editoria kickers | red `AO VIVO` tag |
+| **Lance!** | green `#00A021` header, `#007A17` in text | pure yellow highlight | `#E3262E` real-time |
+| **CazéTV** | structural black | yellow as the mark | — |
+
+The common denominator is **green, yellow and black** — the national team's own
+palette — plus a scoreboard card with a three-letter code, and small-caps kickers set in
+condensed bold rather than monospace. This stage adopts all of that, with three
+decisions the map itself forces:
+
+- **The masthead is black, not green.** Half this screen is coloured data, and several
+  teams *are* green (Nigeria, Algeria, Mexico, Saudi Arabia). A green bar above a map
+  that sometimes goes green reads as part of the scale. Green and yellow go into the
+  wordmark, into a 3px rule under the bar, and into active states — never into a large
+  area. The 3px rule is the only place the two appear together at full strength.
+- **Two greens, and the difference is a contrast rule.** `--accent` (`#00843A` light,
+  `#00D45F` dark) is the one allowed to carry text — 4.8:1 under white. `--accent-vivid`
+  (`#00A83F`) is the flag green, too bright for small text at 3.4:1, and reserved for
+  pure mark: the logo, the rule, the slider fill.
+- **The self-check warning became a yellow card.** In football, yellow is precisely what
+  that panel means — a caution, play continues. The page has not stopped working when it
+  appears; it is reporting that a JavaScript sum drifted from the Python one.
+
+Two things changed in the data layer, not just the paint:
+
+**Every team gained its FIFA trigram** — a `sigla` column in
+[`reference/team_names.csv`](reference/team_names.csv), shipped in `names.json`. It is
+curated, not derived: three letters off the Portuguese name would give `ALE` for
+Alemanha and `HOL` for Holanda, neither of which has appeared on a World Cup screen, and
+`SUI` for both Suíça and Suécia. The ETL rejects a code that is not three capitals and
+raises on a collision — two teams sharing a trigram would be two identical scoreboards
+with different results, and a trigram is too short for anyone to notice.
+
+**A match row became a scoreboard**, and that changed which side is which. The old row
+read from the selected team's point of view — `4–1 vs Itália` — which gives the same
+match two different scorelines depending on how you reached it: the 1970 final is `4–1`
+from Brazil and `1–4` from Italy. The card now shows home on the left and away on the
+right, always, with each side's scorers in its own column underneath. The *result*
+stays the selected team's, because that is the question the list answers, and it is
+carried by both a coloured rail and a letter — `V`, `E`, `D` — never by colour alone.
+
+The typeface is **Archivo**, vendored as a variable font with both axes (width 62–125,
+weight 400–800) in one file, so the same family sets body text at normal width and
+scoreboards, trigrams and kickers in condensed heavy. It ships under SIL OFL 1.1 in
+[`web/vendor/fonts/`](web/vendor/fonts/), on the same terms as Leaflet and the flags: a
+clone renders offline and the version in git is the version on screen.
+
+**One bug surfaced while checking the two themes, and it predates this stage.** Swapping
+themes changes ~35 colour tokens at once, and Chrome treats that as the start of a
+transition on every property that declares one over a `var()` — then resolves the wrong
+end value and leaves it there. After a single click on the theme button, the pressed
+`Total` button kept the *light* theme's green and white on a dark panel, and all three
+`select`s kept a light grey border; nothing recovered without a reload. The fix suspends
+transitions for two frames across the swap (`:root.theming`), on the button and on the
+`prefers-color-scheme` listener, which has the same problem and does not go through the
+button.
+
+### Stage 4f — Doors into the data ✅
+
+Stage 4e repainted the page; it did not redesign it. The interaction model was
+still **metric-first**: pick `goal_difference`, pick `per match`, pick a year
+range. That asks you to already know what the page can answer. A fan does not
+arrive that way — they arrive with a question already formed, and the three
+things they ask first were all reachable and none was *offered*.
+
+Three changes, all inside the existing state model:
+
+**The two team pickers became search boxes.** They were `<select>`s with 83
+countries in alphabetical order, which you navigate by scrolling: the native
+type-ahead of a `<select>` matches a prefix only, is invisible, and expires after
+a second. The box now matches anywhere in the Portuguese name, the FIFA trigram
+and the English key, and ignores accents — `kor`, `coreia` and `korea` all reach
+Coreia do Sul, and each row carries its flag. It is a real ARIA combobox with
+arrow keys, Enter, Escape and a clear button.
+
+> The list is appended to `<body>` and positioned in viewport coordinates, which
+> is not a stylistic choice: the controls card needs `overflow` to scroll on a
+> short window, so anything absolutely positioned inside it gets clipped at the
+> border — the list showed a line and a half. And `position:fixed` inside the
+> card would not have helped either, because `.hud` has a `backdrop-filter`, and
+> that makes an element a containing block for its fixed descendants.
+
+**The landing screen now asks the questions for you.** Six tags — *Maiores
+campeões · Melhor aproveitamento · Brasil × Argentina · A Copa de 1970 · Só o
+século XXI · Onde se jogou* — each of which is a real `<a href="#…">`. The URL
+already described the whole state and `applyURL` already treated a missing
+parameter as a reset, so a tag is just a link: it costs no new code path, it
+enters browser history, the back button works, and it can be copied. It is the
+cheapest way to teach that the metric picker, the year range, the comparison and
+the venue layer exist at all.
+
+**The three headline numbers became football.** They read *83 seleções · 23
+edições · 83 no mapa* — two of which describe the dataset, not the sport. They
+are now *Edições · Partidas · Gols*, followed by three facts that answer
+questions someone would ask out loud, and all of them follow the year slider:
+
+| Range | Most titles | Top scorer | Biggest win |
+|---|---|---|---|
+| 1930–2026 | Brasil (5) | Ronaldo (18) | HUN 10×1 SLV, 1982 |
+| 1930–1958 | Itália · Uruguai (2) | Just Fontaine (13) | HUN 9×0 KOR, 1954 |
+| 1994–2006 | Brasil (2) | Ronaldo (15) | GER 8×0 KSA, 2002 |
+| 2018–2026 | Argentina · Espanha · França (1) | Kylian Mbappé (12) | ESP 7×0 CRC, 2022 |
+
+Ties are the common case, not the exception — in any short range several teams
+have one title each, and showing only the first would elect a "biggest champion"
+by scan order. That last row is the reason: it used to read *França*, silencing
+Argentina and Spain, who won the other two.
+
+**Replacing the `<select>` surfaced a line that had been harmless for two
+stages.** `syncMetricOptions` — whose job is the *metric* options — ended by
+also writing `picker.value = state.team` into the team picker. On a `<select>`
+that set an option by its value and did nothing visible. On a text input it
+wrote the raw English key on screen: the box read **South Korea** while the
+panel beside it read **Coreia do Sul**. The line was redundant either way;
+`select()` and the `hashchange` listener both already sync the box.
+
+### Stage 4g — The player becomes a person ✅
+
+The goals table had carried scorer and minute since stage 4c, and the interface
+spent them on one thing: eight names inside a team's panel. There are **3,028
+goals and 1,624 scorers** in the browser. This stage gives the player a screen —
+an all-time table, and a page per player with their goals grouped by tournament.
+
+Building it turned up a bug in the number that was already on screen.
+
+**The all-time top scorer was wrong, and it was wrong by construction.** The
+scorer tally was keyed by *name*, and a name is not a person. The landing screen
+announced **Ronaldo, 18 goals** — a record that has never existed. It was the
+Brazilian Ronaldo (15 goals, 1998–2006) plus a Portuguese Ronaldo who scored 3
+in 2026, added together and placed ahead of Miroslav Klose, who holds the real
+record with 16.
+
+The ETL had already written the warning down, in `build_goals`:
+
+> *"…o projeto não promete que 'Ronaldo' de 1998 e 'Ronaldo' de 2026 sejam a
+> mesma pessoa. Contar artilheiro por edição é seguro; somar carreira entre
+> fontes não é."*
+
+The fix is upstream, not in the front-end. Fjelstul carries a `player_id` and
+the ETL was discarding it; the 2026 scrape has no id at all. So the model now
+keeps the id, and [`bridge_player_ids`](etl/model.py) decides what a 2026 scorer
+is, on the strongest rule the data supports — **same name *and* same team**:
+
+| Name across both sources | Fjelstul | 2026 | Ruling |
+|---|---|---|---|
+| Casemiro | Brazil, 2022 | Brazil | same person — bridge |
+| Neymar | Brazil, 2014–2022 | Brazil | same person — bridge |
+| Ronaldo | **Brazil**, 1998–2006 | **Portugal** | different people — keep apart |
+
+Those are the only three names that appear in both sources, and the rule gets
+all three right. Everyone else in 2026 gets a synthetic `W-000` id.
+
+**Within Fjelstul the rule is not enough, and the code abstains rather than
+guess.** Five names there carry two `player_id`s each — Oscar and Júnior for
+Brazil, Juanito and Andoni Goikoetxea for Spain, József Tóth for Hungary: same
+name, same team, decades apart. A 2026 name matching one of those cannot be
+resolved, so no bridge is made. A fresh id understates a total; a wrong id
+credits goals to someone who did not score them, and only one of those is
+recoverable.
+
+`goals.json` now indexes players by identity rather than by name, so two
+homonyms are two entries carrying the same label — and ships `player_teams` so
+the interface can tell them apart, and `player_ids` so a player's URL points at
+the person (`#art=P-27787`) rather than at an ambiguous string or a list
+position that shifts when the data is regenerated. Eight tests pin all of it,
+including the one that matters most:
+
+```python
+def test_o_artilheiro_de_todos_os_tempos_e_klose(goals):
+    """Klose 16 é o recorde real da Copa; se este teste apontar para outra
+    pessoa, ou a identidade quebrou ou o dado mudou."""
+```
+
 ### Stage 5 — Publish ✅
 
 The site is static, so there is no server to break and hosting costs nothing:
@@ -481,7 +675,7 @@ The site is static, so there is no server to break and hosting costs nothing:
 
 Deployment is [`.github/workflows/pages.yml`](.github/workflows/pages.yml) — a push to `main`
 runs `pytest`, and **only if the suite passes** does it upload `web/` as the Pages artifact.
-That ordering is the point: the 82 tests exist to stop a wrong number reaching a reader, so
+That ordering is the point: the 103 tests exist to stop a wrong number reaching a reader, so
 they gate the deploy rather than merely reporting after it.
 
 The workflow publishes `web/` **as it stands in the repository** — it does not re-run the
@@ -497,7 +691,7 @@ for precisely that hook.
 pytest
 ```
 
-82 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+103 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
 two sentinel nulls, the 3,028 goals reconciling per match against the scorelines, the venue
@@ -506,7 +700,7 @@ coordinates (a valid schema cannot tell Wembley in London from Wembley in the At
 someone edits the succession map without realising the consequence, a test fails with the
 reason attached.
 
-One of the 82 reads `data/raw/`, which is not in the repository — the champions come from
+One of the 103 reads `data/raw/`, which is not in the repository — the champions come from
 the source's own standings table rather than from `stage == "final"`, so that check has
 nowhere else to look. It skips in a clone that has not run `python -m etl.extract`, and the
 deploy workflow runs the extraction so that it never skips there.
@@ -575,12 +769,14 @@ because the marker coordinate should be the *stadium*, not the metro centroid.
 
 ```
 etl/                     pipeline modules (paths, provenance, extract)
+serve.py                 local HTTP/1.1 server for web/ (development only)
 data/raw/                immutable source data — gitignored
 data/raw/metadata.json   provenance ledger — committed
 data/interim/            partial transformations — disposable
 data/processed/          final tables, ready for the front-end
 web/                     Leaflet map — the published site
 web/data/                what the page fetches: countries.geojson + 7 JSON payloads
+web/vendor/              Leaflet, 83 flag SVGs, Archivo — all vendored, all licensed
 .github/workflows/       pytest, then deploy web/ to GitHub Pages
 docs/roadmap.html        visual roadmap (bilingual PT/EN)
 tests/                   pytest suite for transformation logic
@@ -805,3 +1001,17 @@ clone renders the map offline and the version in git is the version on screen. I
 its own BSD 2-Clause licence, reproduced at
 [`web/vendor/LEAFLET-LICENSE.txt`](web/vendor/LEAFLET-LICENSE.txt) — neither this
 repository's MIT code licence nor its CC BY-SA data licence applies to it.
+
+The interface typeface is [**Archivo**](https://github.com/Omnibus-Type/Archivo) by
+Omnibus-Type, vendored on the same terms: the variable font carries both axes (width
+62–125, weight 400–800) in a single file, split into the `latin` and `latin-ext`
+subsets Google Fonts publishes, with the `unicode-range` that only fetches the second
+when a player's name needs it. It is licensed under the
+[SIL Open Font License 1.1](web/vendor/fonts/ARCHIVO-LICENSE.txt), reproduced in full at
+[`web/vendor/fonts/ARCHIVO-LICENSE.txt`](web/vendor/fonts/ARCHIVO-LICENSE.txt).
+
+The flag set is [**flag-icons**](https://github.com/lipis/flag-icons) by HatScripts,
+MIT, at [`web/vendor/flags/LICENSE.md`](web/vendor/flags/LICENSE.md). SVG rather than
+emoji because emoji flags depend on a system font and **Windows ships none** — `🇧🇷`
+renders as the letters `BR` there, and the three British flags collapse into one black
+rectangle.

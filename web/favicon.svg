@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- A mesma marca da faixa do topo: um globo que também é uma bola. Os
+       meridianos dizem "atlas", o pentágono central diz "futebol", e as duas
+       leituras cabem em 16px porque nenhuma delas depende de detalhe fino.
+
+       Cores literais, não `var()`: um favicon é carregado fora do documento e
+       não enxerga os tokens da folha de estilo. O verde e o amarelo são os do
+       tema claro, que é o que o navegador desenha atrás do ícone da aba nos
+       dois temas. -->
+  <rect width="32" height="32" rx="7" fill="#0B120E"/>
+  <circle cx="16" cy="16" r="11.5" fill="#00A83F"/>
+  <g fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.3">
+    <ellipse cx="16" cy="16" rx="5.2" ry="11.5"/>
+    <path d="M4.9 12.3h22.2M4.9 19.7h22.2"/>
+  </g>
+  <path d="M16 10.6 20.7 14.0 18.9 19.5 13.1 19.5 11.3 14.0Z"
+        fill="#FFCC00" stroke="rgba(4,20,10,.55)" stroke-width=".8"
+        stroke-linejoin="round"/>
+</svg>

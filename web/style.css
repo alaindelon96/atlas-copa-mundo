@@ -1,4 +1,4 @@
-/* Atlas da Copa do Mundo — Etapa 4
+/* Atlas da Copa do Mundo — o cromo da página
  *
  * **As rampas de cor do dado não estão aqui.** Elas dependem da seleção
  * escolhida — o mapa de confronto direto é pintado na cor da própria seleção —,
@@ -11,9 +11,38 @@
  * rampas geradas sempre carregam um traço do matiz da seleção, inclusive no
  * passo mais fraco, para que "zero" nunca se confunda com "sem dado".
  *
- * **O acento da interface nunca é azul.** Azul é a rampa da visão global, e um
- * botão azul ao lado de um mapa azul faria o olho ler o botão como parte da
- * escala. O acento é verde-esmeralda, distinto de qualquer passo das rampas.
+ * ----------------------------------------------------------------------------
+ * A IDENTIDADE, E POR QUE ELA MUDOU
+ *
+ * A página era um atlas de dado: acento verde-esmeralda, rótulos em monoespaçada
+ * versalete, nenhum cabeçalho. Bonito e mudo — quem chega de um link não
+ * descobre em meio segundo que aquilo é sobre futebol. As três referências do
+ * público brasileiro resolvem isso do mesmo jeito e com a mesma paleta:
+ *
+ *   ge.globo    barra de navegação verde #06AA48, tarja vermelha de AO VIVO,
+ *               cartelas de placar com sigla de três letras e escudo
+ *   Lance!      cabeçalho verde #00A021, verde profundo #007A17 no texto,
+ *               amarelo puro de destaque, vermelho #E3262E no tempo real
+ *   CazéTV      amarelo, azul, preto e branco — o preto estrutural com o
+ *               amarelo como marca
+ *
+ * O denominador é **verde, amarelo e preto**, que é a paleta da própria
+ * seleção. É essa que a página usa agora, com três decisões próprias:
+ *
+ * 1. A FAIXA DA MARCA É PRETA, não verde como a das três. Metade da tela aqui é
+ *    dado colorido, e há seleções verdes (Nigéria, Argélia, México, Arábia
+ *    Saudita): uma barra verde por cima de um mapa que às vezes fica verde faria
+ *    o olho ler a marca como parte da escala. O verde e o amarelo entram na
+ *    marca, na faixa de 3px e nos estados ativos — nunca em área grande.
+ *
+ * 2. O ACENTO NUNCA É AZUL. Regra antiga que continua valendo, e pelo mesmo
+ *    motivo: azul é a rampa da visão global, e um botão azul ao lado de um mapa
+ *    azul se lê como legenda.
+ *
+ * 3. OS RÓTULOS MICRO DEIXARAM A MONOESPAÇADA. Versalete em monoespaçada é a
+ *    assinatura do jornalismo de dados, não a do futebol — ge e Lance! usam
+ *    caixa-alta condensada e pesada. A monoespaçada sobrou onde ela é literal:
+ *    nomes de arquivo nos créditos.
  *
  * **Layout: o mapa é a página.** Ele ocupa a janela inteira e os painéis
  * flutuam por cima, em vidro fosco. A camada que os posiciona não recebe
@@ -21,21 +50,72 @@
  * vazio entre eles engoliria o arrasto e metade da tela deixaria de ser mapa.
  */
 
+/* ---- tipografia vendorizada ----
+ *
+ * Archivo variável, com os dois eixos (largura 62–125, peso 400–800) num
+ * arquivo só. Variável e não estática porque a página precisa das duas pontas:
+ * o texto corrido em largura normal e as tarjas, siglas e placares em
+ * condensada pesada — que é a voz do futebol na tela. Em arquivos estáticos
+ * isso seriam quatro downloads.
+ *
+ * Os dois subconjuntos são os que o Google Fonts publica, com o mesmo
+ * `unicode-range`: o latino cobre a página inteira e o latin-ext só é baixado
+ * quando aparece um nome de jogador que precise dele (Šuker, Łukasz, Özil).
+ * Licença SIL OFL 1.1 em `vendor/fonts/ARCHIVO-LICENSE.txt`. */
+@font-face {
+  font-family: "Archivo";
+  src: url("vendor/fonts/archivo-latin.woff2") format("woff2");
+  font-weight: 400 800; font-stretch: 62% 125%; font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Archivo";
+  src: url("vendor/fonts/archivo-latin-ext.woff2") format("woff2");
+  font-weight: 400 800; font-stretch: 62% 125%; font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
   color-scheme: light;
 
-  --surface:#FFFFFF; --surface-2:#F4F7F9; --surface-3:#E8EDF1;
-  --ink:#0C1620; --ink-2:#42566B; --ink-3:#75899E;
-  --rule:#DCE4EA; --rule-strong:#B9C6D1;
+  --surface:#FFFFFF; --surface-2:#F3F6F4; --surface-3:#E6EBE7;
+  --ink:#0A140E; --ink-2:#41534B; --ink-3:#5F6F67;
+  --rule:#DEE5E0; --rule-strong:#B9C5BE;
 
-  --glass:rgba(255,255,255,.88); --glass-line:rgba(12,22,32,.10);
+  --glass:rgba(255,255,255,.90); --glass-line:rgba(10,20,14,.10);
 
-  --accent:#00A37A; --accent-ink:#FFFFFF; --accent-soft:#D6F3E9;
-  --warn:#D9541F; --warn-soft:#FDEBE2;
+  /* Dois verdes, e a diferença entre eles é regra de contraste, não gosto.
+     `--accent` é o que carrega texto — 4,8:1 com branco por cima, que é o que
+     um botão preenchido precisa. `--accent-vivid` é o verde da bandeira, vivo
+     demais para levar texto pequeno (3,4:1) e reservado ao que é marca pura:
+     o logotipo, a faixa de 3px, o preenchimento do slider, as réguas. */
+  --accent:#00843A; --accent-vivid:#00A83F;
+  --accent-ink:#FFFFFF; --accent-soft:#E3F5E9;
+  --accent-deep:#00622B; --vivid-ink:#04160B;
+
+  --gold:#FFCC00; --gold-ink:#1A1500;
+
+  /* Vitória, empate e derrota. O verde da vitória é o mesmo do acento de
+     propósito: em futebol verde já significa "ganhou" em qualquer tabela, e dar
+     a ele um segundo verde só ensinaria a página a mentir devagar. */
+  --win:#00843A; --draw:#5F6D66; --loss:#CE2B2B; --result-ink:#FFFFFF;
+  --zebra:#F7F9F8;
+
+  --warn:#8A5200; --warn-soft:#FFF3D1; --warn-edge:#FFCC00;
 
   /* fora do dado: nunca disputou uma partida na faixa escolhida */
-  --absent:#DAE2E8;
-  --ocean:#E4EBF0; --coast:#FFFFFF;
+  --absent:#D5DED8;
+  --ocean:#E4EAE6; --coast:#FFFFFF;
+
+  /* A faixa da marca e tudo que é preto estrutural. */
+  --chrome:#0B120E; --chrome-ink:#FFFFFF; --chrome-ink-2:#96A79E;
+  --chrome-line:rgba(255,255,255,.13);
 
   /* O alfinete das sedes: cabeça vermelha e agulha metálica. Vermelho e NÃO
      `--accent`: o verde da interface também pinta botões e links, e um marcador
@@ -43,68 +123,113 @@
      convenção de localização em mapa. */
   --pin:#E01B24; --pin-needle:#8A97A5;
 
-  --shadow-1:0 1px 2px rgba(12,22,32,.06);
-  --shadow-2:0 4px 10px rgba(12,22,32,.08), 0 18px 40px -18px rgba(12,22,32,.35);
-  --glow:0 0 0 3px rgba(0,163,122,.18);
+  --shadow-1:0 1px 2px rgba(10,20,14,.06);
+  --shadow-2:0 4px 10px rgba(10,20,14,.08), 0 18px 40px -18px rgba(10,20,14,.35);
+  --glow:0 0 0 3px rgba(0,132,58,.20);
 
-  --r-card:16px; --r-input:10px; --r-pill:999px;
-  --gap:.85rem;
+  --r-card:14px; --r-input:10px; --r-pill:999px;
+  --gap:.8rem; --masthead:3.25rem;
 
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
 }
 
+/* O tema escuro é o do estádio à noite: preto esverdeado, verde elétrico,
+   amarelo de placar eletrônico. Os tokens abaixo trocam só o que muda de
+   valor — nenhuma cor nasce dentro de um bloco de tema. */
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --surface:#111823; --surface-2:#18212E; --surface-3:#212C3B;
-    --ink:#F2F6FA; --ink-2:#A8B9C9; --ink-3:#78899C;
-    --rule:#243040; --rule-strong:#3A4A5D;
-    --glass:rgba(15,21,31,.86); --glass-line:rgba(255,255,255,.10);
-    --accent:#12C79A; --accent-ink:#04231B; --accent-soft:#0B3A2E;
-    --warn:#FF7A45; --warn-soft:#3A1B0E;
-    --absent:#1E2836;
-    --ocean:#0A0F16; --coast:#111823;
+    --surface:#101815; --surface-2:#18211D; --surface-3:#212C27;
+    --ink:#F1F5F2; --ink-2:#A9BAB1; --ink-3:#7E9188;
+    --rule:#243029; --rule-strong:#3B4A42;
+    --glass:rgba(13,20,16,.88); --glass-line:rgba(255,255,255,.10);
+    --accent:#00D45F; --accent-vivid:#00E566;
+    --accent-ink:#04160B; --accent-soft:#0B3320;
+    --accent-deep:#00D45F; --vivid-ink:#04160B;
+    --gold:#FFD400; --gold-ink:#1A1500;
+    --win:#00D45F; --draw:#78877F; --loss:#FF5A5A; --result-ink:#04160B;
+    --zebra:#141C18;
+    --warn:#FFC94D; --warn-soft:#2E2408; --warn-edge:#FFD400;
+    --absent:#1D2620;
+    --ocean:#080D0A; --coast:#101815;
+    --chrome:#070C09; --chrome-ink:#FFFFFF; --chrome-ink-2:#8FA298;
+    --chrome-line:rgba(255,255,255,.12);
     --pin:#FF4D4D; --pin-needle:#C3CDD8;
     --shadow-1:0 1px 2px rgba(0,0,0,.5);
     --shadow-2:0 4px 10px rgba(0,0,0,.45), 0 18px 44px -18px rgba(0,0,0,.9);
-    --glow:0 0 0 3px rgba(18,199,154,.22);
+    --glow:0 0 0 3px rgba(0,212,95,.24);
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --surface:#111823; --surface-2:#18212E; --surface-3:#212C3B;
-  --ink:#F2F6FA; --ink-2:#A8B9C9; --ink-3:#78899C;
-  --rule:#243040; --rule-strong:#3A4A5D;
-  --glass:rgba(15,21,31,.86); --glass-line:rgba(255,255,255,.10);
-  --accent:#12C79A; --accent-ink:#04231B; --accent-soft:#0B3A2E;
-  --warn:#FF7A45; --warn-soft:#3A1B0E;
-  --absent:#1E2836;
-  --ocean:#0A0F16; --coast:#111823;
+  --surface:#101815; --surface-2:#18211D; --surface-3:#212C27;
+  --ink:#F1F5F2; --ink-2:#A9BAB1; --ink-3:#7E9188;
+  --rule:#243029; --rule-strong:#3B4A42;
+  --glass:rgba(13,20,16,.88); --glass-line:rgba(255,255,255,.10);
+  --accent:#00D45F; --accent-vivid:#00E566;
+  --accent-ink:#04160B; --accent-soft:#0B3320;
+  --accent-deep:#00D45F; --vivid-ink:#04160B;
+  --gold:#FFD400; --gold-ink:#1A1500;
+  --win:#00D45F; --draw:#78877F; --loss:#FF5A5A; --result-ink:#04160B;
+  --zebra:#141C18;
+  --warn:#FFC94D; --warn-soft:#2E2408; --warn-edge:#FFD400;
+  --absent:#1D2620;
+  --ocean:#080D0A; --coast:#101815;
+  --chrome:#070C09; --chrome-ink:#FFFFFF; --chrome-ink-2:#8FA298;
+  --chrome-line:rgba(255,255,255,.12);
   --pin:#FF4D4D; --pin-needle:#C3CDD8;
   --shadow-1:0 1px 2px rgba(0,0,0,.5);
   --shadow-2:0 4px 10px rgba(0,0,0,.45), 0 18px 44px -18px rgba(0,0,0,.9);
-  --glow:0 0 0 3px rgba(18,199,154,.22);
+  --glow:0 0 0 3px rgba(0,212,95,.24);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --surface:#FFFFFF; --surface-2:#F4F7F9; --surface-3:#E8EDF1;
-  --ink:#0C1620; --ink-2:#42566B; --ink-3:#75899E;
-  --rule:#DCE4EA; --rule-strong:#B9C6D1;
-  --glass:rgba(255,255,255,.88); --glass-line:rgba(12,22,32,.10);
-  --accent:#00A37A; --accent-ink:#FFFFFF; --accent-soft:#D6F3E9;
-  --warn:#D9541F; --warn-soft:#FDEBE2;
-  --absent:#DAE2E8;
-  --ocean:#E4EBF0; --coast:#FFFFFF;
+  --surface:#FFFFFF; --surface-2:#F3F6F4; --surface-3:#E6EBE7;
+  --ink:#0A140E; --ink-2:#41534B; --ink-3:#5F6F67;
+  --rule:#DEE5E0; --rule-strong:#B9C5BE;
+  --glass:rgba(255,255,255,.90); --glass-line:rgba(10,20,14,.10);
+  --accent:#00843A; --accent-vivid:#00A83F;
+  --accent-ink:#FFFFFF; --accent-soft:#E3F5E9;
+  --accent-deep:#00622B; --vivid-ink:#04160B;
+  --gold:#FFCC00; --gold-ink:#1A1500;
+  --win:#00843A; --draw:#5F6D66; --loss:#CE2B2B; --result-ink:#FFFFFF;
+  --zebra:#F7F9F8;
+  --warn:#8A5200; --warn-soft:#FFF3D1; --warn-edge:#FFCC00;
+  --absent:#D5DED8;
+  --ocean:#E4EAE6; --coast:#FFFFFF;
+  --chrome:#0B120E; --chrome-ink:#FFFFFF; --chrome-ink-2:#96A79E;
+  --chrome-line:rgba(255,255,255,.13);
   --pin:#E01B24; --pin-needle:#8A97A5;
-  --shadow-1:0 1px 2px rgba(12,22,32,.06);
-  --shadow-2:0 4px 10px rgba(12,22,32,.08), 0 18px 40px -18px rgba(12,22,32,.35);
-  --glow:0 0 0 3px rgba(0,163,122,.18);
+  --shadow-1:0 1px 2px rgba(10,20,14,.06);
+  --shadow-2:0 4px 10px rgba(10,20,14,.08), 0 18px 40px -18px rgba(10,20,14,.35);
+  --glow:0 0 0 3px rgba(0,132,58,.20);
 }
 
 * { box-sizing:border-box; }
+
+/* ---- a suspensão das transições na troca de tema ----
+ *
+ * Trocar de tema troca ~35 tokens de cor de uma vez. Toda propriedade que
+ * declara `transition` sobre um `var()` entra em transição junto — e o Chrome
+ * resolve o valor final errado e o deixa lá. O efeito era permanente e bem
+ * visível: depois de um clique no botão de tema, o botão "Total" ficava com o
+ * verde e o branco do tema CLARO sobre um painel escuro, e os três `select`
+ * ficavam com uma borda cinza-clara. Nada disso voltava ao normal sozinho;
+ * só recarregando a página.
+ *
+ * A classe desliga as transições pelo tempo de dois quadros — o bastante para
+ * o novo valor ser aplicado de uma vez, sem transição nenhuma no caminho. Ela
+ * é posta e tirada em `map.js`, tanto no botão quanto no ouvinte da troca de
+ * tema do sistema, que tem exatamente o mesmo problema.
+ *
+ * `*::before` e `*::after` entram na lista porque a régua da faixa da marca e
+ * a tarja das seções são pseudo-elementos com cor de tema. */
+:root.theming, :root.theming *, :root.theming *::before, :root.theming *::after {
+  transition:none !important;
+}
 
 html, body { height:100%; }
 body {
@@ -113,7 +238,7 @@ body {
   -webkit-font-smoothing:antialiased;
 }
 
-h1,h2,h3 { font-family:var(--sans); font-weight:750; margin:0; line-height:1.15;
+h1,h2,h3 { font-family:var(--sans); font-weight:800; margin:0; line-height:1.12;
   letter-spacing:-.02em; }
 p { margin:0; }
 a { color:var(--accent); text-underline-offset:2px; }
@@ -128,16 +253,88 @@ code { font-family:var(--mono); font-size:.86em; }
   overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
 }
 
+/* A tarja: caixa-alta condensada e pesada, que é como ge e Lance! rotulam
+   editoria, fase e seção. Uma regra só para tudo que é rótulo micro — título de
+   cartão, rótulo de campo, cabeçalho de seção do painel, cabeçalho de tabela.
+   Ela substituiu a monoespaçada versalete que a página usava nesses mesmos
+   lugares: versalete em monoespaçada é a assinatura do jornalismo de dados, e
+   nenhuma das três referências a usa. */
+.card-title, .field > label, .field > .legend, .panel .sub,
+.credits summary, thead th, .tile span {
+  font-family:var(--sans); font-weight:700; font-stretch:86%;
+  text-transform:uppercase; letter-spacing:.07em;
+}
+
 /* ---- o mapa é a página ---- */
 
 #map { position:fixed; inset:0; background:var(--ocean); }
 .leaflet-container { font-family:var(--sans); background:var(--ocean); }
 
+/* ---- a faixa da marca ----
+ *
+ * Fixa, opaca e por cima de tudo: o mapa corre por baixo dela. Fica opaca (e
+ * não em vidro fosco como os cartões) porque ela é o único elemento da tela que
+ * não é conteúdo — é a moldura, e moldura translúcida vira ruído. */
+
+.masthead {
+  position:fixed; top:0; left:0; right:0; z-index:1200;
+  height:var(--masthead); display:flex; align-items:center; gap:.75rem;
+  padding:0 .75rem; background:var(--chrome); color:var(--chrome-ink);
+  border-bottom:1px solid var(--chrome-line);
+}
+/* A faixa de 3px: verde–amarelo–verde, na diagonal das cores da seleção. É o
+   único lugar da página onde as duas cores aparecem juntas em área cheia, e é
+   ela que dá o sotaque que uma barra preta sozinha não teria. */
+.masthead::after {
+  content:""; position:absolute; left:0; right:0; bottom:-3px; height:3px;
+  background:linear-gradient(90deg, var(--accent-vivid) 0%, var(--accent-vivid) 34%,
+             var(--gold) 50%, var(--accent-vivid) 66%, var(--accent-vivid) 100%);
+}
+
+.brand { display:flex; align-items:center; gap:.5rem; min-width:0; }
+.brand-mark { width:1.7rem; height:1.7rem; flex:none; display:block; }
+.brand-name {
+  font-size:1.08rem; font-weight:800; font-stretch:88%; letter-spacing:-.015em;
+  text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.brand-name b { font-weight:800; color:var(--gold); margin-left:.22em; }
+
+/* O recorte no ar. Encostado na marca, separado por uma régua vertical — é
+   informação de estado, não parte do nome. */
+.masthead-span {
+  display:flex; align-items:baseline; gap:.45rem; min-width:0;
+  padding-left:.75rem; border-left:1px solid var(--chrome-line);
+  color:var(--chrome-ink-2); white-space:nowrap; overflow:hidden;
+}
+.masthead-span b {
+  color:var(--chrome-ink); font-weight:700; font-stretch:86%; font-size:.82rem;
+  letter-spacing:.03em; font-variant-numeric:tabular-nums;
+}
+.masthead-span span {
+  font-size:.62rem; font-weight:700; font-stretch:86%; letter-spacing:.1em;
+  text-transform:uppercase;
+}
+
+.masthead-actions { margin-left:auto; display:flex; gap:.35rem; flex:none; }
+.icon-btn {
+  width:2.1rem; height:2.1rem; display:grid; place-items:center; padding:0;
+  color:var(--chrome-ink-2); cursor:pointer; background:transparent;
+  border:1px solid var(--chrome-line); border-radius:var(--r-input);
+  transition:color .15s, background .15s, border-color .15s;
+}
+.icon-btn svg { width:1.05rem; height:1.05rem; display:block; }
+.icon-btn:hover { color:var(--chrome-ink); background:rgba(255,255,255,.08); }
+.icon-btn[aria-pressed="true"] {
+  background:var(--accent-vivid); border-color:var(--accent-vivid); color:var(--vivid-ink);
+}
+.icon-btn:focus-visible { outline-color:var(--gold); }
+
 /* ---- a camada de interface ---- */
 
 .ui {
   position:fixed; inset:0; z-index:1000; pointer-events:none;
-  display:grid; gap:var(--gap); padding:var(--gap);
+  display:grid; gap:var(--gap);
+  padding:calc(var(--masthead) + var(--gap)) var(--gap) var(--gap);
   grid-template-columns:minmax(0,20.5rem) 1fr minmax(0,21.5rem);
   grid-template-rows:auto 1fr auto;
   grid-template-areas:
@@ -162,14 +359,15 @@ code { font-family:var(--mono); font-size:.86em; }
  * tela, só para voltar — a barra é o próprio caminho de volta, e fica onde o
  * painel estava. */
 
-.card { display:flex; flex-direction:column; min-height:0; }
+.card { display:flex; flex-direction:column; min-height:0; overflow:hidden; }
 .card-head {
   display:flex; align-items:center; justify-content:space-between; gap:.5rem;
-  padding:.55rem .6rem .55rem .95rem; min-height:2.4rem;
+  padding:.5rem .5rem .5rem .9rem; min-height:2.3rem;
+  border-bottom:1px solid var(--rule);
 }
+.card.collapsed > .card-head { border-bottom:0; }
 .card-title {
-  font-family:var(--mono); font-size:.63rem; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--ink-3);
+  font-size:.66rem; color:var(--ink-2);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
 .card-toggle {
@@ -180,56 +378,149 @@ code { font-family:var(--mono); font-size:.86em; }
 }
 .card-toggle:hover { color:var(--ink); background:var(--surface-2); }
 .card-body {
-  padding:0 .95rem .95rem; display:flex; flex-direction:column; gap:.8rem; min-height:0;
+  padding:.8rem .9rem .9rem; display:flex; flex-direction:column; gap:.75rem; min-height:0;
 }
 .card.collapsed > .card-body { display:none; }
-.card.collapsed > .card-head { padding-bottom:.55rem; }
-.card.collapsed .card-toggle { transform:rotate(-90deg); }
 
-/* À esquerda da coluna do painel, não por cima dela: a barra tem z-index maior
-   e cobriria o conteúdo do painel se ficasse no canto. */
-.toolbar {
-  position:fixed; top:var(--gap); right:calc(21.5rem + var(--gap) * 2); z-index:1100;
-  display:flex; gap:.4rem; pointer-events:none;
-}
-/* Sem painéis não há o que evitar — a barra volta para o canto. */
-.ui.bare .toolbar { right:var(--gap); }
-.toolbar > * { pointer-events:auto; }
-.icon-btn {
-  width:2.35rem; height:2.35rem; display:grid; place-items:center;
-  font-size:1rem; color:var(--ink-2); cursor:pointer;
-  border-radius:var(--r-pill); border:1px solid var(--glass-line);
-  transition:color .15s, transform .15s;
-}
-.icon-btn:hover { color:var(--ink); transform:translateY(-1px); }
-.icon-btn[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); }
+/* ---- controles (canto superior esquerdo) ----
+ *
+ * `align-self:stretch`, e não `start`, nos dois cartões da coluna esquerda. A
+ * diferença só aparece em tela baixa, e ali ela é a diferença entre funcionar e
+ * não funcionar: com `start` o cartão assume a altura do próprio conteúdo e
+ * ignora a linha da grade, então numa janela de 720px os controles (≈490px) e a
+ * legenda (≈250px) não cabiam juntos e o segundo era desenhado POR CIMA do
+ * primeiro — o slider de anos ficava escondido atrás da legenda. Com `stretch`
+ * o cartão é limitado pela linha, e o que não cabe rola dentro dele. Em tela
+ * alta a linha `auto` vale exatamente a altura do conteúdo e nada muda. */
 
-/* ---- controles (canto superior esquerdo) ---- */
-
-.controls { grid-area:controls; align-self:start; }
-.field { display:flex; flex-direction:column; gap:.35rem; min-width:0; }
-.field > label, .field > .legend {
-  font-family:var(--mono); font-size:.63rem; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--ink-3);
-}
+.controls { grid-area:controls; align-self:stretch; }
+.controls > .card-body { gap:.6rem; overflow-y:auto; scrollbar-width:thin; }
+.legend-card > .card-body { overflow-y:auto; scrollbar-width:thin; }
+.field { display:flex; flex-direction:column; gap:.28rem; min-width:0; }
+.field > label, .field > .legend { font-size:.63rem; color:var(--ink-3); }
+/* A leitura tem dois botões e a camada tem um: 2fr/1fr, e não metade para cada,
+   senão "Por partida" fica com menos espaço do que "Sedes" precisa. */
+.field-row { display:flex; gap:.55rem; min-width:0; }
+.field-row > .field:first-child { flex:2 1 0; }
+.field-row > .field:last-child { flex:1 1 0; }
 select {
-  font-family:inherit; font-size:.92rem; font-weight:550; color:var(--ink);
+  font-family:inherit; font-size:.92rem; font-weight:600; color:var(--ink);
   background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-input);
-  padding:.5rem .6rem; width:100%; cursor:pointer;
+  padding:.48rem .6rem; width:100%; cursor:pointer;
   transition:border-color .15s, box-shadow .15s;
 }
 select:hover { border-color:var(--rule-strong); }
-select:focus { box-shadow:var(--glow); }
+select:focus { box-shadow:var(--glow); border-color:var(--accent); }
 select option:disabled { color:var(--ink-3); }
 
+/* ---- a caixa de busca de seleção ----
+ *
+ * Um `<select>` com 83 países é rolagem: para chegar na Coreia do Sul você
+ * desce a lista inteira, e a busca nativa do `<select>` só casa prefixo, é
+ * invisível e some depois de um segundo. Aqui a caixa aceita nome, sigla e
+ * texto sem acento, e mostra a bandeira em cada linha — que é o que faz
+ * reconhecer um país sem ler.
+ *
+ * **A lista mora no `<body>`, não dentro do cartão.** O cartão de controles
+ * precisa de `overflow` para poder rolar em tela baixa, e qualquer coisa
+ * absoluta dentro dele é cortada na borda. Daí ela ser `position:fixed`,
+ * posicionada em JavaScript a partir do retângulo da caixa — e fechada na
+ * rolagem, porque uma lista `fixed` não acompanha o que rolou embaixo dela. */
+
+.combo { position:relative; display:flex; align-items:center; }
+.combo input {
+  font-family:inherit; font-size:.92rem; font-weight:600; color:var(--ink);
+  background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-input);
+  padding:.48rem 1.9rem .48rem .6rem; width:100%; min-width:0;
+  transition:border-color .15s, box-shadow .15s;
+}
+.combo input::placeholder { color:var(--ink-3); font-weight:500; }
+.combo input:hover { border-color:var(--rule-strong); }
+.combo input:focus { box-shadow:var(--glow); border-color:var(--accent); outline:none; }
+.combo input:disabled { opacity:.55; cursor:not-allowed; }
+/* A seta é de fundo porque o `<input>` não tem uma, e sem ela a caixa não se
+   anuncia como lista — vira um campo de texto qualquer. */
+.combo::after {
+  content:""; position:absolute; right:.62rem; width:0; height:0; pointer-events:none;
+  border:4px solid transparent; border-top-color:var(--ink-3); margin-top:4px;
+}
+.combo:has(.combo-clear:not([hidden]))::after { display:none; }
+.combo-clear {
+  position:absolute; right:.3rem; width:1.4rem; height:1.4rem; padding:0;
+  display:grid; place-items:center; font-size:1rem; line-height:1;
+  color:var(--ink-3); background:transparent; border:0; border-radius:var(--r-pill);
+  cursor:pointer;
+}
+.combo-clear:hover { color:var(--ink); background:var(--surface-3); }
+
+.combo-pop {
+  position:fixed; z-index:1300; margin:0; padding:.25rem; list-style:none;
+  max-height:16rem; overflow-y:auto; overscroll-behavior:contain;
+  background:var(--surface); border:1px solid var(--rule-strong);
+  border-radius:var(--r-input); box-shadow:var(--shadow-2);
+}
+.combo-pop[hidden] { display:none; }
+.combo-pop li {
+  display:flex; align-items:center; gap:.1rem; padding:.35rem .45rem;
+  border-radius:6px; cursor:pointer; font-size:.86rem; white-space:nowrap;
+}
+.combo-pop li .flag { width:1.15em; height:1.15em; }
+.combo-pop li .sigla-tag { margin-left:auto; }
+/* `aria-selected` marca o que já está escolhido; `.on` marca onde as setas
+   estão agora. São coisas diferentes e podem estar em linhas diferentes. */
+.combo-pop li[aria-selected="true"] { font-weight:700; }
+.combo-pop li.on { background:var(--accent-soft); }
+.combo-pop .combo-empty { color:var(--ink-3); cursor:default; font-size:.8rem; }
+.combo-pop .combo-empty:hover { background:none; }
+
+/* ---- perguntas prontas ----
+ *
+ * A tela abria num ranking e num mapa colorido, sem dizer o que mais ela sabe
+ * responder: o seletor de métrica, o recorte de anos, a comparação e a camada
+ * de sedes só existiam para quem abrisse os controles e testasse. Cada tarja
+ * aqui é um link de verdade — o `href` descreve o estado inteiro, o mesmo que
+ * a barra de endereço aceita —, então elas também funcionam com o botão voltar
+ * e podem ser copiadas. */
+.asks { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.35rem; }
+.ask {
+  font-size:.72rem; font-weight:700; font-stretch:90%; letter-spacing:.01em;
+  color:var(--ink-2); text-decoration:none; white-space:nowrap;
+  background:var(--surface-2); border:1px solid var(--rule);
+  border-radius:var(--r-pill); padding:.3rem .6rem;
+  transition:border-color .15s, color .15s, background .15s;
+}
+.ask:hover { color:var(--accent-deep); background:var(--accent-soft); border-color:var(--accent); }
+
+/* ---- destaques da faixa ----
+ *
+ * Os três tiles diziam "83 seleções · 23 edições · 83 no mapa" — dois deles
+ * descrevem o conjunto de dados, não o futebol. Estes respondem perguntas que
+ * alguém faria em voz alta, e acompanham o recorte de anos: mudar o slider
+ * muda quem é o maior campeão e quem é o artilheiro. */
+.facts { display:flex; flex-direction:column; margin-top:.35rem; }
+.fact {
+  display:flex; align-items:baseline; gap:.5rem;
+  padding:.32rem .1rem; border-bottom:1px solid var(--rule); font-size:.82rem;
+}
+.fact:last-child { border-bottom:0; }
+.fact > span {
+  flex:none; width:6.6rem; font-size:.58rem; font-weight:700; font-stretch:86%;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--ink-3);
+}
+.fact > strong { flex:1; min-width:0; font-weight:700; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap; }
+.fact > b { font-variant-numeric:tabular-nums; font-weight:800; font-stretch:84%; }
+
 .segmented {
-  display:flex; gap:.25rem; background:var(--surface-2);
-  border:1px solid var(--rule); border-radius:var(--r-pill); padding:.2rem;
+  display:flex; gap:.2rem; background:var(--surface-2);
+  border:1px solid var(--rule); border-radius:var(--r-pill); padding:.18rem;
 }
 .segmented button {
-  flex:1; font-family:var(--sans); font-size:.8rem; font-weight:600; color:var(--ink-2);
+  flex:1; font-family:var(--sans); font-size:.76rem; font-weight:700;
+  font-stretch:92%; letter-spacing:.02em; color:var(--ink-2);
   background:transparent; border:0; border-radius:var(--r-pill);
-  padding:.4rem .5rem; cursor:pointer; white-space:nowrap; transition:background .15s, color .15s;
+  padding:.38rem .5rem; cursor:pointer; white-space:nowrap;
+  transition:background .15s, color .15s;
 }
 .segmented button:hover:not([disabled]):not([aria-pressed="true"]) { color:var(--ink); }
 .segmented button[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); }
@@ -242,7 +533,7 @@ select option:disabled { color:var(--ink-3); }
   position:absolute; left:0; right:0; top:calc(50% - 3px); height:6px;
   background:var(--surface-3); border-radius:var(--r-pill);
 }
-.range .fill { position:absolute; top:0; bottom:0; background:var(--accent);
+.range .fill { position:absolute; top:0; bottom:0; background:var(--accent-vivid);
   border-radius:var(--r-pill); }
 .range input[type="range"] {
   position:absolute; left:0; width:100%; top:0; height:100%; margin:0;
@@ -259,14 +550,25 @@ select option:disabled { color:var(--ink-3); }
   background:var(--surface); border:3px solid var(--accent); cursor:grab;
 }
 .range-read {
-  font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:.74rem; color:var(--ink-3);
-  display:flex; justify-content:space-between; gap:.4rem;
+  font-variant-numeric:tabular-nums; font-size:.72rem; color:var(--ink-3);
+  display:flex; justify-content:space-between; gap:.4rem; align-items:baseline;
 }
-.range-read b { font-weight:700; color:var(--ink); font-size:.82rem; }
+.range-read b { font-weight:800; font-stretch:88%; color:var(--ink); font-size:.86rem; }
+
+/* Botão de percorrer as edições, dentro do rótulo da faixa. */
+.play {
+  margin-left:.4rem; width:1.3rem; height:1.3rem; padding:0;
+  display:inline-grid; place-items:center; vertical-align:-.25em;
+  font-size:.6rem; line-height:1; cursor:pointer;
+  color:var(--accent-deep); background:var(--accent-soft);
+  border:0; border-radius:var(--r-pill);
+}
+.play:hover { filter:brightness(1.06); }
+.play[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); }
 
 /* ---- legenda (canto inferior esquerdo) ---- */
 
-.legend-card { grid-area:legend; align-self:end; }
+.legend-card { grid-area:legend; align-self:stretch; }
 .legend-card .card-body { gap:.5rem; }
 
 /* Legenda de escala contínua: uma barra com o degradê da rampa e marcas
@@ -280,50 +582,87 @@ select option:disabled { color:var(--ink-3); }
   display:flex; flex-direction:column; align-items:center; gap:.1rem; }
 #scale .tick i { display:block; width:1px; height:.26rem; background:var(--rule-strong); }
 #scale .tick em {
-  font-style:normal; font-family:var(--mono); font-variant-numeric:tabular-nums;
-  font-size:.62rem; color:var(--ink-3); white-space:nowrap;
+  font-style:normal; font-variant-numeric:tabular-nums; font-weight:600;
+  font-size:.63rem; color:var(--ink-3); white-space:nowrap;
 }
 #scale .absent-key { display:flex; align-items:center; gap:.4rem; margin-top:.15rem; }
 #scale .absent-key i { width:.8rem; height:.8rem; border-radius:4px;
   box-shadow:inset 0 0 0 1px var(--glass-line); }
-#scale .absent-key span { font-family:var(--mono); font-size:.62rem; color:var(--ink-3); }
+#scale .absent-key span { font-size:.63rem; font-weight:600; color:var(--ink-3); }
 
 .scale-note { font-size:.73rem; color:var(--ink-3); line-height:1.45; }
 
 .credits { font-size:.7rem; color:var(--ink-3); border-top:1px solid var(--rule); padding-top:.5rem; }
-.credits summary { cursor:pointer; font-family:var(--mono); font-size:.62rem;
-  letter-spacing:.12em; text-transform:uppercase; }
+.credits summary { cursor:pointer; font-size:.62rem; letter-spacing:.09em; }
 .credits div { margin-top:.4rem; line-height:1.5; }
 
 /* ---- painel lateral (coluna direita inteira) ---- */
 
 .side { grid-area:panel; align-self:stretch; }
 .side.collapsed { align-self:start; }
-.side > .card-body { overflow-y:auto; gap:.9rem; }
-.panel h2 { font-size:1.3rem; display:flex; align-items:center; gap:.15rem; }
-.panel .sub { font-family:var(--mono); font-size:.64rem; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--ink-3); }
+.side > .card-body { overflow-y:auto; gap:.85rem; scrollbar-width:thin; }
+.panel h2 { font-size:1.28rem; display:flex; align-items:center; gap:.1rem;
+  flex-wrap:wrap; }
 
-.tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:.35rem; }
+/* O rótulo de seção, com a tarja verde na frente — a marca de editoria que
+   ge.globo e Lance! põem antes de cada bloco. Ela é o que separa "Artilheiros"
+   de mais uma linha de texto cinza. */
+.panel .sub {
+  font-size:.63rem; color:var(--ink-2);
+  display:flex; align-items:center; gap:.4rem;
+}
+.panel .sub::before {
+  content:""; flex:none; width:3px; height:.8rem; border-radius:2px;
+  background:var(--accent-vivid);
+}
+
+/* A sigla FIFA ao lado do nome: a etiqueta de três letras do placar. */
+.sigla-tag {
+  font-size:.6rem; font-weight:800; font-stretch:80%; letter-spacing:.06em;
+  color:var(--ink-3); background:var(--surface-2); border:1px solid var(--rule);
+  border-radius:5px; padding:.1rem .3rem; margin-left:.45rem;
+  vertical-align:.18em; line-height:1.4;
+}
+
+.tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:.3rem; }
 .tile {
   background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-input);
-  padding:.5rem .55rem; display:flex; flex-direction:column; gap:.05rem;
+  padding:.45rem .5rem; display:flex; flex-direction:column; gap:.1rem;
 }
-.tile b { font-family:var(--mono); font-variant-numeric:tabular-nums;
-  font-size:1.05rem; font-weight:700; letter-spacing:-.03em; line-height:1.25; }
-.tile span { font-size:.58rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
+.tile b { font-variant-numeric:tabular-nums; font-stretch:84%;
+  font-size:1.18rem; font-weight:800; letter-spacing:-.01em; line-height:1.15; }
+.tile span { font-size:.55rem; letter-spacing:.06em; color:var(--ink-3); }
+
+/* ---- tabelas: a leitura de tabela de campeonato ---- */
 
 table { border-collapse:collapse; width:100%; font-size:.8rem; }
-th, td { text-align:right; padding:.3rem .35rem; border-bottom:1px solid var(--rule); }
+th, td { text-align:right; padding:.32rem .35rem; border-bottom:1px solid var(--rule); }
 th:first-child, td:first-child { text-align:left; }
-thead th { font-family:var(--mono); font-size:.58rem; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--ink-3); font-weight:400;
-  position:sticky; top:0; background:var(--surface); }
+thead th {
+  font-size:.57rem; letter-spacing:.08em; color:var(--ink-3); font-weight:700;
+  position:sticky; top:0; background:var(--surface); z-index:1;
+  border-bottom:1px solid var(--rule-strong);
+}
 tbody td { font-variant-numeric:tabular-nums; }
+tbody tr:nth-child(even) { background:var(--zebra); }
 tbody tr:hover { background:var(--surface-2); }
-.h2h-scroll { margin-top:.4rem; }
+.h2h-scroll { margin-top:.35rem; }
 .chip { display:inline-block; width:.64rem; height:.64rem; border-radius:3px;
   box-shadow:inset 0 0 0 1px rgba(128,128,128,.3); margin-right:.4rem; vertical-align:baseline; }
+
+/* A coluna de posição do ranking. Os três primeiros ganham a tarja dourada —
+   pódio é a convenção de qualquer tabela esportiva, e ela vem antes do número
+   para o olho achar o topo sem ler. */
+table.rank td.pos {
+  width:1.9rem; font-weight:800; font-stretch:84%; color:var(--ink-3);
+  text-align:center; padding-left:0; padding-right:.2rem;
+}
+table.rank tbody tr:nth-child(-n+3) td.pos { color:var(--ink); }
+table.rank tbody tr:nth-child(-n+3) td.pos::before {
+  content:""; display:block; position:absolute; left:0; width:3px; top:.15rem; bottom:.15rem;
+  border-radius:2px; background:var(--gold);
+}
+table.rank tbody tr { position:relative; }
 
 /* A bandeira é um SVG versionado, não emoji: emoji de bandeira depende da fonte
    do sistema e o Windows não tem nenhuma. Redonda porque ela senta ao lado de
@@ -338,11 +677,13 @@ tbody tr:hover { background:var(--surface-2); }
 /* ---- detalhamento: a lista de partidas ---- */
 
 .back {
-  align-self:flex-start; font-family:var(--sans); font-size:.76rem; font-weight:600;
-  color:var(--accent); background:var(--accent-soft); border:0;
-  border-radius:var(--r-pill); padding:.35rem .75rem; cursor:pointer;
+  align-self:flex-start; font-family:var(--sans); font-size:.74rem; font-weight:700;
+  font-stretch:92%; letter-spacing:.02em;
+  color:var(--accent-deep); background:var(--accent-soft); border:0;
+  border-radius:var(--r-pill); padding:.35rem .8rem; cursor:pointer;
 }
-.back:hover { filter:brightness(1.08); }
+.back:hover { filter:brightness(1.05); }
+.back.solid { background:var(--accent); color:var(--accent-ink); }
 
 /* Linha de confronto que abre o detalhamento. O cursor e o realce dizem que ela
    é clicável — uma linha de tabela não parece um botão por conta própria. */
@@ -350,56 +691,199 @@ tbody tr.drill { cursor:pointer; }
 tbody tr.drill:hover, tbody tr.drill:focus-visible { background:var(--accent-soft); outline:none; }
 tbody tr.drill:focus-visible td:first-child { box-shadow:inset 2px 0 0 var(--accent); }
 
-.matches { display:flex; flex-direction:column; gap:1px; margin-top:.4rem; }
-.match {
-  display:flex; align-items:center; gap:.55rem;
-  padding:.4rem .3rem; border-bottom:1px solid var(--rule); font-size:.8rem;
+/* ---- o placar ----
+ *
+ * Uma partida era uma linha de texto: "V | 4–1 vs Itália | 1970 · Final". Isso
+ * é a leitura de uma planilha, e a leitura que o torcedor tem na cabeça é a
+ * cartela da transmissão — sigla e bandeira dos dois lados, placar no meio,
+ * fase por cima, quem fez os gols por baixo, cada nome debaixo da sua bandeira.
+ *
+ * Duas coisas mudaram junto com o desenho, e as duas são de dado, não de estilo:
+ *
+ *   A ORDEM É A DA PARTIDA, não a da seleção escolhida. O placar mostra
+ *   mandante à esquerda e visitante à direita, sempre — inverter para pôr o time
+ *   escolhido sempre na frente daria dois placares diferentes para a mesma
+ *   partida, dependendo de por onde você chegou nela.
+ *
+ *   O RESULTADO CONTINUA SENDO O DA SELEÇÃO ESCOLHIDA, porque é a pergunta que
+ *   a lista responde. Ele aparece na régua colorida da borda **e** na letra
+ *   V/E/D — cor sozinha não decide nada aqui, mesma regra do mapa.
+ */
+
+.matches { display:flex; flex-direction:column; gap:.3rem; margin-top:.4rem; }
+.placar {
+  position:relative; display:flex; flex-direction:column; gap:.35rem;
+  padding:.45rem .55rem .5rem .75rem;
+  background:var(--surface-2); border:1px solid var(--rule);
+  border-radius:var(--r-input); overflow:hidden;
 }
-.match:last-child { border-bottom:0; }
-.res {
-  flex:none; width:1.35rem; height:1.35rem; border-radius:var(--r-pill);
-  display:grid; place-items:center; font-size:.66rem; font-weight:700;
-  font-family:var(--mono); color:#fff;
+.placar::before {
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--draw);
 }
-/* Vitória, empate e derrota nunca dependem só da cor: a letra está dentro do
-   círculo. É a mesma regra que vale para as métricas no mapa. */
-.res-W { background:#1E9E62; }
-.res-D { background:#8A94A0; }
-.res-L { background:#D1495B; }
-.match-main { display:flex; flex-direction:column; min-width:0; line-height:1.3; }
-.match-main b { font-variant-numeric:tabular-nums; }
-.match-sub { font-size:.68rem; color:var(--ink-3); }
-.pens { font-style:normal; font-size:.7rem; color:var(--ink-2); font-weight:400; }
+.placar.res-W::before { background:var(--win); }
+.placar.res-L::before { background:var(--loss); }
+
+/* A linha de cima: fase, edição e cidade. A fase é uma tarja porque ela é a
+   informação que separa uma final de um jogo de grupo, e num bloco de texto
+   cinza as duas pesam igual. */
+.placar-meta {
+  display:flex; align-items:center; gap:.35rem; flex-wrap:wrap;
+  font-size:.63rem; color:var(--ink-3);
+}
+/* A tarja de fase é usada pelo placar e pela lista de gols de um jogador, então
+   ela é uma regra própria em vez de morar dentro de `.placar-meta`. */
+.stage {
+  font-size:.63rem; font-weight:800; font-stretch:82%; letter-spacing:.07em;
+  text-transform:uppercase; white-space:nowrap;
+  color:var(--ink-2); background:var(--surface-3); border-radius:4px;
+  padding:.08rem .3rem;
+}
+/* Final e quadrangular decisivo pesam mais que uma fase de grupos, e a tarja
+   diz isso: a decisão é dourada. */
+.stage.final { background:var(--gold); color:var(--gold-ink); }
+.placar-meta .year { font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink-2); }
+.placar-meta .res-letter {
+  margin-left:auto; flex:none; width:1.1rem; height:1.1rem; border-radius:4px;
+  display:grid; place-items:center; font-size:.62rem; font-weight:800;
+  color:var(--result-ink); background:var(--draw);
+}
+.res-W .res-letter { background:var(--win); }
+.res-L .res-letter { background:var(--loss); }
+
+/* A linha do placar. Três colunas, e as laterais têm a mesma largura para o
+   número ficar no eixo da cartela mesmo com siglas de larguras diferentes. */
+.placar-line {
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:.4rem;
+}
+.placar-side { display:flex; align-items:center; gap:.35rem; min-width:0; }
+.placar-side.away { justify-content:flex-end; }
+.placar-side .flag { margin:0; width:1.3em; height:1.3em; }
+.placar-side .sigla {
+  font-size:.92rem; font-weight:800; font-stretch:78%; letter-spacing:.04em;
+  color:var(--ink-2);
+}
+/* O lado da seleção que você escolheu fica em tinta cheia; o outro recua. Os
+   dois são fatos da mesma partida, mas só um deles responde à sua pergunta. */
+.placar-side.is-team .sigla { color:var(--ink); }
+.placar-score {
+  display:flex; align-items:center; gap:.3rem;
+  font-size:1.15rem; font-weight:800; font-stretch:78%;
+  font-variant-numeric:tabular-nums; letter-spacing:-.01em; color:var(--ink);
+}
+.placar-score i { font-style:normal; font-size:.72em; font-weight:600; color:var(--ink-3); }
+.pens {
+  display:block; text-align:center; font-style:normal; font-size:.6rem;
+  font-weight:700; font-stretch:88%; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--ink-3); margin-top:-.15rem;
+}
+
+/* Os gols de cada lado, cada coluna debaixo da sua bandeira. */
+.placar-goals {
+  display:grid; grid-template-columns:1fr 1fr; gap:.3rem .5rem;
+  font-size:.68rem; color:var(--ink-2); line-height:1.45;
+}
+.placar-goals .against { text-align:right; color:var(--ink-3); }
+.scorer { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.scorer em { font-style:normal; font-variant-numeric:tabular-nums;
+  font-size:.94em; color:var(--ink-3); }
+
+/* ---- artilheiros ---- */
+
+.scorer-list { display:flex; flex-direction:column; margin-top:.3rem; }
+.scorer-row {
+  display:flex; justify-content:space-between; align-items:baseline; gap:.5rem;
+  padding:.26rem .15rem; border-bottom:1px solid var(--rule); font-size:.82rem;
+}
+.scorer-row:last-child { border-bottom:0; }
+
+/* Os gols de um jogador, agrupados por edição. A fase à esquerda, o placar da
+   partida no meio e o minuto à direita — a mesma leitura da cartela do placar,
+   numa linha só, porque aqui a partida é contexto e o gol é o assunto. */
+.goal-list { display:flex; flex-direction:column; margin-top:.3rem; }
+.goal-row {
+  display:flex; align-items:center; gap:.45rem;
+  padding:.3rem .1rem; border-bottom:1px solid var(--rule); font-size:.8rem;
+}
+.goal-row:last-child { border-bottom:0; }
+.goal-row .goal-match {
+  flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  color:var(--ink-2); font-variant-numeric:tabular-nums;
+}
+.goal-row b {
+  flex:none; font-variant-numeric:tabular-nums; font-weight:800; font-stretch:84%;
+}
+/* O "p" do pênalti fica junto do minuto, e não numa coluna própria: ele
+   qualifica aquele gol, não é um dado ao lado dele. */
+.goal-row b i { font-style:normal; font-weight:700; color:var(--ink-3); font-size:.82em; }
+
+/* Linhas que abrem outra tela — a de artilheiro e a do destaque — usam o mesmo
+   realce das linhas de confronto da tabela. */
+.scorer-row.drill, .fact.drill { cursor:pointer; border-radius:5px; }
+.scorer-row.drill:hover, .scorer-row.drill:focus-visible,
+.fact.drill:hover, .fact.drill:focus-visible {
+  background:var(--accent-soft); outline:none;
+}
+.fact.drill:focus-visible, .scorer-row.drill:focus-visible {
+  box-shadow:inset 2px 0 0 var(--accent);
+}
+.scorer-row i {
+  font-style:normal; font-weight:800; font-stretch:84%; color:var(--ink-3);
+  font-size:.72rem; width:1.1rem; flex:none;
+}
+.scorer-row span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap; }
+.scorer-row b { font-variant-numeric:tabular-nums; font-weight:800; font-stretch:84%; }
 
 /* ---- comparação de duas seleções ---- */
 
-.panel h2 .vs { color:var(--ink-3); font-weight:400; margin:0 .1rem; }
+.panel h2 .vs { color:var(--ink-3); font-weight:600; margin:0 .25rem; }
 table.compare { margin-top:.2rem; }
 table.compare td {
-  text-align:center; font-variant-numeric:tabular-nums; font-weight:600;
-  width:30%; font-size:.86rem;
+  text-align:center; font-variant-numeric:tabular-nums; font-weight:700;
+  width:30%; font-size:.88rem;
 }
 table.compare th[scope="row"] {
-  text-align:center; font-weight:400; font-size:.68rem; color:var(--ink-3);
+  text-align:center; font-weight:600; font-size:.66rem; color:var(--ink-3);
   text-transform:uppercase; letter-spacing:.05em;
 }
 table.compare td.win { color:var(--accent); }
-table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15em; }
+table.compare td.win::after { content:" ▲"; font-size:.58em; vertical-align:.2em; }
+/* O cabeçalho da comparação: as duas siglas, uma em cada coluna. */
+table.compare thead th { text-align:center; font-size:.7rem; color:var(--ink);
+  font-stretch:80%; font-weight:800; letter-spacing:.05em; }
+table.compare thead th .flag { margin-right:.25rem; }
 
 .muted { color:var(--ink-2); font-size:.8rem; }
 .empty { color:var(--ink-3); font-size:.84rem; }
 
-/* ---- aviso da autoconferência ---- */
+/* A dica de uso na visão global. Ela existe porque o gesto principal da página
+   — clicar num país — não tem nenhum affordance no mapa. */
+.hint {
+  display:flex; align-items:center; gap:.45rem; margin-top:.5rem;
+  font-size:.74rem; color:var(--ink-2);
+  background:var(--accent-soft); border-radius:var(--r-input); padding:.45rem .6rem;
+}
+.hint b { color:var(--accent-deep); font-weight:800; font-stretch:88%; }
+
+/* ---- aviso da autoconferência: o cartão amarelo ----
+ *
+ * Amarelo, e não vermelho: em futebol amarelo é exatamente isto — advertência,
+ * o jogo continua. A página não parou de funcionar quando este aviso aparece;
+ * ela está dizendo que uma conta do JavaScript descolou da do Python. */
 
 .alarm {
   grid-area:alarm; align-self:start; justify-self:center;
   display:none; gap:.6rem; align-items:flex-start; max-width:44rem;
-  background:var(--warn-soft); border-color:var(--warn); border-left-width:4px;
-  padding:.7rem 1rem; font-size:.83rem; color:var(--ink);
+  background:var(--warn-soft); border:1px solid var(--warn-edge);
+  border-left:4px solid var(--warn-edge);
+  padding:.65rem 1rem; font-size:.82rem; color:var(--ink);
 }
 .alarm[data-on] { display:flex; }
-.alarm b { font-family:var(--mono); font-size:.64rem; letter-spacing:.14em;
-  text-transform:uppercase; color:var(--warn); white-space:nowrap; }
+.alarm b {
+  font-size:.62rem; font-weight:800; font-stretch:84%; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--warn); white-space:nowrap;
+  padding-top:.1rem;
+}
 
 /* ---- Leaflet no cromo da página ---- */
 
@@ -410,14 +894,15 @@ table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15
   font-family:var(--sans); font-size:.8rem; white-space:nowrap;
 }
 .leaflet-tooltip.atlas-tip::before { display:none; }
-.atlas-tip b { display:block; font-weight:700; font-size:.88rem; margin-bottom:.1rem; }
+.atlas-tip b { display:block; font-weight:800; font-size:.9rem; margin-bottom:.12rem;
+  letter-spacing:-.01em; }
 /* As linhas do tooltip são `<div>` no HTML justamente para não dependerem desta
    regra: quebrar linha entre dois números é legibilidade, não estilo, e já vinha
    de graça na folha do navegador. Quando dependia daqui, "247" e "119 partidas"
    colavam em "247119 partidas" — parecia dado corrompido e era CSS. O que sobra
    aqui é aparência. */
-.atlas-tip .tip-line { font-family:var(--mono);
-  font-variant-numeric:tabular-nums; font-size:.74rem; color:var(--ink-2); line-height:1.45; }
+.atlas-tip .tip-line { font-variant-numeric:tabular-nums; font-size:.74rem;
+  font-weight:600; color:var(--ink-2); line-height:1.45; }
 
 /* ---- O alfinete das sedes ----
  *
@@ -440,7 +925,7 @@ table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15
  * dentro de um quadradinho. */
 .venue-pin { background:none; border:0; }
 .venue-pin svg { display:block; width:100%; height:100%;
-  filter:drop-shadow(0 2px 3px rgba(12,22,32,.45)); }
+  filter:drop-shadow(0 2px 3px rgba(10,20,14,.45)); }
 
 /* O zoom fica no rodapé, deslocado para a direita do cartão da legenda — que é
    o único elemento que disputa aquele canto. Em tela estreita a legenda some e o
@@ -464,14 +949,17 @@ table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15
 }
 .leaflet-control-attribution a { color:var(--ink-2) !important; }
 
-/* ---- telas estreitas: os painéis viram folhas empilhadas ---- */
+/* ---- telas estreitas: os painéis viram folhas empilhadas ----
+ *
+ * O público de futebol no Brasil lê no celular, então este bloco não é um
+ * remendo — é metade do desenho. */
 
 @media (max-width:72rem) {
   /* A altura da folha do rodapé vira variável porque três coisas dependem dela:
-     a própria folha, a barra de ferramentas e o zoom do Leaflet. Com números
-     soltos elas saem de sincronia assim que o painel muda de tamanho — foi o que
-     aconteceu quando os controles ganharam dois campos novos. */
-  :root { --sheet:44vh; }
+     a própria folha e o zoom do Leaflet. Com números soltos elas saem de
+     sincronia assim que o painel muda de tamanho — foi o que aconteceu quando
+     os controles ganharam dois campos novos. */
+  :root { --sheet:44vh; --masthead:3rem; }
 
   .ui {
     grid-template-columns:minmax(0,1fr);
@@ -481,43 +969,63 @@ table.compare td.win::after { content:" ▲"; font-size:.6em; vertical-align:.15
       "alarm"
       "panel";
   }
-  .controls .card-body { flex-direction:row; flex-wrap:wrap; gap:.6rem .9rem; }
-  .controls .field { flex:1 1 9rem; }
+  .controls .card-body { flex-direction:row; flex-wrap:wrap; gap:.55rem .8rem; }
+  .controls .field { flex:1 1 8rem; }
+  /* A linha compartilhada só existe para economizar altura, e aqui os campos já
+     fluem lado a lado sozinhos — mantê-la agrupando dois deles só faria a
+     "Leitura" e as "Camadas" ficarem estreitas à toa. */
+  .field-row { display:contents; }
   .side { align-self:end; max-height:var(--sheet); }
   .legend-card { display:none; }
   .alarm { justify-self:stretch; }
-  /* `right` precisa voltar: o recuo que evita o painel na tela larga jogaria a
-     barra para fora da tela aqui, onde o painel é uma folha no rodapé. */
-  .toolbar { top:auto; right:var(--gap); bottom:calc(var(--sheet) + var(--gap) * 2); }
   /* e o zoom sobe para não ficar embaixo da folha */
-  .leaflet-bottom.leaflet-left { margin-left:0; margin-bottom:calc(var(--sheet) + var(--gap) * 2); }
+  .leaflet-bottom.leaflet-left { margin-left:0; margin-bottom:calc(var(--sheet) + var(--gap)); }
 }
 
-/* ---- artilheiros ---- */
+/* ---- celular ----
+ *
+ * Aqui a tela é um orçamento fechado: 812px de altura menos a faixa da marca
+ * menos a folha do rodapé é tudo o que sobra de mapa. Sem teto, o cartão de
+ * controles crescia até 339px e engolia o mapa inteiro — sobravam 0 pixels
+ * entre ele e a folha, e os dois se sobrepunham. O teto de 32vh é o que garante
+ * que sempre reste mapa; o que não couber rola dentro do cartão. */
+@media (max-width:30rem) {
+  :root { --gap:.55rem; --sheet:46vh; }
 
-/* Os gols de cada lado, embaixo do placar. O lado adversário fica mais apagado:
-   os dois são fatos da mesma partida, mas só um deles é da seleção que você
-   escolheu, e a hierarquia evita ler a linha errada. */
-.scorers { display:block; font-size:.7rem; color:var(--ink-2); margin-top:.15rem; line-height:1.5; }
-.scorers.against { color:var(--ink-3); }
-.scorer { margin-right:.5rem; white-space:nowrap; }
-.scorer em { font-style:normal; font-family:var(--mono); font-size:.92em; opacity:.8; }
+  .masthead { padding:0 .6rem; gap:.5rem; }
+  .brand-mark { width:1.5rem; height:1.5rem; }
+  .brand-name { font-size:.98rem; }
+  /* A contagem de edições é a primeira coisa a sair: a faixa de anos ao lado
+     dela já diz quantas são, e o nome da página vale mais que a repetição. */
+  .masthead-span { padding-left:.5rem; }
+  .masthead-span span { display:none; }
 
-.scorer-list { display:flex; flex-direction:column; margin-top:.35rem; }
-.scorer-row {
-  display:flex; justify-content:space-between; align-items:baseline; gap:.5rem;
-  padding:.24rem .1rem; border-bottom:1px solid var(--rule); font-size:.82rem;
+  .controls { max-height:32vh; }
+  .card-body { padding:.7rem .75rem .8rem; }
+
+  /* A folha encosta na borda de baixo, com as quinas arredondadas só em cima —
+     é o formato que todo aplicativo usa para dizer "isto sobe e desce", e a
+     alça no topo é o que diz que ela é arrastável de olhar. */
+  .side {
+    margin:0 calc(var(--gap) * -1) calc(var(--gap) * -1);
+    border-radius:var(--r-card) var(--r-card) 0 0;
+    border-bottom:0;
+  }
+  .side > .card-head { position:relative; padding-top:.85rem; }
+  .side > .card-head::before {
+    content:""; position:absolute; top:.3rem; left:50%; transform:translateX(-50%);
+    width:2.2rem; height:3px; border-radius:2px; background:var(--rule-strong);
+  }
+
+  /* O +/− do Leaflet sai: num celular o gesto é a pinça, e os dois botões só
+     disputariam o canto com o cartão de controles. */
+  .leaflet-control-zoom { display:none; }
+
+  .placar-goals { grid-template-columns:1fr; }
+  .placar-goals .against { text-align:left; }
+  .tiles { gap:.25rem; }
 }
-.scorer-row:last-child { border-bottom:0; }
-.scorer-row b { font-family:var(--mono); font-variant-numeric:tabular-nums; }
 
-/* Botão de percorrer as edições, dentro do rótulo da faixa. */
-.play {
-  margin-left:.4rem; width:1.3rem; height:1.3rem; padding:0;
-  display:inline-grid; place-items:center; vertical-align:-.25em;
-  font-size:.6rem; line-height:1; cursor:pointer;
-  color:var(--accent); background:var(--accent-soft);
-  border:0; border-radius:var(--r-pill);
+@media (prefers-reduced-motion:reduce) {
+  * { transition-duration:.01ms !important; animation-duration:.01ms !important; }
 }
-.play:hover { filter:brightness(1.08); }
-.play[aria-pressed="true"] { background:var(--accent); color:var(--accent-ink); }
