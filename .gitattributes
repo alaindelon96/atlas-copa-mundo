@@ -17,3 +17,8 @@
 # data/raw/metadata.json depende disso.
 *.csv     -text
 *.geojson -text
+
+# Fonte vendorizada: binário. O `text=auto` acima adivinha certo na prática,
+# mas adivinhar num arquivo que o navegador rejeita inteiro se um byte mudar
+# não é risco que valha a pena correr.
+*.woff2   binary

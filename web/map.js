@@ -92,8 +92,9 @@
   var state = {
     metric: "goals", mode: "total", team: null, from: 0, to: 0,
     versus: null,     // segunda seleção, para a comparação lado a lado
-    view: null,       // null = padrão; "matches" = detalhamento de partidas
+    view: null,       // null = padrão; "matches" = partidas; "scorers" = artilheiros
     opponent: null,   // adversário do detalhamento, quando veio de um confronto
+    player: null,     // índice do jogador aberto — a PESSOA, não o nome
     venues: false     // camada de sedes
   };
 
@@ -122,6 +123,19 @@
     return (NAMES && NAMES.teams[team]) || team;
   }
 
+  /* A sigla de três letras — BRA, ARG, GER —, que é como o placar de uma
+   * transmissão nomeia as duas seleções. Curada em `reference/team_names.csv`
+   * pelo trigrama da FIFA, e não derivada do nome: "Alemanha" daria "ALE" e
+   * "Holanda" daria "HOL", que não apareceram na tela de ninguém em Copa
+   * nenhuma. O que o torcedor reconhece é o padrão, não a regra.
+   *
+   * A reserva devolve as três primeiras letras em caixa-alta: se `names.json`
+   * não carregar, o placar fica com "GER" errado em vez de vazio. */
+  function sigla(team) {
+    return (NAMES && NAMES.siglas && NAMES.siglas[team]) ||
+           team.slice(0, 3).toUpperCase();
+  }
+
   /* Ordem alfabética pelo rótulo mostrado — que é o único que a pessoa vê. Em
    * inglês, Alemanha vem antes de Argentina; em português, é o contrário. */
   function byName(a, b) {
@@ -133,11 +147,8 @@
    * Estados Unidos", mas "Portugal" e "Cuba" sem nenhum. A tabela curada é
    * quem sabe; o ETL só manda quem tem.
    *
-   * `theTeam` é o nome com artigo ("a Alemanha"); `atTeam` é o mesmo com a
-   * preposição contraída ("na Suécia", "em Portugal"). Sem isso o detalhamento
-   * dizia "em Suécia". */
-  var CONTRACTION_EM = { o: "no", a: "na", os: "nos", as: "nas" };
-
+   * `theTeam` é o nome com artigo ("a Alemanha"), e é o que a legenda e o
+   * tooltip usam quando o país aparece no meio de uma frase. */
   function article(team) {
     return (NAMES && NAMES.articles && NAMES.articles[team]) || "";
   }
@@ -145,11 +156,6 @@
   function theTeam(team) {
     var word = article(team);
     return word ? word + " " + pt(team) : pt(team);
-  }
-
-  /* O lado visitante do detalhamento: "na Suécia", "no Japão", "em Portugal". */
-  function atTeam(team) {
-    return (CONTRACTION_EM[article(team)] || "em") + " " + pt(team);
   }
 
   /* "Os Estados Unidos aparecem", "o Brasil aparece". O número vem do artigo —
@@ -644,7 +650,25 @@
     if (state.view === "matches") {
       parts.push("jogos=" + (state.opponent ? encodeURIComponent(state.opponent) : "1"));
     }
+    // O link de um jogador aponta para o `player_id`, não para o nome nem para
+    // a posição na lista: por nome, `art=Ronaldo` seria ambíguo justamente no
+    // caso que a identidade existe para separar; por posição, o link passaria a
+    // abrir outra pessoa se o dado fosse regerado com um artilheiro a mais.
+    if (state.player !== null) parts.push("art=" + encodeURIComponent(GOALS.player_ids[state.player]));
+    else if (state.view === "scorers") parts.push("art=1");
     return parts.join("&");
+  }
+
+  /* `player_id` → índice, montado no primeiro uso. Só a URL precisa dele; o
+   * resto do arquivo já trabalha com o índice. */
+  var playerByID = null;
+
+  function playerIndex(id) {
+    if (!playerByID) {
+      playerByID = {};
+      GOALS.player_ids.forEach(function (value, index) { playerByID[value] = index; });
+    }
+    return playerByID.hasOwnProperty(id) ? playerByID[id] : -1;
   }
 
   var writingHash = false;
@@ -679,6 +703,7 @@
     state.versus = null;
     state.view = null;
     state.opponent = null;
+    state.player = null;
 
     state.metric = params.m && metricDef(params.m).key === params.m ? params.m : "goals";
     if (params.t && known[params.t]) state.team = params.t;
@@ -697,6 +722,19 @@
     if (params.jogos && state.team) {
       state.view = "matches";
       state.opponent = params.jogos !== "1" && known[params.jogos] ? params.jogos : null;
+    }
+    if (params.art === "1") {
+      state.view = "scorers";
+    } else if (params.art) {
+      var who = playerIndex(params.art);
+      // Um id que não existe mais é ignorado, como um ano que não é edição: a
+      // página abre no que sobrou do link em vez de numa tela vazia.
+      if (who >= 0) {
+        state.player = who;
+        // Sem seleção escolhida, a lista de artilheiros é a casa do jogador —
+        // é para lá que o "voltar" da página dele leva.
+        if (!state.team) state.view = "scorers";
+      }
     }
     // A faixa de anos volta ao total quando a URL não a menciona, pelo mesmo
     // motivo de tudo o mais aqui: ausência é informação.
@@ -963,15 +1001,149 @@
       goalsOfMatch(position).forEach(function (goal) {
         if (goal[5] === 2) return;                       // gol contra
         if (MATCHES.teams[goal[1]] !== team) return;
-        var name = GOALS.players[goal[2]];
-        if (!tally[name]) { tally[name] = { name: name, goals: 0 }; out.push(tally[name]); }
-        tally[name].goals += 1;
+        // Agrupado pela PESSOA, não pelo nome: dois homônimos da mesma seleção
+        // (o Oscar de 1982 e o de 2014, o Júnior de 82 e o de 2002) somavam
+        // numa linha só e inventavam um artilheiro que nenhum dos dois foi.
+        var who = goal[2];
+        if (!tally[who]) {
+          tally[who] = { player: who, name: GOALS.players[who], goals: 0 };
+          out.push(tally[who]);
+        }
+        tally[who].goals += 1;
       });
     });
 
     return out.sort(function (a, b) {
-      return b.goals - a.goals || a.name.localeCompare(b.name);
+      return b.goals - a.goals || ORDER.compare(a.name, b.name);
     }).slice(0, limit || 8);
+  }
+
+  /* Os destaques da faixa escolhida — o que a visão global mostra no lugar dos
+   * três números que ela mostrava antes ("83 seleções · 23 edições · 83 no
+   * mapa"). Dois daqueles descreviam o *conjunto de dados*, não o futebol.
+   *
+   * Tudo aqui acompanha o slider: mudar o recorte muda quem é o artilheiro e
+   * qual é a maior goleada, que é justamente o que torna o slider interessante
+   * em vez de um filtro abstrato.
+   *
+   * Uma varredura só sobre as 1.068 partidas e outra sobre os 3.028 gols, a
+   * cada repintura. São 4 mil iterações — o slider dispara isso a cada pixel
+   * arrastado e nem aparece no perfil; o `matchYear` existe só para a segunda
+   * varredura não ter que procurar a partida de cada gol. */
+  var matchYear = null;
+
+  function factsFor(from, to) {
+    if (!matchYear) matchYear = MATCHES.rows.map(function (row) { return row[0]; });
+    var firstYear = TIMELINE.years[from], lastYear = TIMELINE.years[to];
+    var played = 0, scored = 0, rout = null;
+
+    MATCHES.rows.forEach(function (row) {
+      if (row[0] < firstYear || row[0] > lastYear) return;
+      played += 1;
+      scored += row[4] + row[5];
+      var margin = Math.abs(row[4] - row[5]);
+      var total = row[4] + row[5];
+      // Desempate pela quantidade de gols: 10–1 e 9–0 têm a mesma diferença, e
+      // a goleada que se lembra é a de dois dígitos.
+      if (!rout || margin > rout.margin || (margin === rout.margin && total > rout.total)) {
+        rout = { margin: margin, total: total, row: row };
+      }
+    });
+
+    // A conta é POR PESSOA, e a chave é o índice do jogador — que o ETL montou
+    // a partir do `player_id`, não do nome. Enquanto ela foi o nome, o Ronaldo
+    // brasileiro (15 gols) somava com um Ronaldo português de 2026 (3) e esta
+    // linha anunciava um artilheiro de 18 que nunca existiu, na frente do
+    // Klose, que tem o recorde de verdade com 16.
+    var tally = {}, best = null;
+    GOALS.rows.forEach(function (goal) {
+      if (goal[5] === 2) return;                       // gol contra não é do artilheiro
+      var year = matchYear[goal[0]];
+      if (year < firstYear || year > lastYear) return;
+      var who = goal[2];
+      tally[who] = (tally[who] || 0) + 1;
+      // Empate resolvido pelo rótulo, para o destaque não trocar de dono a cada
+      // repintura só porque a ordem de varredura mudou.
+      if (!best || tally[who] > tally[best] ||
+          (tally[who] === tally[best] && GOALS.players[who] < GOALS.players[best])) {
+        best = who;
+      }
+    });
+
+    return {
+      matches: played,
+      goals: scored,
+      rout: rout,
+      scorer: best,
+      scorerGoals: best === null ? 0 : tally[best]
+    };
+  }
+
+  /* A seleção de um artilheiro — a dele, não a creditada pelo gol.
+   *
+   * Num gol contra a linha credita a seleção ADVERSÁRIA de quem chutou, porque
+   * é assim que o placar fecha. Tirar o time do artilheiro dali poria o autor
+   * de um gol contra jogando pelo time que levou o gol; por isso o ETL manda
+   * `player_teams`, index a index com `players`. */
+  function teamOfPlayer(who) {
+    var index = GOALS.player_teams[who];
+    return index >= 0 ? MATCHES.teams[index] : null;
+  }
+
+  /* A tabela de artilheiros da faixa. Uma linha por pessoa, com a seleção, os
+   * gols, quantos foram de pênalti e em quantas Copas ela marcou. */
+  function scorerTable(from, to) {
+    if (!matchYear) matchYear = MATCHES.rows.map(function (row) { return row[0]; });
+    var firstYear = TIMELINE.years[from], lastYear = TIMELINE.years[to];
+    var byPlayer = {}, out = [];
+
+    GOALS.rows.forEach(function (goal) {
+      if (goal[5] === 2) return;
+      var year = matchYear[goal[0]];
+      if (year < firstYear || year > lastYear) return;
+      var who = goal[2];
+      if (!byPlayer[who]) {
+        byPlayer[who] = { player: who, name: GOALS.players[who], team: teamOfPlayer(who),
+                          goals: 0, pens: 0, years: {} };
+        out.push(byPlayer[who]);
+      }
+      byPlayer[who].goals += 1;
+      if (goal[5] === 1) byPlayer[who].pens += 1;
+      byPlayer[who].years[year] = 1;
+    });
+
+    out.forEach(function (entry) { entry.cups = Object.keys(entry.years).length; });
+    return out.sort(function (a, b) {
+      return b.goals - a.goals || ORDER.compare(a.name, b.name);
+    });
+  }
+
+  /* Os gols de um jogador, do mais recente para o mais antigo, com a partida
+   * em que cada um saiu. */
+  function goalsOfPlayer(who, from, to) {
+    if (!matchYear) matchYear = MATCHES.rows.map(function (row) { return row[0]; });
+    var firstYear = TIMELINE.years[from], lastYear = TIMELINE.years[to];
+    var out = [];
+
+    GOALS.rows.forEach(function (goal) {
+      if (goal[2] !== who || goal[5] === 2) return;
+      var year = matchYear[goal[0]];
+      if (year < firstYear || year > lastYear) return;
+      var match = MATCHES.rows[goal[0]];
+      out.push({
+        year: year,
+        stage: MATCHES.stages[match[1]],
+        date: match[7],
+        home: MATCHES.teams[match[2]], away: MATCHES.teams[match[3]],
+        homeGoals: match[4], awayGoals: match[5],
+        minute: goal[3] + (goal[4] ? "+" + goal[4] : "") + "'",
+        penalty: goal[5] === 1
+      });
+    });
+
+    return out.sort(function (a, b) {
+      return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+    });
   }
 
   var STAGE_SHORT = {
@@ -981,27 +1153,80 @@
     "final": "Final", "final round": "Quadrangular"
   };
 
+  /* As fases que ganham a tarja dourada. Uma final não pesa o mesmo que um jogo
+   * de grupo, e num bloco de rótulos cinza as duas pesam igual. */
+  var STAGE_GOLD = { "final": 1, "final round": 1 };
+
+  /* A letra do resultado, em português: V, E, D. A CHAVE continua sendo W/D/L —
+   * ela vem de `resultOf`, espelha `etl.model` e nomeia as classes de CSS —, mas
+   * a letra dentro do quadradinho é o que a pessoa lê, e numa página em pt-BR
+   * "W" não quer dizer nada. O "D" das duas línguas significa coisas opostas
+   * (draw / derrota), o que é exatamente o motivo de a tradução existir. */
+  var RESULT_LETTER = { W: "V", D: "E", L: "D" };
+  var RESULT_TITLE = { W: "Vitória", D: "Empate", L: "Derrota" };
+
+  /* O placar de uma partida, no formato da cartela de transmissão.
+   *
+   * A ORDEM É A DA PARTIDA — mandante à esquerda, visitante à direita, sempre.
+   * A versão anterior escrevia o placar do ponto de vista da seleção escolhida
+   * ("4–1 vs Itália"), e isso dá dois placares diferentes para a mesma partida
+   * dependendo de por onde você chegou nela: a final de 70 seria "4–1" pelo
+   * Brasil e "1–4" pela Itália. O resultado (V/E/D) continua sendo o da seleção
+   * escolhida, porque é a pergunta que a lista responde — ele fica na régua
+   * colorida da borda E na letra, nunca só na cor. */
+  function placar(match) {
+    var homeTeam = match.home ? match.team : match.opponent;
+    var awayTeam = match.home ? match.opponent : match.team;
+    var homeGoals = match.home ? match.goalsFor : match.goalsAgainst;
+    var awayGoals = match.home ? match.goalsAgainst : match.goalsFor;
+    var homePens = match.home ? match.pensFor : match.pensAgainst;
+    var awayPens = match.home ? match.pensAgainst : match.pensFor;
+
+    function side(team, away) {
+      // A sigla já nomeia a seleção, então uma bandeira que não carrega some em
+      // vez de virar ícone quebrado — diferente da tabela, onde a bandeira é a
+      // única marca da linha e o `badge()` a troca por um quadrado colorido.
+      var flag = '<img class="flag" src="vendor/flags/' +
+                 ((COLORS.teams[team] && COLORS.teams[team].flag) || "") +
+                 '" alt="" aria-hidden="true" decoding="async"' +
+                 ' onerror="this.remove()">';
+      var tag = '<b class="sigla" title="' + pt(team) + '">' + sigla(team) + "</b>";
+      return '<span class="placar-side' + (away ? " away" : "") +
+             (team === match.team ? " is-team" : "") + '">' +
+             (away ? tag + flag : flag + tag) + "</span>";
+    }
+
+    var stage = STAGE_SHORT[match.stage] || match.stage;
+    var meta = '<div class="placar-meta">' +
+      '<span class="stage' + (STAGE_GOLD[match.stage] ? " final" : "") + '">' + stage + "</span>" +
+      '<span class="year">' + match.year + "</span>" +
+      (match.venue ? "<span>" + match.venue.city + "</span>" : "") +
+      '<span class="res-letter" title="' + RESULT_TITLE[match.result] + '">' +
+      RESULT_LETTER[match.result] + "</span></div>";
+
+    var line = '<div class="placar-line">' + side(homeTeam, false) +
+      '<span class="placar-score">' + homeGoals + "<i>×</i>" + awayGoals + "</span>" +
+      side(awayTeam, true) + "</div>";
+
+    // Nos pênaltis o placar do tempo normal é empate, e sem esta linha a lista
+    // mostraria um "E" ao lado de uma vitória — as 39 decisões por pênalti são
+    // justamente as partidas mais lembradas do dado.
+    var pens = homePens === null || homePens === undefined ? "" :
+      '<i class="pens">' + homePens + " × " + awayPens + " nos pênaltis</i>";
+
+    var homeScorers = scorers(match.position, homeTeam);
+    var awayScorers = scorers(match.position, awayTeam);
+    var goals = homeScorers || awayScorers ?
+      '<div class="placar-goals"><span>' + homeScorers + "</span>" +
+      '<span class="against">' + awayScorers + "</span></div>" : "";
+
+    return '<div class="placar res-' + match.result + '">' +
+           meta + line + pens + goals + "</div>";
+  }
+
   function matchRows(list) {
     if (!list.length) return '<p class="empty">Nenhuma partida nesta faixa.</p>';
-    var html = '<div class="matches">';
-    list.forEach(function (match) {
-      var score = match.goalsFor + "–" + match.goalsAgainst;
-      var pens = match.pensFor === null ? "" :
-                 ' <em class="pens">(' + match.pensFor + "–" + match.pensAgainst + " p)</em>";
-      var mine = scorers(match.position, match.team);
-      var theirs = scorers(match.position, match.opponent);
-      html += '<div class="match">' +
-        '<span class="res res-' + match.result + '">' + match.result + "</span>" +
-        '<span class="match-main">' +
-          '<b>' + score + pens + "</b> " +
-          (match.home ? "vs " + pt(match.opponent) : atTeam(match.opponent)) +
-          '<span class="match-sub">' + match.year + " · " + (STAGE_SHORT[match.stage] || match.stage) +
-          (match.venue ? " · " + match.venue.city : "") + "</span>" +
-          (mine ? '<span class="scorers">' + mine + "</span>" : "") +
-          (theirs ? '<span class="scorers against">' + theirs + "</span>" : "") +
-        "</span></div>";
-    });
-    return html + "</div>";
+    return '<div class="matches">' + list.map(placar).join("") + "</div>";
   }
 
   /* Resumo V–E–D de uma lista de partidas, para o cabeçalho do detalhamento. */
@@ -1047,10 +1272,17 @@
       ["Participações", "participations", 1], ["Partidas recebidas", "matches_received", 1]
     ];
 
+    // O cabeçalho repete as duas seleções em sigla, uma por coluna: sem ele a
+    // tabela é uma pilha de pares de números e a pessoa tem que voltar ao
+    // título toda vez para lembrar qual coluna é de quem.
     var html = '<div class="sub">' + span + "</div>" +
       "<h2>" + badge(state.team, null) + pt(state.team) + " <span class='vs'>×</span> " +
       badge(state.versus, null) + pt(state.versus) + "</h2>" +
-      '<table class="compare"><tbody>';
+      '<table class="compare"><thead><tr>' +
+        "<th>" + badge(state.team, null) + sigla(state.team) + "</th>" +
+        '<th><span class="sr-only">Métrica</span></th>' +
+        "<th>" + badge(state.versus, null) + sigla(state.versus) + "</th>" +
+      "</tr></thead><tbody>";
 
     lines.forEach(function (line) {
       var a = left[line[1]], b = right[line[1]], direction = line[2];
@@ -1083,6 +1315,105 @@
     return html + "</div>";
   }
 
+  /* A tabela de artilheiros da faixa.
+   *
+   * O jogador só existia escondido dentro do painel de uma seleção, cortado em
+   * oito nomes. São 1.624 pessoas e 3.028 gols no navegador; esta é a tela que
+   * trata jogador como entidade em vez de nota de rodapé.
+   *
+   * O corte em 60 linhas não é preguiça: passa disso e a lista vira listagem
+   * telefônica — o 60º da faixa completa tem 5 gols, e abaixo disso a ordem é
+   * quase alfabética. Quem procura alguém específico chega pela seleção. */
+  function scorersPanel(span) {
+    var table = scorerTable(state.from, state.to);
+    if (!table.length) {
+      return '<div class="sub">' + span + '</div><h2>Artilheiros</h2>' +
+             '<p class="empty">Nenhum gol nesta faixa de edições.</p>';
+    }
+
+    var goals = 0, pens = 0;
+    table.forEach(function (entry) { goals += entry.goals; pens += entry.pens; });
+
+    var html = '<div class="sub">' + span + '</div><h2>Artilheiros</h2>' +
+      '<div class="tiles">' +
+        tile(NUM.format(goals), "Gols") +
+        tile(NUM.format(table.length), "Artilheiros") +
+        tile(NUM.format(pens), "De pênalti") +
+      "</div>" +
+      '<div><div class="sub">Ranking · gols em Copas</div>' +
+      '<div class="h2h-scroll"><table class="rank"><thead><tr><th>#</th><th>Jogador</th>' +
+      "<th>Seleção</th><th>Gols</th></tr></thead><tbody>";
+
+    table.slice(0, 60).forEach(function (entry, index) {
+      html += '<tr class="drill" data-player="' + entry.player + '" tabindex="0">' +
+        '<td class="pos">' + (index + 1) + "</td>" +
+        "<td>" + entry.name + "</td>" +
+        "<td>" + (entry.team ? badge(entry.team, null) + sigla(entry.team) : "—") + "</td>" +
+        "<td>" + NUM.format(entry.goals) + "</td></tr>";
+    });
+
+    html += "</tbody></table></div>" +
+      '<p class="hint"><b>' + (narrow() ? "Toque" : "Clique") +
+      " num jogador</b> para ver os gols dele, um a um.</p></div>";
+
+    // Gol contra não entra em artilharia — ele é creditado a quem ganhou o gol,
+    // e quem chutou joga do outro lado. Dizer isso evita a conta não fechar aos
+    // olhos de quem somar a coluna e comparar com o total de gols da faixa.
+    html += '<p class="muted">Gols contra ficam de fora: o gol conta para a ' +
+      "seleção que o ganhou, e quem chutou joga do outro lado.</p>";
+    return html;
+  }
+
+  /* A página de um jogador: os gols dele, agrupados por edição.
+   *
+   * Agrupar por Copa e não numa lista corrida é o que transforma dezoito linhas
+   * numa carreira — "2002: 8 gols" é a frase que alguém repete, e ela não
+   * aparece numa lista plana. */
+  function playerPanel(span) {
+    var who = state.player;
+    var name = GOALS.players[who];
+    var team = teamOfPlayer(who);
+    var list = goalsOfPlayer(who, state.from, state.to);
+
+    var head = '<div class="sub">' + span + "</div>" +
+      '<button class="back" type="button" data-back="player">← voltar</button>' +
+      "<h2>" + (team ? badge(team, null) : "") + name +
+      (team ? '<span class="sigla-tag">' + sigla(team) + "</span>" : "") + "</h2>";
+
+    if (!list.length) {
+      return head + '<p class="empty">Não marcou nesta faixa de edições.</p>';
+    }
+
+    var pens = 0, byYear = {}, years = [];
+    list.forEach(function (goal) {
+      if (goal.penalty) pens += 1;
+      if (!byYear[goal.year]) { byYear[goal.year] = []; years.push(goal.year); }
+      byYear[goal.year].push(goal);
+    });
+
+    var html = head + '<div class="tiles">' +
+      tile(NUM.format(list.length), "Gols") +
+      tile(NUM.format(years.length), years.length === 1 ? "Copa" : "Copas") +
+      tile(NUM.format(pens), "De pênalti") +
+      "</div>";
+
+    years.forEach(function (year) {
+      var goals = byYear[year];
+      html += '<div><div class="sub">' + year + " · " + goals.length +
+        (goals.length === 1 ? " gol" : " gols") + '</div><div class="goal-list">';
+      goals.forEach(function (goal) {
+        var stage = STAGE_SHORT[goal.stage] || goal.stage;
+        html += '<div class="goal-row">' +
+          '<span class="stage' + (STAGE_GOLD[goal.stage] ? " final" : "") + '">' + stage + "</span>" +
+          '<span class="goal-match">' + sigla(goal.home) + " " + goal.homeGoals + " × " +
+          goal.awayGoals + " " + sigla(goal.away) + "</span>" +
+          "<b>" + goal.minute + (goal.penalty ? " <i>p</i>" : "") + "</b></div>";
+      });
+      html += "</div></div>";
+    });
+    return html;
+  }
+
   function drawPanel() {
     var def = current.metric, panel = document.getElementById("panel");
     var span = TIMELINE.years[state.from] + "–" + TIMELINE.years[state.to];
@@ -1091,8 +1422,22 @@
     // A barra do cartão diz o que ele contém mesmo recolhido — é a única pista
     // que sobra quando o painel está fechado.
     document.getElementById("side-title").textContent =
-      state.versus ? "⚔️ " + pt(state.team) + " × " + pt(state.versus)
-      : state.team ? "📋 " + pt(state.team) : "📋 Ranking";
+      state.player !== null ? GOALS.players[state.player]
+      : state.view === "scorers" ? "Artilheiros"
+      : state.versus ? pt(state.team) + " × " + pt(state.versus)
+      : state.team ? pt(state.team) : "Ranking";
+
+    // --- a página de um jogador ----------------------------------------
+    if (state.player !== null) {
+      panel.innerHTML = playerPanel(span);
+      return;
+    }
+
+    // --- a tabela de artilheiros ---------------------------------------
+    if (state.view === "scorers") {
+      panel.innerHTML = scorersPanel(span);
+      return;
+    }
 
     // --- detalhamento: as partidas que formam o número -----------------
     if (state.view === "matches" && state.team) {
@@ -1128,7 +1473,8 @@
       // com o `last_cup` conferido no ETL) — ela só não se anuncia na tela: o
       // painel é sobre os números da seleção, não sobre a origem do amarelo.
       html = '<div class="sub">' + span + '</div>' +
-        '<h2>' + badge(state.team, null) + pt(state.team) + '</h2>' +
+        '<h2>' + badge(state.team, null) + pt(state.team) +
+        '<span class="sigla-tag">' + sigla(state.team) + '</span></h2>' +
         '<div class="tiles">' +
           tile(NUM.format(totals.goals), "Gols") +
           tile(NUM.format(totals.conceded), "Sofridos") +
@@ -1153,14 +1499,19 @@
       if (scorersList.length) {
         html += '<div><div class="sub">Artilheiros · ' + span + "</div>" +
           '<div class="scorer-list">';
-        scorersList.forEach(function (player) {
-          html += '<div class="scorer-row"><span>' + player.name + "</span>" +
+        // A linha abre a página do jogador. É o mesmo gesto da linha de
+        // confronto logo abaixo, e o mesmo motivo: ligar o número às partidas
+        // que o produziram.
+        scorersList.forEach(function (player, index) {
+          html += '<div class="scorer-row drill" data-player="' + player.player +
+                  '" tabindex="0"><i>' + (index + 1) + "º</i>" +
+                  "<span>" + player.name + "</span>" +
                   "<b>" + NUM.format(player.goals) + "</b></div>";
         });
         html += "</div></div>";
       }
 
-      html += '<button class="back" type="button" data-matches="1">' +
+      html += '<button class="back solid" type="button" data-matches="1">' +
         "Ver as " + NUM.format(totals.matches_played) + " partidas →</button>";
 
       html += '<div><div class="sub">Confrontos diretos · ' + rows.length + ' adversários</div>' +
@@ -1194,31 +1545,83 @@
       return y - x || byName(a[0], b[0]);
     });
 
-    var painted = rows.filter(function (entry) {
-      return valueOf(entry[1], def, state.mode) !== null;
+    var facts = factsFor(state.from, state.to);
+
+    // O maior campeão da faixa sai do mesmo agregado que pinta o mapa, então
+    // ele nunca pode discordar dele.
+    //
+    // Empate é o caso comum, não a exceção: em qualquer recorte curto várias
+    // seleções têm um título cada, e mostrar só a primeira da lista elegeria um
+    // "maior campeão" por ordem de varredura — em 2018–2026 saía "França",
+    // calando Argentina e Espanha, que ganharam as outras duas. Empatados
+    // aparecem juntos, e acima de três vira contagem para a linha não virar
+    // parágrafo.
+    var mostTitles = 0, champions = [];
+    rows.forEach(function (entry) {
+      if (entry[1].titles > mostTitles) { mostTitles = entry[1].titles; champions = [entry[0]]; }
+      else if (entry[1].titles === mostTitles && mostTitles > 0) champions.push(entry[0]);
     });
+    champions.sort(byName);
+
+    var championLine = champions.length > 3
+      ? NUM.format(champions.length) + " seleções empatadas"
+      : champions.map(function (team) { return badge(team, null) + pt(team); }).join(" · ");
 
     html = '<div class="sub">' + span + '</div><h2>Visão global</h2>' +
       '<div class="tiles">' +
-        tile(NUM.format(rows.length), "Seleções") +
         tile(NUM.format(state.to - state.from + 1), "Edições") +
-        tile(NUM.format(painted.length), "No mapa") +
+        tile(NUM.format(facts.matches), "Partidas") +
+        tile(NUM.format(facts.goals), "Gols") +
       '</div>' +
+      '<div class="facts">' +
+        (mostTitles ?
+          '<div class="fact"><span>' +
+          (champions.length > 1 ? "Mais títulos" : "Maior campeão") + "</span><strong>" +
+          championLine + "</strong><b>" + NUM.format(mostTitles) + "</b></div>" : "") +
+        (facts.scorer !== null ?
+          '<div class="fact drill" data-player="' + facts.scorer + '" tabindex="0">' +
+          "<span>Artilheiro</span><strong>" + GOALS.players[facts.scorer] +
+          "</strong><b>" + NUM.format(facts.scorerGoals) + "</b></div>" : "") +
+        (facts.rout ?
+          '<div class="fact"><span>Maior goleada</span><strong>' +
+          sigla(MATCHES.teams[facts.rout.row[2]]) + " " + facts.rout.row[4] + " × " +
+          facts.rout.row[5] + " " + sigla(MATCHES.teams[facts.rout.row[3]]) +
+          "</strong><b>" + facts.rout.row[0] + "</b></div>" : "") +
+      "</div>" +
+      // Cada tarja é um link cujo `href` descreve o estado inteiro — o mesmo
+      // formato que a barra de endereço aceita. Sendo link de verdade, elas
+      // entram no histórico, funcionam com o botão voltar e podem ser copiadas;
+      // e o `hashchange` que já existia faz o resto sem nenhum código novo.
+      '<div><div class="sub">Por onde começar</div><div class="asks">' +
+        '<a class="ask" href="#art=1">Artilheiros de todos os tempos</a>' +
+        '<a class="ask" href="#m=titles">Maiores campeões</a>' +
+        '<a class="ask" href="#m=win_pct">Melhor aproveitamento</a>' +
+        '<a class="ask" href="#t=Brazil&v=Argentina">Brasil × Argentina</a>' +
+        '<a class="ask" href="#y=1970-1970">A Copa de 1970</a>' +
+        '<a class="ask" href="#y=2002-2026">Só o século XXI</a>' +
+        '<a class="ask" href="#sedes=1">Onde se jogou</a>' +
+      "</div></div>" +
       '<div><div class="sub">Ranking · ' + def.label +
       (state.mode === "rate" && def.rate ? " por partida" : "") + '</div>' +
-      '<div class="h2h-scroll"><table><thead><tr><th>#</th><th>Seleção</th><th>' +
+      // `table.rank` é o que liga a coluna de posição e a tarja dourada dos três
+      // primeiros — a leitura de tabela de campeonato, que o confronto direto
+      // não tem porque ali não existe classificação.
+      '<div class="h2h-scroll"><table class="rank"><thead><tr><th>#</th><th>Seleção</th><th>' +
       def.label + "</th>" + (showsMatchContext(def) ? "<th>J</th>" : "") + "</tr></thead><tbody>";
     rows.slice(0, 30).forEach(function (entry, index) {
       var rec = entry[1], value = valueOf(rec, def, state.mode);
-      html += '<tr><td>' + (index + 1) + '</td>' +
+      html += '<tr><td class="pos">' + (index + 1) + '</td>' +
         '<td>' + badge(entry[0], value) + pt(entry[0]) + '</td>' +
         '<td>' + format(value, def, state.mode) + "</td>" +
         // A coluna de jogos sai junto com a linha do tooltip, e pelo mesmo
         // motivo: em "partidas recebidas" ela fala de outra coisa.
         (showsMatchContext(def) ? "<td>" + NUM.format(rec.matches_played) + "</td>" : "") + "</tr>";
     });
-    html += '</tbody></table></div><p class="muted" style="margin-top:.5rem">' +
-      'Clique num país do mapa para ver os confrontos diretos dele.</p></div>';
+    // "Toque" no celular, "Clique" no desktop: a dica descreve um gesto, e
+    // descrever o gesto errado é pior do que não descrever nenhum.
+    html += '</tbody></table></div>' +
+      '<p class="hint"><b>' + (narrow() ? "Toque" : "Clique") + ' num país</b> ' +
+      "do mapa para abrir os confrontos diretos dele.</p></div>";
     panel.innerHTML = html;
   }
 
@@ -1265,7 +1668,7 @@
     state.view = null;
     state.opponent = null;
     if (state.versus === state.team) state.versus = null;
-    document.getElementById("team").value = state.team || "";
+    teamCombo.set(state.team);
     if (syncMetricOptions()) {
       state.swapped = previous;
       syncMode();
@@ -1279,15 +1682,12 @@
   /* A segunda seleção da comparação. Ela não pode ser a mesma da primeira — a
    * opção some da lista em vez de existir e não fazer nada. */
   function syncVersusOptions() {
-    var picker = document.getElementById("versus");
-    var options = picker.options;
-    for (var i = 0; i < options.length; i++) {
-      options[i].disabled = Boolean(options[i].value) && options[i].value === state.team;
-    }
-    picker.disabled = !state.team;
-    picker.title = state.team ? "" : "Escolha um país primeiro";
+    // A primeira seleção sai da lista da segunda em vez de ficar lá escolhível
+    // e não fazer nada — ninguém joga contra si mesmo.
+    versusCombo.exclude(state.team);
+    versusCombo.disable(!state.team, state.team ? "" : "Escolha uma seleção primeiro");
     if (!state.team) state.versus = null;
-    picker.value = state.versus || "";
+    versusCombo.set(state.versus);
   }
 
   function selectVersus(team) {
@@ -1311,11 +1711,29 @@
     repaint();
   }
 
+  /* Abre a página de um jogador. O detalhamento de partidas fecha junto: as
+   * duas são telas de aprofundamento e empilhá-las deixaria um "voltar" sem
+   * destino claro. */
+  function openPlayer(who) {
+    state.player = who;
+    if (state.view === "matches") { state.view = null; state.opponent = null; }
+    repaint();
+  }
+
+  /* O "voltar" da página do jogador não escolhe destino: ele só apaga o
+   * jogador. Quem chegou pela lista de artilheiros tem `view === "scorers"` e
+   * volta para a lista; quem chegou pelo painel de uma seleção não tem, e
+   * volta para a seleção. O caminho de volta é o caminho de ida ao contrário
+   * sem nenhum histórico próprio para manter. */
+  function closePlayer() {
+    state.player = null;
+    repaint();
+  }
+
   /* No modo de país, três métricas deixam de existir. Em vez de deixá-las
    * escolhíveis e mostrar um mapa vazio, elas ficam desabilitadas — e se uma
    * delas estava escolhida, a troca é anunciada no lugar de acontecer calada. */
   function syncMetricOptions() {
-    var picker = document.getElementById("team");
     var chosen = state.team;
     var options = document.getElementById("metric").options;
     var swapped = false;
@@ -1331,9 +1749,234 @@
       state.metric = "goals";
       document.getElementById("metric").value = "goals";
     }
-    picker.value = chosen || "";
+    // Esta função mexe SÓ nas opções de métrica. Ela também reescrevia o valor
+    // do seletor de seleção, o que era inofensivo enquanto ele era um `<select>`
+    // (a chave em inglês era o `value` de uma opção) e virou bug quando ele
+    // virou caixa de texto: a chave crua aparecia escrita na tela, "South
+    // Korea" num painel que dizia "Coreia do Sul". Quem sincroniza a caixa é
+    // `select()` e o ouvinte de `hashchange`, e os dois já o fazem.
     return swapped;
   }
+
+  // ------------------------------------------------- a caixa de busca de seleção
+
+  /* Texto comparável: sem acento e em minúsculas. Quem procura a Argélia digita
+   * "argelia", e quem procura a Bósnia não digita nada com acento nenhum. */
+  function fold(text) {
+    return text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  }
+
+  /* Uma caixa de busca de seleção, sobre um `<input>`.
+   *
+   * Substitui um `<select>` de 83 países em ordem alfabética, que só se navega
+   * rolando: a busca nativa do `<select>` casa prefixo, é invisível e expira em
+   * um segundo. Aqui o texto casa em qualquer posição do nome em português, da
+   * sigla FIFA e da chave em inglês — "kor", "coreia" e "korea" chegam todos na
+   * Coreia do Sul.
+   *
+   * A lista é anexada ao `<body>` e posicionada em coordenadas de janela. Ela
+   * não pode morar dentro do cartão: o cartão de controles tem `overflow` para
+   * poder rolar em tela baixa, e um elemento absoluto lá dentro é cortado na
+   * borda — a lista apareceria com uma linha e meia. O preço de sair de lá é
+   * que ela não acompanha rolagem nenhuma, então ela fecha quando algo rola.
+   *
+   * `chosen` guarda a CHAVE em inglês, nunca o rótulo: é ela que vai para o
+   * estado e para a URL, e é a mesma regra do resto do arquivo. O texto visível
+   * é só rótulo, e é reescrito a partir da chave sempre que a caixa fecha. */
+  function makeCombo(id, teams, onPick) {
+    var input = document.getElementById(id);
+    var box = input.parentNode;
+    var clear = box.querySelector(".combo-clear");
+
+    var pop = document.createElement("ul");
+    pop.className = "combo-pop";
+    pop.id = id + "-list";
+    pop.setAttribute("role", "listbox");
+    pop.hidden = true;
+    document.body.appendChild(pop);
+
+    var haystack = {};
+    teams.forEach(function (team) {
+      haystack[team] = fold(pt(team) + " " + sigla(team) + " " + team);
+    });
+
+    var chosen = null, excluded = null, shown = [], active = -1;
+
+    function labelOf(team) { return team ? pt(team) : ""; }
+
+    function candidates() {
+      var typed = fold(input.value.trim());
+      // Texto igual ao rótulo do que já está escolhido significa que ninguém
+      // digitou nada — abrir mostra a lista inteira, como um `<select>` faria.
+      var filtering = typed && typed !== fold(labelOf(chosen));
+      return teams.filter(function (team) {
+        if (team === excluded) return false;
+        return !filtering || haystack[team].indexOf(typed) >= 0;
+      });
+    }
+
+    function render() {
+      if (!shown.length) {
+        pop.innerHTML = '<li class="combo-empty">Nenhuma seleção com esse nome.</li>';
+        return;
+      }
+      pop.innerHTML = shown.map(function (team, i) {
+        return '<li role="option" id="' + pop.id + "-" + i + '" data-team="' + team +
+          '" aria-selected="' + (team === chosen) + '"' + (i === active ? ' class="on"' : "") +
+          ">" + badge(team, null) + pt(team) +
+          '<span class="sigla-tag">' + sigla(team) + "</span></li>";
+      }).join("");
+    }
+
+    /* Abaixo da caixa quando cabe, acima quando não cabe e há mais espaço lá.
+     * A altura é medida depois de renderizar porque ela depende de quantos
+     * países sobraram do filtro. */
+    function place() {
+      var rect = box.getBoundingClientRect();
+      // Sem caixa não há onde ancorar: um retângulo zerado significa que o
+      // cartão foi recolhido (`display:none`), e posicionar a partir dele
+      // largaria a lista no canto superior esquerdo da tela.
+      if (!rect.width && !rect.height) { pop.hidden = true; return; }
+      var gap = 4, margin = 12, ceiling = 256;
+      pop.style.left = Math.round(rect.left) + "px";
+      pop.style.width = Math.round(rect.width) + "px";
+      pop.style.maxHeight = ceiling + "px";
+      var wanted = Math.min(pop.scrollHeight + 2, ceiling);
+      var below = window.innerHeight - rect.bottom - gap - margin;
+      var above = rect.top - gap - margin;
+      if (wanted > below && above > below) {
+        pop.style.top = "";
+        pop.style.bottom = Math.round(window.innerHeight - rect.top + gap) + "px";
+        pop.style.maxHeight = Math.round(Math.min(wanted, above)) + "px";
+      } else {
+        pop.style.bottom = "";
+        pop.style.top = Math.round(rect.bottom + gap) + "px";
+        pop.style.maxHeight = Math.round(Math.min(wanted, below)) + "px";
+      }
+    }
+
+    function open() {
+      if (input.disabled) return;
+      shown = candidates();
+      active = shown.indexOf(chosen);
+      render();
+      pop.hidden = false;
+      place();
+      input.setAttribute("aria-expanded", "true");
+      scrollActiveIntoView();
+    }
+
+    function close() {
+      pop.hidden = true;
+      active = -1;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+      // O texto sempre volta a descrever a escolha atual: sair da caixa com
+      // "arge" escrito e a Argentina pintada no mapa seria a caixa mentindo.
+      input.value = labelOf(chosen);
+    }
+
+    function scrollActiveIntoView() {
+      var row = active >= 0 && pop.children[active];
+      if (row && row.scrollIntoView) row.scrollIntoView({ block: "nearest" });
+    }
+
+    function highlight(next) {
+      if (!shown.length) return;
+      active = (next + shown.length) % shown.length;
+      Array.prototype.forEach.call(pop.children, function (row, i) {
+        row.classList.toggle("on", i === active);
+      });
+      input.setAttribute("aria-activedescendant", pop.id + "-" + active);
+      scrollActiveIntoView();
+    }
+
+    function commit(team) {
+      chosen = team || null;
+      close();
+      syncClear();
+      onPick(chosen);
+    }
+
+    function syncClear() { clear.hidden = !chosen || input.disabled; }
+
+    input.addEventListener("input", function () {
+      shown = candidates();
+      active = shown.length ? 0 : -1;
+      render();
+      pop.hidden = false;
+      place();
+      input.setAttribute("aria-expanded", "true");
+      if (active >= 0) input.setAttribute("aria-activedescendant", pop.id + "-" + active);
+    });
+
+    input.addEventListener("focus", function () { input.select(); open(); });
+    input.addEventListener("mousedown", function () {
+      if (document.activeElement === input && pop.hidden) open();
+    });
+
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowDown") { event.preventDefault(); pop.hidden ? open() : highlight(active + 1); }
+      else if (event.key === "ArrowUp") { event.preventDefault(); pop.hidden ? open() : highlight(active - 1); }
+      else if (event.key === "Enter") {
+        if (pop.hidden) return;
+        event.preventDefault();
+        if (active >= 0 && shown[active]) commit(shown[active]);
+      } else if (event.key === "Escape") {
+        if (pop.hidden) return;
+        event.preventDefault();     // não deixa o Esc escapar e fechar outra coisa
+        close();
+      } else if (event.key === "Tab") {
+        close();
+      }
+    });
+
+    // `mousedown` e não `click`: o clique numa lista fora do campo tira o foco
+    // do `<input>` antes, e o `blur` fecharia a lista debaixo do ponteiro.
+    pop.addEventListener("mousedown", function (event) {
+      var row = event.target.closest("[data-team]");
+      if (!row) return;
+      event.preventDefault();
+      commit(row.getAttribute("data-team"));
+      input.focus();
+    });
+
+    input.addEventListener("blur", function () {
+      // Um quadro de atraso: sem ele o `blur` do clique na lista fecha antes de
+      // o `mousedown` de lá ser processado em navegadores que ordenam assim.
+      window.setTimeout(function () {
+        if (!pop.hidden && !pop.contains(document.activeElement)) close();
+      }, 0);
+    });
+
+    clear.addEventListener("click", function () { input.value = ""; commit(null); });
+
+    // Uma lista `position:fixed` não acompanha o que rolou embaixo dela, então
+    // ela fecha em vez de ficar flutuando ao lado do campo que a abriu.
+    var dismiss = function () { if (!pop.hidden) close(); };
+    window.addEventListener("resize", dismiss);
+    window.addEventListener("scroll", dismiss, true);
+    document.addEventListener("mousedown", function (event) {
+      if (!pop.hidden && !box.contains(event.target) && !pop.contains(event.target)) close();
+    });
+
+    return {
+      set: function (team) {
+        chosen = team || null;
+        input.value = labelOf(chosen);
+        syncClear();
+      },
+      exclude: function (team) { excluded = team || null; },
+      disable: function (off, why) {
+        input.disabled = off;
+        input.title = why || "";
+        if (off) { close(); }
+        syncClear();
+      }
+    };
+  }
+
+  var teamCombo = null, versusCombo = null;
 
   /* Recolher e mostrar os painéis.
    *
@@ -1356,11 +1999,23 @@
     } catch (error) { /* sem persistência; a interface não muda */ }
   }
 
+  /* Devolve `null` quando nunca houve escolha — que é diferente de "abriu tudo".
+   * A diferença importa porque o padrão do celular depende dela: `[]` é uma
+   * decisão da pessoa e tem que ser respeitada, `null` é a primeira visita. */
   function recall() {
     try {
       var raw = window.localStorage.getItem(STORAGE_KEY);
-      return raw ? raw.split(",").filter(Boolean) : [];
-    } catch (error) { return []; }
+      if (raw === null) return null;
+      return raw.split(",").filter(Boolean);
+    } catch (error) { return null; }
+  }
+
+  /* O mesmo limite do `@media (max-width:30rem)` da folha de estilo. Ele está
+   * repetido aqui porque o JavaScript precisa saber a mesma coisa, e não há
+   * como perguntar ao CSS — o jeito de manter os dois em dia é este comentário
+   * e o fato de o número aparecer duas vezes na busca. */
+  function narrow() {
+    return window.matchMedia("(max-width:30rem)").matches;
   }
 
   function collapsedNow() {
@@ -1382,14 +2037,24 @@
     var all = Object.keys(CARDS);
     var every = collapsedNow().length === all.length;
     var button = document.getElementById("panels");
+    var label = every ? "Mostrar todos os painéis" : "Recolher todos os painéis";
     button.setAttribute("aria-pressed", String(every));
-    button.title = every ? "Mostrar todos os painéis" : "Recolher todos os painéis";
-    // Sem painéis abertos não há o que a barra de ferramentas precise evitar.
-    document.querySelector(".ui").classList.toggle("bare", every);
+    button.title = label;
+    // O botão é um ícone, então o nome acessível vem do texto escondido dentro
+    // dele — e conteúdo ganha de `title`. Atualizar só o `title` deixaria o
+    // leitor de tela anunciando "recolher" num botão que agora mostra.
+    button.querySelector(".sr-only").textContent = label;
   }
 
   function wirePanels() {
     var saved = recall();
+    // Primeira visita num celular: os controles começam recolhidos. Abertos,
+    // eles ocupam ~230px de uma tela de 812px, e com a folha do rodapé sobram
+    // 150px de mapa — numa página cujo desenho inteiro parte de "o mapa é a
+    // página". Recolhidos, sobram 340px e a barra de título continua ali,
+    // dizendo onde eles estão. Quem já escolheu alguma coisa mantém a escolha,
+    // inclusive a de deixar tudo aberto.
+    if (saved === null) saved = narrow() ? ["controls"] : [];
     Object.keys(CARDS).forEach(function (name) {
       setCard(name, saved.indexOf(name) >= 0);
       var card = document.getElementById(CARDS[name]);
@@ -1490,8 +2155,15 @@
     document.getElementById("read-from").textContent = TIMELINE.years[state.from];
     document.getElementById("read-to").textContent = TIMELINE.years[state.to];
     var count = state.to - state.from + 1;
-    document.getElementById("read-count").textContent =
-      count + (count === 1 ? " edição" : " edições");
+    var label = count + (count === 1 ? " edição" : " edições");
+    document.getElementById("read-count").textContent = label;
+
+    // O mesmo recorte, na faixa da marca. Ele é o estado global da página: com
+    // todos os cartões recolhidos, é a única coisa que sobra dizendo o que a
+    // tela está mostrando.
+    document.getElementById("head-span").textContent =
+      TIMELINE.years[state.from] + "–" + TIMELINE.years[state.to];
+    document.getElementById("head-count").textContent = label;
 
     var fill = document.getElementById("range-fill");
     fill.style.left = (100 * state.from / last) + "%";
@@ -1514,40 +2186,16 @@
       repaint();
     });
 
-    var team = document.getElementById("team");
-    var none = document.createElement("option");
-    none.value = "";
-    none.textContent = "Nenhum — visão global";
-    team.appendChild(none);
     // Só as seleções que de fato jogaram: `TIMELINE.teams` inclui países-sede,
     // e no dado masculino todos jogaram, mas a conferência é barata.
     var played = {};
     TIMELINE.rows.forEach(function (row) { played[TIMELINE.teams[row[1]]] = 1; });
-    // O `value` é a chave em inglês (é ela que vai para o estado e para a URL);
-    // o rótulo e a ordem alfabética são os do português.
-    Object.keys(played).sort(byName)
-      .forEach(function (name) {
-        var option = document.createElement("option");
-        option.value = name;
-        option.textContent = pt(name);
-        team.appendChild(option);
-      });
-    team.addEventListener("change", function () { select(team.value); });
+    // A ordem é a do rótulo em português; a chave guardada é a inglesa. As duas
+    // caixas recebem a MESMA lista, da mesma variável, para nunca divergirem.
+    var roster = Object.keys(played).sort(byName);
 
-    // O seletor de comparação recebe a mesma lista. Ele é preenchido a partir do
-    // primeiro para as duas listas nunca divergirem.
-    var versus = document.getElementById("versus");
-    var blank = document.createElement("option");
-    blank.value = "";
-    blank.textContent = "Ninguém — sem comparação";
-    versus.appendChild(blank);
-    Array.prototype.slice.call(team.options, 1).forEach(function (option) {
-      var copy = document.createElement("option");
-      copy.value = option.value;
-      copy.textContent = option.textContent;
-      versus.appendChild(copy);
-    });
-    versus.addEventListener("change", function () { selectVersus(versus.value); });
+    teamCombo = makeCombo("team", roster, function (name) { select(name || ""); });
+    versusCombo = makeCombo("versus", roster, function (name) { selectVersus(name || ""); });
 
     document.getElementById("play").addEventListener("click", function () {
       if (playing()) stopPlay(); else startPlay();
@@ -1563,14 +2211,22 @@
      * inteiro a cada repintura, e ouvintes presos às linhas morreriam junto. */
     document.getElementById("panel").addEventListener("click", function (event) {
       var back = event.target.closest("[data-back]");
-      if (back) { closeMatches(); return; }
+      if (back) {
+        if (back.getAttribute("data-back") === "player") closePlayer();
+        else closeMatches();
+        return;
+      }
       var all = event.target.closest("[data-matches]");
       if (all) { openMatches(null); return; }
+      var who = event.target.closest("[data-player]");
+      if (who) { openPlayer(Number(who.getAttribute("data-player"))); return; }
       var row = event.target.closest("[data-opponent]");
       if (row) openMatches(row.getAttribute("data-opponent"));
     });
     document.getElementById("panel").addEventListener("keydown", function (event) {
       if (event.key !== "Enter" && event.key !== " ") return;
+      var who = event.target.closest("[data-player]");
+      if (who) { event.preventDefault(); openPlayer(Number(who.getAttribute("data-player"))); return; }
       var row = event.target.closest("[data-opponent]");
       if (row) { event.preventDefault(); openMatches(row.getAttribute("data-opponent")); }
     });
@@ -1583,6 +2239,11 @@
         document.getElementById("year-from").value = state.from;
         document.getElementById("year-to").value = state.to;
         document.getElementById("layer-venues").setAttribute("aria-pressed", String(state.venues));
+        // A caixa da seleção também segue a URL. Ela ficava de fora, e o botão
+        // voltar do navegador deixava "Brasil" escrito num mapa que já tinha
+        // voltado para a visão global — as perguntas prontas, que são links,
+        // tornaram isso um caminho comum em vez de um canto raro.
+        teamCombo.set(state.team);
         syncYears();
         syncMode();
         syncMetricOptions();
@@ -1614,15 +2275,45 @@
 
     wirePanels();
 
+    var system = window.matchMedia("(prefers-color-scheme: dark)");
+
     document.getElementById("theme").addEventListener("click", function () {
       var root = document.documentElement;
-      var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      var currentTheme = root.getAttribute("data-theme") || (dark ? "dark" : "light");
-      root.setAttribute("data-theme", currentTheme === "dark" ? "light" : "dark");
-      // As cores vêm de variáveis CSS lidas na hora de pintar, então trocar o
-      // tema exige repintar — o Leaflet não reavalia estilo sozinho.
-      repaint();
+      var currentTheme = root.getAttribute("data-theme") || (system.matches ? "dark" : "light");
+      applyTheme(currentTheme === "dark" ? "light" : "dark");
     });
+
+    // O sistema mudando de tema por conta própria (o modo noturno do Windows
+    // virando na hora marcada) tem o mesmo problema das transições presas, e
+    // não passa pelo botão. Se a pessoa já escolheu um tema, a escolha dela
+    // manda e não há o que fazer aqui.
+    var onSystem = function () {
+      if (!document.documentElement.getAttribute("data-theme")) suspendTransitions();
+    };
+    if (system.addEventListener) system.addEventListener("change", onSystem);
+    else if (system.addListener) system.addListener(onSystem);   // Safari < 14
+  }
+
+  /* Troca o tema sem deixar cor presa no caminho — ver a nota de
+   * `:root.theming` na folha de estilo. */
+  function suspendTransitions() {
+    var root = document.documentElement;
+    root.classList.add("theming");
+    // Dois quadros: o primeiro aplica os valores novos com as transições
+    // desligadas, o segundo devolve as transições com o valor certo já no
+    // lugar. Um quadro só devolveria cedo demais e a transição pegaria a
+    // mudança pela metade.
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () { root.classList.remove("theming"); });
+    });
+  }
+
+  function applyTheme(name) {
+    suspendTransitions();
+    document.documentElement.setAttribute("data-theme", name);
+    // As cores vêm de variáveis CSS lidas na hora de pintar, então trocar o
+    // tema exige repintar — o Leaflet não reavalia estilo sozinho.
+    repaint();
   }
 
   // -------------------------------------------------------------------- boot
@@ -1665,7 +2356,7 @@
 
     wire();
     document.getElementById("metric").value = state.metric;
-    document.getElementById("team").value = state.team || "";
+    teamCombo.set(state.team);
     document.getElementById("year-from").value = state.from;
     document.getElementById("year-to").value = state.to;
     document.getElementById("layer-venues").setAttribute("aria-pressed", String(state.venues));

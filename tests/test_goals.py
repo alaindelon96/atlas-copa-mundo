@@ -151,7 +151,12 @@ def test_nome_de_jogador_sem_o_sentinel_da_fonte(goals):
 def test_o_payload_preserva_tudo(payload, goals):
     assert len(payload["rows"]) == len(goals) == 3028
     assert payload["competition"] == "mens"
-    assert len(payload["players"]) == goals.player.nunique()
+    # Uma entrada por PESSOA, não por nome. Eram `player.nunique()` (1.562)
+    # enquanto o índice era o nome; são `player_id.nunique()` (1.618) desde que
+    # a identidade passou a ser o id — a diferença são os homônimos, que antes
+    # somavam gols de gente diferente na mesma linha.
+    assert len(payload["players"]) == goals.player_id.nunique()
+    assert goals.player_id.nunique() > goals.player.nunique()
 
     marcas = [row[5] for row in payload["rows"]]
     assert marcas.count(1) == int(goals.penalty.sum())
@@ -167,3 +172,82 @@ def test_o_minuto_de_acrescimo_sobrevive_ao_payload(payload):
     com_acrescimo = [row for row in payload["rows"] if row[4] > 0]
     assert len(com_acrescimo) > 100
     assert all(row[3] in (45, 90, 105, 120) for row in com_acrescimo)
+
+
+# --- identidade de jogador ------------------------------------------------
+
+
+def test_todo_gol_tem_player_id(goals):
+    """Sem id não há artilheiro: a soma cairia de volta no nome."""
+    assert goals.player_id.notna().all()
+    assert (goals.player_id.str.strip() != "").all()
+
+
+def test_um_id_tem_um_nome_so(goals):
+    """O id é a pessoa e o nome é o rótulo dela. Um id com dois nomes seria
+    duas pessoas coladas — o erro que a ponte existe para não cometer."""
+    split = goals.groupby("player_id").player.nunique()
+    assert split.max() == 1, f"id com mais de um nome: {sorted(split[split > 1].index)}"
+
+
+def test_os_dois_ronaldos_sao_pessoas_diferentes(goals):
+    """O caso que motivou tudo isto.
+
+    Por nome, o Ronaldo brasileiro (15 gols entre 1998 e 2006) somava com um
+    Ronaldo português de 2026 e virava um artilheiro de 18 — recorde que nunca
+    existiu, e que passava na frente do Klose, que tem o de verdade com 16.
+    """
+    ronaldos = goals[goals.player == "Ronaldo"].groupby("player_id")
+    assert len(ronaldos) == 2, "os dois Ronaldos voltaram a ser um só"
+    times = {sorted(set(sub.player_team))[0] for _, sub in ronaldos}
+    assert times == {"Brazil", "Portugal"}
+
+
+def test_quem_marcou_nas_duas_fontes_continua_uma_pessoa(goals):
+    """O outro lado da mesma moeda: Casemiro e Neymar marcaram antes e em 2026,
+    pelo Brasil nas duas vezes. Separá-los subestimaria os dois."""
+    for nome, esperado in (("Neymar", {"Brazil"}), ("Casemiro", {"Brazil"})):
+        sub = goals[goals.player == nome]
+        assert sub.player_id.nunique() == 1, f"{nome} foi partido em dois"
+        assert set(sub.player_team) == esperado
+        assert {"fjelstul", "wikipedia"} <= set(sub.source), f"{nome} não cruza as fontes"
+
+
+def test_homonimo_do_fjelstul_nao_vira_ponte(goals):
+    """Cinco nomes do Fjelstul têm dois `player_id` cada, mesma seleção,
+    décadas diferentes. Um nome de 2026 que casasse com um deles não teria como
+    saber com qual — e a regra é recusar a ponte, não escolher."""
+    for nome in ("Oscar", "Júnior", "Juanito", "József Tóth", "Andoni Goikoetxea"):
+        sub = goals[goals.player == nome]
+        if sub.empty:
+            continue
+        assert sub.player_id.nunique() >= 2, f"{nome} foi fundido num id só"
+
+
+def test_o_artilheiro_de_todos_os_tempos_e_klose(goals):
+    """A conta que a página mostra. Klose 16 é o recorde real da Copa; se este
+    teste apontar para outra pessoa, ou a identidade quebrou ou o dado mudou."""
+    marcados = goals[~goals.own_goal.astype(bool)]
+    top = marcados.groupby("player_id").size().sort_values(ascending=False)
+    campeao = top.index[0]
+    linha = marcados[marcados.player_id == campeao].iloc[0]
+    assert (linha.player, int(top.iloc[0])) == ("Miroslav Klose", 16)
+
+
+def test_o_json_carrega_a_selecao_de_cada_artilheiro(payload):
+    """`player_teams` existe porque a coluna `team` do gol é a **creditada** —
+    num gol contra, a adversária de quem chutou. Sem ela o front-end colocaria
+    o autor de um gol contra na seleção errada."""
+    assert len(payload["player_teams"]) == len(payload["players"])
+    assert all(index >= 0 for index in payload["player_teams"])
+
+
+def test_homonimos_no_json_sao_entradas_separadas(payload):
+    """Dois jogadores com o mesmo nome viram duas entradas com o mesmo rótulo —
+    é `player_teams` que os separa na tela."""
+    nomes = payload["players"]
+    repetidos = {nome for nome in nomes if nomes.count(nome) > 1}
+    assert "Ronaldo" in repetidos
+    posicoes = [i for i, nome in enumerate(nomes) if nome == "Ronaldo"]
+    times = {payload["player_teams"][i] for i in posicoes}
+    assert len(times) == len(posicoes), "os Ronaldos ficaram na mesma seleção"
