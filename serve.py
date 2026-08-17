@@ -16,8 +16,18 @@ nenhum erro que apontasse para o servidor.
 Em HTTP/1.1 o `Content-Length` delimita a resposta e a conexão sobrevive à
 próxima requisição, que é o que os oito `fetch()` do `map.js` esperam.
 
-Isto é ferramenta de desenvolvimento. Em produção o site é estático no GitHub
-Pages e não passa por aqui.
+E por uma segunda linha, que custou uma tarde: `Cache-Control: no-store`.
+
+O `SimpleHTTPRequestHandler` manda `Last-Modified` e mais nada. Sem
+`Cache-Control`, o navegador cai na heurística do RFC 9111 e reaproveita o
+arquivo por cerca de 10% do tempo desde a última modificação, **sem revalidar**
+— num `style.css` salvo há três horas, quase vinte minutos servindo a versão
+velha. O efeito é o pior possível numa ferramenta de desenvolvimento: você
+edita, recarrega, e vê exatamente o que via antes. O bug parece não ter sido
+corrigido; o que não foi atualizado é o arquivo.
+
+`no-store` só vale aqui. Em produção o site é estático no GitHub Pages, que
+manda o cabeçalho dele e não passa por este arquivo.
 """
 
 from __future__ import annotations
@@ -35,6 +45,13 @@ WEB = ROOT / "web"
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
+
+    def end_headers(self) -> None:
+        # Recarregar tem que mostrar o arquivo que está no disco agora. Ver a
+        # nota no topo: sem isto o navegador serve a versão anterior por vários
+        # minutos e a edição parece não ter surtido efeito.
+        self.send_header("Cache-Control", "no-store, max-age=0")
+        super().end_headers()
 
     def log_message(self, fmt: str, *args) -> None:  # noqa: A002
         # O padrão imprime IP e data em toda requisição, e uma página que baixa
