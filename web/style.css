@@ -299,6 +299,49 @@ code { font-family:var(--mono); font-size:.86em; }
 }
 .brand-name b { font-weight:800; color:var(--gold); margin-left:.22em; }
 
+/* ---- as cinco portas, na faixa da marca ----
+ *
+ * As telas existiam e não se anunciavam: a Copa, a seleção, o artilheiro e o
+ * confronto só se alcançavam por uma tarja da abertura ou por um seletor dentro
+ * de um cartão — e quem fechasse a abertura perdia o caminho de volta. A barra
+ * é o índice permanente, no lugar onde ge.globo e Lance! põem as editorias.
+ *
+ * O item aberto é SUBLINHADO em verde vivo, não preenchido. Preencher cinco
+ * pastilhas numa barra preta que já tem logotipo verde-e-amarelo e uma régua de
+ * 3px embaixo seria a terceira área colorida em 52px de altura. O sublinhado é
+ * a marca de editoria de qualquer capa de jornal esportivo, e cabe na regra da
+ * página: verde e amarelo entram em réguas e estados ativos, nunca em área. */
+.masthead-nav {
+  display:flex; align-items:center; gap:.05rem; min-width:0;
+  padding-left:.7rem; border-left:1px solid var(--chrome-line);
+}
+/* Sem transição na COR, e isso é regra e não descuido. O item aberto se
+   distingue por tinta cheia, e uma tinta que chega por transição só chega se o
+   navegador estiver desenhando quadros: numa aba em segundo plano a transição
+   não avança, o `transitionend` não vem e a cor fica presa no valor inicial —
+   "você está aqui" deixa de aparecer. É o mesmo motivo que tirou a animação do
+   enquadramento do mapa, e o mesmo bug que a Etapa 4e documentou na troca de
+   tema. O fundo pode ter transição: ele é afago de passagem do mouse, e se
+   falhar não some informação nenhuma. */
+.masthead-nav a {
+  display:block; padding:.3rem .5rem 0; border-radius:5px 5px 0 0;
+  font-size:.7rem; font-weight:700; font-stretch:88%; letter-spacing:.045em;
+  text-transform:uppercase; white-space:nowrap; text-decoration:none;
+  color:var(--chrome-ink-2); transition:background .15s;
+}
+/* A régua embaixo de TODO item, transparente onde não está aberto: se ela só
+   existisse no ativo, cada troca de seção mexeria 2px na altura da barra. */
+.masthead-nav a::after {
+  content:""; display:block; height:2px; margin-top:.26rem;
+  border-radius:1px 1px 0 0; background:transparent;
+}
+.masthead-nav a:hover { color:var(--chrome-ink); background:rgba(255,255,255,.07); }
+.masthead-nav a:focus-visible {
+  outline:2px solid var(--accent-vivid); outline-offset:-2px; color:var(--chrome-ink);
+}
+.masthead-nav a[aria-current="page"] { color:var(--chrome-ink); }
+.masthead-nav a[aria-current="page"]::after { background:var(--accent-vivid); }
+
 /* O recorte no ar. Encostado na marca, separado por uma régua vertical — é
    informação de estado, não parte do nome. */
 .masthead-span {
@@ -315,7 +358,10 @@ code { font-family:var(--mono); font-size:.86em; }
   text-transform:uppercase;
 }
 
-.masthead-actions { margin-left:auto; display:flex; gap:.35rem; flex:none; }
+/* O recorte e os botões formam o grupo da direita; a barra de seções fica
+   encostada na marca, à esquerda. */
+.masthead-span { margin-left:auto; }
+.masthead-actions { display:flex; gap:.35rem; flex:none; }
 .icon-btn {
   width:2.1rem; height:2.1rem; display:grid; place-items:center; padding:0;
   color:var(--chrome-ink-2); cursor:pointer; background:transparent;
@@ -451,6 +497,15 @@ select option:disabled { color:var(--ink-3); }
   color:var(--ink-3); background:transparent; border:0; border-radius:var(--r-pill);
   cursor:pointer;
 }
+/* SEM ESTA LINHA O `hidden` DO BOTÃO NÃO FAZ NADA.
+   `display:none` de `[hidden]` vem da folha do navegador, e `display:grid`
+   acima é do autor — autor sempre ganha. O `.combo.set(null)` marcava o
+   atributo direitinho e o × continuava na tela: um campo escrito "Todas —
+   visão global", sem seleção nenhuma, oferecendo limpar o quê. Pior, ele caía
+   em cima da seta ▼ (que some por `:has(.combo-clear:not([hidden]))` e por
+   isso aparecia certo), e as duas marcas se sobrepunham no mesmo canto.
+   `.combo-pop[hidden]`, logo abaixo, existe pelo mesmo motivo. */
+.combo-clear[hidden] { display:none; }
 .combo-clear:hover { color:var(--ink); background:var(--surface-3); }
 
 .combo-pop {
@@ -723,6 +778,14 @@ tbody tr.drill:focus-visible td:first-child { box-shadow:inset 2px 0 0 var(--acc
 .placar.res-W::before { background:var(--win); }
 .placar.res-L::before { background:var(--loss); }
 
+/* Sem seleção escolhida não há vitória nem derrota a declarar — é o placar da
+   tela de uma edição, onde a partida não é de ninguém. A régua SOME, e não fica
+   cinza: cinza aqui já significa empate, e um jogo de grupo de 1970 passaria a
+   anunciar um empate que não houve. Sem ela, o recuo da esquerda volta a ser o
+   mesmo da direita. */
+.placar.neutro::before { display:none; }
+.placar.neutro { padding-left:.55rem; }
+
 /* A linha de cima: fase, edição e cidade. A fase é uma tarja porque ela é a
    informação que separa uma final de um jogo de grupo, e num bloco de texto
    cinza as duas pesam igual. */
@@ -741,7 +804,18 @@ tbody tr.drill:focus-visible td:first-child { box-shadow:inset 2px 0 0 var(--acc
 /* Final e quadrangular decisivo pesam mais que uma fase de grupos, e a tarja
    diz isso: a decisão é dourada. */
 .stage.final { background:var(--gold); color:var(--gold-ink); }
+/* O ano é a porta para a edição: de qualquer placar se chega na Copa daquele
+   ano. Ele não ganha sublinhado nem cor de link em repouso porque está dentro
+   de uma linha de rótulos cinza, e um azul ali roubaria a leitura do placar —
+   o tracejado embaixo diz que ele é clicável sem competir com o número. */
 .placar-meta .year { font-weight:700; font-variant-numeric:tabular-nums; color:var(--ink-2); }
+a.year {
+  text-decoration:underline dotted var(--rule-strong); text-underline-offset:.15em;
+  border-radius:3px; transition:color .15s, text-decoration-color .15s;
+}
+a.year:hover, a.year:focus-visible {
+  color:var(--accent-deep); text-decoration-color:var(--accent);
+}
 .placar-meta .res-letter {
   margin-left:auto; flex:none; width:1.1rem; height:1.1rem; border-radius:4px;
   display:grid; place-items:center; font-size:.62rem; font-weight:800;
@@ -833,6 +907,106 @@ tbody tr.drill:focus-visible td:first-child { box-shadow:inset 2px 0 0 var(--acc
 .scorer-row span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
   white-space:nowrap; }
 .scorer-row b { font-variant-numeric:tabular-nums; font-weight:800; font-stretch:84%; }
+
+/* ---- Copa a Copa: a edição como destino ----
+ *
+ * O slider recortava o mapa por ano e nunca ABRIA uma Copa. Estas duas telas
+ * são a diferença entre filtrar e chegar: a lista das edições e a edição
+ * inteira — sede, campeão, vice, artilheiro, totais e as partidas fase a fase.
+ *
+ * A lista é uma grade de três colunas com larguras fixas nas pontas: o ano é
+ * sempre quatro dígitos e a sede é bandeira com sigla, então só o campeão
+ * precisa esticar. Em `1fr` para os três, "Estados Unidos" empurraria o ano de
+ * uma linha e deixaria as 23 desalinhadas — e uma lista de anos que não alinha
+ * é uma lista que não se percorre com o olho. */
+
+.copas { display:flex; flex-direction:column; margin-top:.35rem; }
+.copa-head, .copa {
+  display:grid; grid-template-columns:2.9rem 4.6rem 1fr; align-items:center; gap:.5rem;
+}
+.copa-head {
+  font-size:.57rem; letter-spacing:.08em; text-transform:uppercase;
+  font-weight:700; font-stretch:86%; color:var(--ink-3);
+  padding:.2rem .35rem; border-bottom:1px solid var(--rule-strong);
+}
+.copa {
+  padding:.4rem .35rem; border-bottom:1px solid var(--rule); border-radius:5px;
+  color:inherit; text-decoration:none; font-size:.82rem;
+  transition:background .15s, color .15s;
+}
+.copa:last-child { border-bottom:0; }
+.copa:hover, .copa:focus-visible {
+  background:var(--accent-soft); outline:none; box-shadow:inset 2px 0 0 var(--accent);
+}
+.copa > b {
+  font-variant-numeric:tabular-nums; font-weight:800; font-stretch:84%; font-size:.9rem;
+}
+.copa .copa-sede { display:flex; align-items:center; }
+/* Sede dividida: as bandeiras encostam em vez de guardarem a folga que a sigla
+   usaria — 2002 e 2026 são duas e três bandeiras na largura de uma sigla. */
+.copa .copa-sede .flag { margin-right:.1rem; }
+.copa .copa-sede .sigla-tag { margin-left:.25rem; }
+.copa .copa-champ { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+/* Ir de uma Copa à vizinha sem passar pela lista — o gesto que o nome da tela
+   promete. Nas pontas o link vira texto apagado em vez de sumir: sumindo, a
+   barra mudaria de forma entre 1930 e 1934. */
+.copa-nav {
+  display:flex; justify-content:space-between; align-items:center; gap:.5rem;
+  font-size:.74rem; font-weight:700; font-stretch:90%;
+}
+.copa-nav a {
+  color:var(--accent-deep); text-decoration:none;
+  background:var(--accent-soft); border-radius:var(--r-pill); padding:.28rem .7rem;
+}
+.copa-nav a:hover { filter:brightness(1.05); }
+.copa-nav .off { color:var(--ink-3); padding:.28rem 0; font-weight:600; }
+
+/* As sedes da edição aberta, logo abaixo do título — é o que o mapa está
+   mostrando naquele instante. Elas embrulham porque 2026 são três países. */
+.copa-sedes { display:flex; flex-wrap:wrap; gap:.3rem; }
+.copa-host {
+  display:flex; align-items:center; font-size:.8rem; font-weight:700;
+  background:var(--surface-2); border:1px solid var(--rule);
+  border-radius:var(--r-pill); padding:.2rem .55rem .2rem .35rem;
+}
+.copa-host .flag { margin-right:.3rem; }
+/* Quantas partidas cada sede recebeu, quando são mais de uma: em 2026 os
+   Estados Unidos receberam 78 das 104, e sem o número os três parecem iguais. */
+.copa-host i {
+  font-style:normal; font-variant-numeric:tabular-nums; font-weight:800;
+  font-size:.72em; color:var(--ink-3); margin-left:.35rem;
+}
+
+/* O campeão leva a tarja dourada — a mesma do rótulo de final no placar, e pelo
+   mesmo motivo: numa pilha de linhas cinza, o título pesa igual ao resto. */
+.fact.campeao { box-shadow:inset 3px 0 0 var(--gold); padding-left:.5rem; }
+/* A disputa de pênaltis da final, embaixo do placar do tempo normal. Em bloco e
+   não coladinha ao lado: em linha ela empurraria o nome do campeão para as
+   reticências justamente em 1994, 2006 e 2022 — as três em que ela existe. */
+.fact > b i {
+  display:block; font-style:normal; font-size:.72em; font-weight:700;
+  font-stretch:88%; color:var(--ink-3); white-space:nowrap; text-align:right;
+}
+
+/* O "voltar" desta tela é um link, e não um botão: `#copa=1` é um endereço de
+   verdade, então voltar para a lista entra no histórico e pode ser copiado. O
+   resto da aparência é a do `.back` que já existia. */
+a.back { text-decoration:none; display:inline-block; }
+
+/* ---- índice de confrontos ----
+   As duas seleções na mesma célula, em sigla: por extenso "República Tcheca ×
+   Estados Unidos" não cabe numa coluna que ainda precisa de J e V–E–D ao lado.
+   A bandeira encosta na sigla porque o par são quatro marcas numa linha só. */
+td.duel { white-space:nowrap; font-weight:700; font-stretch:84%; }
+td.duel .flag { margin-right:.22rem; }
+td.duel i {
+  font-style:normal; font-size:.82em; font-weight:600; color:var(--ink-3);
+  margin:0 .3rem;
+}
+/* O número de títulos na lista de seleções: as nove campeãs em tinta cheia, o
+   travessão das outras 74 em cinza — a coluna existe para mostrar as nove. */
+table td b { font-weight:800; font-stretch:84%; }
 
 /* ---- comparação de duas seleções ---- */
 
@@ -989,6 +1163,33 @@ table.compare thead th .flag { margin-right:.25rem; }
  * controles crescia até 339px e engolia o mapa inteiro — sobravam 0 pixels
  * entre ele e a folha, e os dois se sobrepunham. O teto de 32vh é o que garante
  * que sempre reste mapa; o que não couber rola dentro do cartão. */
+/* A barra de seções não cabe na mesma linha da marca, do recorte e dos dois
+   botões — são cinco palavras contra a sobra que resta depois deles. Ela desce
+   para uma segunda faixa, de largura inteira, e a faixa da marca cresce junto:
+   `--masthead` é variável exatamente por isso, porque a camada de interface se
+   posiciona a partir dela e um número solto aqui deixaria os cartões por baixo
+   do cabeçalho.
+
+   O CORTE É 54rem PORQUE A CONTA É 821px: marca 163 + seções 377 + recorte 148
+   + botões 73, mais 24 de recuo e 36 de folgas. Ele começou em 44rem, que é
+   menor do que a barra precisa — e entre 704 e 821px a linha ficava apertada
+   sem quebrar: a marca saía com reticências, o recorte de anos também, e
+   "Confrontos" era cortado no meio pela borda da tela. 864px deixa a folga que
+   o arredondamento de fonte pede. */
+@media (max-width:54rem) {
+  :root { --masthead:4.6rem; }
+
+  .masthead { flex-wrap:wrap; align-content:center; row-gap:.1rem; }
+  .masthead-nav {
+    order:9; width:100%; padding-left:0; border-left:0;
+    /* Abaixo de ~340px as cinco ainda estouram. Aí elas rolam na horizontal, em
+       vez de quebrarem em duas linhas ou sumirem cortadas na borda. */
+    overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  .masthead-nav::-webkit-scrollbar { display:none; }
+  .masthead-nav a { font-size:.66rem; padding:.25rem .45rem 0; }
+}
+
 @media (max-width:30rem) {
   :root { --gap:.55rem; --sheet:46vh; }
 

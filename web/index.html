@@ -63,6 +63,24 @@
     <span class="brand-name">Atlas <b>da Copa</b></span>
   </h1>
 
+  <!-- As cinco portas da página, na barra da marca.
+       Elas existem porque as telas existiam e não se anunciavam: a Copa, a
+       seleção, o artilheiro e o confronto só se alcançavam por uma tarja na
+       abertura ou por um seletor dentro de um cartão — quem fechasse a abertura
+       perdia o caminho. Aqui elas ficam sempre visíveis, e cada uma é um
+       `<a href="#…">` de verdade, como as tarjas: a URL já descreve o estado
+       inteiro, então navegar não custa código novo nenhum.
+
+       "Mapa" é o estado sem nada escolhido — a visão global. As outras quatro
+       são índices: 23 Copas, 83 seleções, 1.624 artilheiros, 682 confrontos. -->
+  <nav class="masthead-nav" aria-label="Seções do atlas">
+    <a href="#" data-nav="map">Mapa</a>
+    <a href="#copa=1" data-nav="editions">Copas</a>
+    <a href="#selecoes=1" data-nav="teams">Seleções</a>
+    <a href="#art=1" data-nav="scorers">Artilheiros</a>
+    <a href="#confrontos=1" data-nav="duels">Confrontos</a>
+  </nav>
+
   <!-- O recorte que está no ar, na faixa da marca — o mesmo texto que o painel
        repete lá embaixo. Ele fica aqui porque é o estado global da página: com
        os cartões recolhidos, some tudo menos isto. -->
@@ -211,7 +229,13 @@
       <button class="card-toggle" type="button" data-card="side"
               aria-expanded="true" aria-controls="panel" title="Recolher">▾</button>
     </div>
-    <div class="card-body" id="panel" aria-live="polite"></div>
+    <!-- As duas classes são necessárias: `card-body` é o cartão (recolher,
+         rolagem, espaçamento) e `panel` é o conteúdo (a tarja verde de
+         editoria antes de cada `.sub`, o tamanho do `h2`, a bandeira maior no
+         título). A folha de estilo sempre teve as regras `.panel …`, e este
+         elemento nunca teve a classe — os rótulos de seção saíam como texto
+         corrido desde a Etapa 4e. -->
+    <div class="card-body panel" id="panel" aria-live="polite"></div>
   </aside>
 
   <!-- O aviso da autoconferência é um cartão amarelo: em futebol amarelo é

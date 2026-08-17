@@ -18,7 +18,7 @@ inconsistent records, relational modelling, validation, and publication.
 
 | | |
 |---|---|
-| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, an interactive choropleth map with match detail, two-team comparison, a venue layer, an all-time scorer table with a page per player, searchable team pickers, ready-made questions and shareable URLs — deployed to GitHub Pages by a workflow |
+| **Working** | Extraction with cryptographic provenance, a Wikipedia scraper for 2026, a reconciled match table, a validated 6-table model, an interactive choropleth map with match detail, two-team comparison, a venue layer, an all-time scorer table with a page per player, a screen per World Cup, searchable team pickers, ready-made questions and shareable URLs — deployed to GitHub Pages by a workflow |
 | **Data on hand** | `data/processed/` — 1,068 men's matches, 3,028 goals with scorer and minute, 23 tournaments, 83 teams, 208 geocoded venues, 1930–2026. Schema: [`docs/schema.md`](docs/schema.md) |
 | **Not built yet** | Scheduled re-runs of the pipeline in CI — deferred to v2 |
 | **Known gap** | Attendance exists only for 2026 (Fjelstul carries none) — and is deliberately not a feature |
@@ -667,6 +667,166 @@ def test_o_artilheiro_de_todos_os_tempos_e_klose(goals):
     pessoa, ou a identidade quebrou ou o dado mudou."""
 ```
 
+### Stage 4h — Copa a Copa: the edition becomes a destination ✅
+
+The year slider could always cut the map to 1970. It could never *open* the 1970 World
+Cup. That is the difference between a filter and a place, and until this stage the
+tournament — the unit the sport actually organises itself around, the thing people mean by
+"a Copa de 70" — existed on this page only as a range of a slider.
+
+Every edition now has a screen, and every edition is a link:
+
+| | |
+|---|---|
+| `#copa=1` | all 23 editions, host and champion, honouring the year range |
+| `#copa=1970` | one edition: host, champion, runner-up, top scorers, totals, and every match grouped by stage |
+
+**Nothing new came from the ETL, and that was checked before it was assumed.** All six
+facts derive from payloads already in the browser: the host from `timeline.hosted`, the
+champion from `timeline.titles`, the runner-up from the other side of the final, the
+scorers from `goals.json` by `player_id`, the totals from the scorelines in `matches.json`,
+the stadiums from the venue index each match already carries.
+
+**Except that "the other side of the final" is not always available.** 1950 has no final —
+it was decided by a four-team round robin, and the match everyone remembers as the final,
+Uruguay 2×1 Brazil, is recorded as `final round` because that is what it was. So the
+runner-up there comes from the group table, on 1950's own two-points-per-win rule, and the
+screen shows the table rather than asserting a placing out of nowhere. The ordering is
+counter-intuitive enough to be worth a test: **Brazil finished second with a +10 goal
+difference against Uruguay's +2.** Sorting that table by goal difference — or by goals
+scored — hands the 1950 World Cup to the wrong country.
+
+**A match had to lose its point of view.** `.placar` was built for a chosen team: home and
+away always in match order, but the coloured rail and the `V`/`E`/`D` letter belong to
+whoever you picked. On an edition screen nobody is picked, and a grey rail there would read
+as *draw* on 24 group matches that were nothing of the sort. So the match object was split
+— `matchAt()` returns the match as it happened, and `matchesFor()` layers a team's
+perspective on top. Without a perspective the rail and the letter are simply absent.
+
+**The map does the one thing only it can do**: the host outlined in the pin colour, and
+that edition's stadiums pinned — five in Mexico for 1970, three in Montevideo for 1930,
+sixteen across three countries for 2026. The frame is computed from the floating cards' own
+rectangles, not from hardcoded margins, so Montevideo does not land underneath the side
+panel. The pins are *implied* by an open edition rather than stored in the URL, so a
+`#copa=1970` someone pastes to you opens exactly the screen they saw; the `Sedes` button
+shows pressed and disabled, with the reason in its tooltip.
+
+> **The fly-to is not animated, and that is a bug fix.** Leaflet ends its zoom animation on
+> the CSS `transitionend`. In a tab that is not compositing frames the event never arrives,
+> the closing `_resetView` never runs, and the map simply stays where it was — the edition
+> opens with its pins outside the frame and nothing in the console. That is exactly how it
+> failed while this stage was being checked. A hard cut always lands.
+
+**Two bugs surfaced, one of them old.** The landing tag *A Copa de 1970* pointed at
+`#y=1970-1970` — it narrowed the slider and opened nothing, because there was nothing to
+open; it now points at the edition. And **`#panel` never had the class `panel`**, so
+`.panel .sub`, `.panel h2` and two more rules had matched nothing since stage 4e: the
+small-caps section kickers with the green editoria tick — described in that stage as the
+ge.globo/Lance! signature — had never once rendered. They render now, on every screen.
+
+Nine tests pin what the screen derives, including the one that keeps 1950 honest:
+
+```python
+def test_o_vice_de_1950_e_o_brasil_pela_tabela_do_quadrangular(matches, champions)
+```
+
+### Stage 4i — Five doors in the masthead ✅
+
+Stage 4h built the edition screen and then hid it: the way in was one chip among
+eight on the landing screen, and closing that panel closed the only route. The same
+was true of everything else — a team was reachable only through the search box or by
+clicking the map, and a head-to-head only by typing two names into two fields.
+
+The masthead now carries the index:
+
+```
+ATLAS DA COPA │ Mapa · Copas · Seleções · Artilheiros · Confrontos │ 1930–2026 ◐
+```
+
+Each is a real `<a href="#…">`, so navigation costs no new code path — the URL already
+described the whole state. **Mapa** is the state with nothing chosen; the other four are
+indexes of the four things the data contains: 23 editions, 83 teams, 1,624 scorers, 682
+fixtures. Two of them are new screens:
+
+- **`#selecoes=1`** — all 83 teams, **alphabetical**, with Copas / matches / titles. A
+  *directory*, deliberately not a ranking: the page already ranks teams by any metric,
+  and what was missing was the list where you find a team by name without knowing its
+  position first.
+- **`#confrontos=1`** — every fixture by how often it has been played, each row opening
+  the side-by-side comparison that already existed. **Argentina × Germany leads with
+  eight**, three of them finals. The headline the screen leads with is the opposite fact:
+  **457 of the 682 fixtures have happened exactly once**, which is what makes eight
+  remarkable.
+
+> Building the fixture index meant handling the one match where both sides carry the same
+> label — **Germany × Germany, 1974**. Every match appears twice in `timeline.json`, once
+> per side, so the index counts each pair from the lower-index side only; the same test
+> drops the 1974 case, because a team is not a fixture against itself. That is why the
+> index covers 1,067 matches and not 1,068.
+
+**A third instance of the same bug turned up here**, and it is now a rule rather than a
+fix. The active nav item is distinguished by full-strength ink, and `color` was declared
+with a transition. In a tab that is not painting frames the transition never advances, so
+the computed colour stays at its starting value and *"you are here" simply never appears* —
+the same failure as the Leaflet fly-to in 4h and the stuck theme colours in 4e. Colour that
+carries information is now set without a transition; the hover background keeps one,
+because losing it loses nothing.
+
+**Two layout bugs, and only one of them was new.**
+
+The masthead wraps to two rows on narrow windows, and the breakpoint was first set at
+`44rem` — smaller than the bar actually needs. The row measures **821px** (mark 163 +
+sections 377 + range readout 148 + buttons 73, plus 24 of padding and 36 of gaps), so
+between 704px and 821px it crowded instead of wrapping: the wordmark ellipsised, the year
+readout ellipsised, and *Confrontos* was sliced by the window edge. The breakpoint is now
+`54rem`.
+
+The other one predates this stage and came from the combobox in 4f. **The dropdown copied
+the input's width verbatim.** Below `72rem` the controls card flows its fields in a row
+(`flex:1 1 8rem`), so on a 750px window each field is ~145px — and the list inherited that,
+with `white-space:nowrap` rows inside. *Bósnia e Herzegovina* overran by 60px and the list
+grew a **horizontal scrollbar**: reading a country's name meant dragging the list sideways.
+The field width is now a floor, not a measurement — the list grows to its content, stops at
+the viewport, and shifts left rather than spilling off the right edge. On a full-width
+desktop nothing changes, which is why it survived three stages unnoticed.
+
+**The worst one was that the list could not be scrolled.** It closes on `scroll` — correct
+in principle, because a `position:fixed` list does not follow whatever moved underneath it.
+But the listener sits on `window` in the **capture** phase, so it also caught the list
+scrolling *itself*, which is the one case where closing is wrong. Eighty-three countries in
+254px is 2,650px of content: reaching anything past Croácia *requires* scrolling, and the
+list shut on the first turn of the wheel. Dragging its scrollbar failed for a second
+reason — `mousedown` there blurred the input, and the blur handler closed the list out from
+under the pointer. The dismiss now ignores scrolls whose target is the list, and `mousedown`
+anywhere inside it keeps focus on the field. A search box that only worked if you already
+knew how to spell the country was, for three stages, the only way in.
+
+**And a third, in the same component: `hidden` did nothing to the clear button.**
+`.combo-clear` declares `display:grid`, and an author declaration beats the browser's
+`[hidden] { display:none }` — so the `×` was painted permanently. The JavaScript was
+correct throughout: `syncClear` set the attribute exactly when it should, which is why
+the `▼` arrow — hidden via `:has(.combo-clear:not([hidden]))`, an *attribute* test —
+behaved perfectly. The result was both marks stacked in the same corner, and a field
+reading *Todas — visão global* offering to clear a selection that did not exist. One
+line fixes it, and `.combo-pop[hidden] { display:none }` three lines below is the same
+guard, written for the list and forgotten for the button:
+
+```css
+.combo-clear[hidden] { display:none; }
+```
+
+**And the reason all of this took three rounds to find: `serve.py` sent no
+`Cache-Control` at all.** `SimpleHTTPRequestHandler` sends `Last-Modified` and nothing
+else, so browsers fall back to the RFC 9111 heuristic and reuse the file for roughly 10%
+of its age *without revalidating* — on a stylesheet saved three hours ago, that is twenty
+minutes of serving the previous version. On a development server the effect is the worst
+one available: you edit, you reload, and you see exactly what you saw before. The fix
+reports as "the bug is still there" when what is stale is the file. `serve.py` now sends
+`no-store`, which is what a server whose only job is showing you your own edits should
+have done from the start.
+
+Three more tests, 115 in total.
+
 ### Stage 5 — Publish ✅
 
 The site is static, so there is no server to break and hosting costs nothing:
@@ -675,7 +835,7 @@ The site is static, so there is no server to break and hosting costs nothing:
 
 Deployment is [`.github/workflows/pages.yml`](.github/workflows/pages.yml) — a push to `main`
 runs `pytest`, and **only if the suite passes** does it upload `web/` as the Pages artifact.
-That ordering is the point: the 103 tests exist to stop a wrong number reaching a reader, so
+That ordering is the point: the 115 tests exist to stop a wrong number reaching a reader, so
 they gate the deploy rather than merely reporting after it.
 
 The workflow publishes `web/` **as it stands in the repository** — it does not re-run the
@@ -691,16 +851,16 @@ for precisely that hook.
 pytest
 ```
 
-103 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+115 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
 two sentinel nulls, the 3,028 goals reconciling per match against the scorelines, the venue
-lists staying in the same order, shootouts never becoming draws, and a hand-checked sample of
-coordinates (a valid schema cannot tell Wembley in London from Wembley in the Atlantic). If
-someone edits the succession map without realising the consequence, a test fails with the
-reason attached.
+lists staying in the same order, shootouts never becoming draws, every edition's champion
+agreeing with the winner of its final, and a hand-checked sample of coordinates (a valid
+schema cannot tell Wembley in London from Wembley in the Atlantic). If someone edits the
+succession map without realising the consequence, a test fails with the reason attached.
 
-One of the 103 reads `data/raw/`, which is not in the repository — the champions come from
+One of the 115 reads `data/raw/`, which is not in the repository — the champions come from
 the source's own standings table rather than from `stage == "final"`, so that check has
 nowhere else to look. It skips in a clone that has not run `python -m etl.extract`, and the
 deploy workflow runs the extraction so that it never skips there.
@@ -868,6 +1028,11 @@ more controls without changing that shape.
 Every one of those is in the URL hash, so any view is a link. Clicking a fixture opens the
 matches behind the number, scorers and minutes included.
 
+The year range is a *filter*; an edition is a **place**. `#copa=1970` opens the 1970 World
+Cup itself — host, champion, runner-up, top scorers, totals and every match grouped by
+stage, with the map flown to the host and that year's stadiums pinned. See
+[stage 4h](#stage-4h--copa-a-copa-the-edition-becomes-a-destination-).
+
 Selecting a country **recolours the map by head-to-head**. *Brazil + Goals* shades every
 country by how many goals Brazil scored against it — Sweden brightest at 21 in 7 matches,
 and Mexico conceding 13 across 5 matches without ever scoring.
@@ -906,6 +1071,8 @@ the reasoning.
 | 4 · Build the Leaflet map | ✅ Done |
 | 4b · URL state, match detail, comparison, venue layer | ✅ Done |
 | 4c · Top scorers, 1930–2026 | ✅ Done |
+| 4h · Copa a Copa — the edition as a destination | ✅ Done |
+| 4i · Masthead index — teams and fixtures get screens | ✅ Done |
 | 5 · Publish to GitHub Pages | ✅ Done |
 | v2 · Re-run the pipeline on a schedule | ⬜ Deferred |
 
