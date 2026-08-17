@@ -95,6 +95,34 @@ def iter_matches_with_stage(soup: BeautifulSoup) -> Iterator[tuple[Tag, str | No
             yield element, stage
 
 
+def player_pages(cell: Tag) -> dict[str, str]:
+    """Nome exibido -> título do artigo, para os links de uma coluna de gols.
+
+    **A caixa de partida abrevia o nome, mas o link não.** O que a coluna mostra
+    é o nome curto ("Mbappé", "Quiñones"), e é só isso que sobra depois de ler o
+    texto; o `title` da âncora traz o nome inteiro que o artigo tem:
+
+        <a href="/wiki/Kylian_Mbappé"  title="Kylian Mbappé">Mbappé</a>
+        <a href="/wiki/Julián_Quiñones" title="Julián Quiñones">Quiñones</a>
+
+    Vale a pena insistir no link em vez de tentar completar o sobrenome depois,
+    porque o artigo não é só um nome mais longo — **é a identidade que a fonte
+    declara**. Quem decide se o "Ronaldo" de 2026 é o brasileiro ou o português
+    é a Wikipédia, no destino do link, e não uma regra nossa de comparar strings.
+
+    Os 308 gols de 2026 têm link, todos os 190 nomes distintos — mas um nome sem
+    âncora não é erro (a Wikipédia deixa sem link quem não tem artigo), e nesse
+    caso `parse_goals` fica com o nome curto mesmo.
+    """
+    pages: dict[str, str] = {}
+    for anchor in cell.select("a[title]"):
+        title = " ".join(str(anchor.get("title", "")).split())
+        shown = " ".join(anchor.get_text(" ", strip=True).split())
+        if shown and title:
+            pages.setdefault(shown, title)
+    return pages
+
+
 def parse_goals(box: Tag) -> list[dict[str, Any]]:
     """Os gols de uma partida, a partir das duas colunas de artilheiros.
 
@@ -125,6 +153,9 @@ def parse_goals(box: Tag) -> list[dict[str, Any]]:
     (e o placar) contam — por isso `team_side` é o lado da coluna, e o nome do
     jogador é de quem marcou contra. Sem essa distinção a soma dos gols não
     fecharia com o placar.
+
+    O `player_page` que sai junto é o artigo apontado pelo link daquele nome (ver
+    `player_pages`): o nome curto é o que a coluna mostra, o artigo é quem ele é.
     """
     goals: list[dict[str, Any]] = []
 
@@ -133,6 +164,7 @@ def parse_goals(box: Tag) -> list[dict[str, Any]]:
         if cell is None:
             continue
 
+        pages = player_pages(cell)
         items = cell.select("li")
         lines = items if items else [cell]
 
@@ -154,6 +186,7 @@ def parse_goals(box: Tag) -> list[dict[str, Any]]:
                 goals.append({
                     "team_side": side,
                     "player_name": player,
+                    "player_page": pages.get(player, ""),
                     "minute_regulation": int(match.group(1)),
                     "minute_stoppage": int(match.group(2)) if match.group(2) else None,
                     "penalty": int(marker == "pen."),
@@ -271,6 +304,11 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
 
     O `team_side` vira nome de seleção aqui, onde a partida ainda está à mão —
     depois disso a coluna não teria como ser resolvida sem um join de volta.
+
+    As duas colunas de nome saem lado a lado de propósito: `player_name` é o que
+    a caixa de partida exibiu e `player_page`, o artigo para onde ela apontou.
+    Guardar as duas mantém este arquivo fiel à página — quem escolhe rótulo e
+    identidade é o `etl.model`, e essa escolha fica revisável sem re-raspar nada.
     """
     rows: list[dict[str, Any]] = []
     for match in matches.itertuples():
@@ -286,6 +324,7 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
                                   else match.home_team_name),
                 "home_away": goal["team_side"],
                 "player_name": goal["player_name"],
+                "player_page": goal["player_page"],
                 "minute_regulation": goal["minute_regulation"],
                 "minute_stoppage": goal["minute_stoppage"],
                 "penalty": goal["penalty"],

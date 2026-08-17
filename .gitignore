@@ -28,6 +28,12 @@ data/interim/**
 !data/interim/matches_2026.csv
 !data/interim/venues_2026.csv
 !data/interim/tournament_2026.csv
+# O goals_2026.csv entrou na lista depois dos outros três, pelo mesmo motivo e
+# mais um: além de ser o registro do que a página dizia, é ele que guarda o
+# `player_page` — o artigo que identifica cada artilheiro de 2026 e o único elo
+# entre a Wikipédia e os `player_id` do Fjelstul. Sem ele versionado, o teste
+# que protege essa coluna pula calado num clone e no CI.
+!data/interim/goals_2026.csv
 
 # EXCEÇÃO — o cache do Nominatim TAMBÉM é versionado, por educação.
 # Reproduzir as 298 consultas custa ~5 minutos de requisições a um serviço
