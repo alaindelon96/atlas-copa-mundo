@@ -1774,21 +1774,22 @@
    *
    * Agrupar por Copa e não numa lista corrida é o que transforma dezoito linhas
    * numa carreira — "2002: 8 gols" é a frase que alguém repete, e ela não
-   * aparece numa lista plana. */
-  function playerPanel(span) {
+   * aparece numa lista plana.
+   *
+   * É A CARREIRA INTEIRA, e não o recorte do slider. Esta é a única tela da
+   * página que ignora a faixa de anos, e o motivo é o que ela é: as outras
+   * respondem "o que aconteceu neste recorte" — o mapa, o ranking, a edição —,
+   * e uma pessoa não é um recorte. Chegar no Klose pela tabela de 2002 e ver
+   * "5 gols" descreve 2002 corretamente e descreve o Klose errado; o recorde
+   * dele são 16, em quatro Copas, e é isso que a página de uma pessoa deve
+   * dizer. A faixa continua valendo para todo o resto da tela, e a linha
+   * abaixo do título diz isso quando as duas discordam. */
+  function playerPanel() {
     var who = state.player;
     var name = GOALS.players[who];
     var team = teamOfPlayer(who);
-    var list = goalsOfPlayer(who, state.from, state.to);
-
-    var head = '<div class="sub">' + span + "</div>" +
-      '<button class="back" type="button" data-back="player">← voltar</button>' +
-      "<h2>" + (team ? badge(team, null) : "") + name +
-      (team ? '<span class="sigla-tag">' + sigla(team) + "</span>" : "") + "</h2>";
-
-    if (!list.length) {
-      return head + '<p class="empty">Não marcou nesta faixa de edições.</p>';
-    }
+    var last = TIMELINE.years.length - 1;
+    var list = goalsOfPlayer(who, 0, last);
 
     var pens = 0, byYear = {}, years = [];
     list.forEach(function (goal) {
@@ -1797,11 +1798,46 @@
       byYear[goal.year].push(goal);
     });
 
+    // `goalsOfPlayer` devolve do mais recente para o mais antigo, então a
+    // carreira vai do último ano da lista até o primeiro.
+    var carreira = years.length
+      ? (years[years.length - 1] === years[0] ? String(years[0])
+                                              : years[years.length - 1] + "–" + years[0])
+      : "";
+
+    var head = '<div class="sub">' + carreira + "</div>" +
+      '<button class="back" type="button" data-back="player">← voltar</button>' +
+      "<h2>" + (team ? badge(team, null) : "") + name +
+      (team ? '<span class="sigla-tag">' + sigla(team) + "</span>" : "") + "</h2>";
+
+    if (!list.length) {
+      // Não deve acontecer: quem está em `GOALS.players` marcou pelo menos um
+      // gol. Fica como rede, porque uma tela em branco não explica nada.
+      return head + '<p class="empty">Nenhum gol registrado.</p>';
+    }
+
     var html = head + '<div class="tiles">' +
       tile(NUM.format(list.length), "Gols") +
       tile(NUM.format(years.length), years.length === 1 ? "Copa" : "Copas") +
       tile(NUM.format(pens), "De pênalti") +
       "</div>";
+
+    /* O aviso só aparece quando as duas leituras discordam de fato — ou seja,
+     * quando o recorte no ar deixaria alguma Copa dele de fora. Sem ele, quem
+     * chega da tabela de artilheiros de 1958 vê 13 numa tela e 16 na outra e
+     * não tem como saber qual das duas está certa: as duas estão. */
+    var fora = years.filter(function (year) {
+      var index = TIMELINE.years.indexOf(year);
+      return index < state.from || index > state.to;
+    });
+    if (fora.length) {
+      html += '<p class="muted">Carreira inteira, fora do recorte de <b>' +
+        TIMELINE.years[state.from] + "–" + TIMELINE.years[state.to] +
+        "</b> que vale para o resto da tela: uma pessoa não é uma faixa de anos. " +
+        (fora.length === 1 ? "A Copa de " + fora[0] + " está aqui e não no mapa."
+                           : NUM.format(fora.length) +
+                             " das Copas dele estão aqui e não no mapa.") + "</p>";
+    }
 
     years.forEach(function (year) {
       var goals = byYear[year];
@@ -2123,7 +2159,7 @@
     // Ela vem antes da edição de propósito: abrir um artilheiro de 1970 não
     // fecha a Copa de 1970, e é para lá que o "voltar" dele leva.
     if (state.player !== null) {
-      panel.innerHTML = playerPanel(span);
+      panel.innerHTML = playerPanel();
       return;
     }
 

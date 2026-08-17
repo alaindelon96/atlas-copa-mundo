@@ -234,6 +234,28 @@ def test_o_artilheiro_de_todos_os_tempos_e_klose(goals):
     assert (linha.player, int(top.iloc[0])) == ("Miroslav Klose", 16)
 
 
+def test_a_carreira_de_um_jogador_soma_entre_as_copas(goals):
+    """A página de um jogador mostra a CARREIRA, e não o recorte do slider.
+
+    Ela é a única tela que ignora a faixa de anos, porque uma pessoa não é uma
+    faixa de anos: abrir o Pelé pela Copa de 1970 e ler "4 gols" descreve 1970
+    certo e descreve o Pelé errado. Como a tela passou a afirmar o total de uma
+    carreira, o total vira número conferível — e por identidade, nunca por nome.
+
+    Os três aqui são os que qualquer torcedor confere de cabeça.
+    """
+    marcados = goals[~goals.own_goal.astype(bool)]
+
+    def carreira(nome: str) -> tuple[int, int]:
+        dele = marcados[marcados.player == nome]
+        assert dele.player_id.nunique() == 1, f"{nome} não é uma pessoa só"
+        return len(dele), dele.year.nunique()
+
+    assert carreira("Pelé") == (12, 4)
+    assert carreira("Miroslav Klose") == (16, 4)
+    assert carreira("Just Fontaine") == (13, 1)
+
+
 def test_o_json_carrega_a_selecao_de_cada_artilheiro(payload):
     """`player_teams` existe porque a coluna `team` do gol é a **creditada** —
     num gol contra, a adversária de quem chutou. Sem ela o front-end colocaria

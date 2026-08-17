@@ -825,7 +825,20 @@ reports as "the bug is still there" when what is stale is the file. `serve.py` n
 `no-store`, which is what a server whose only job is showing you your own edits should
 have done from the start.
 
-Three more tests, 115 in total.
+**A player's page now shows the whole career, not the slider's range.** It is the only
+screen that ignores the year filter, and the reason is what it is: every other screen
+answers *what happened in this range* — the map, the ranking, an edition — and a person
+is not a range. Opening Pelé from the 1970 screen and reading **4 goals** describes 1970
+correctly and describes Pelé wrongly; his 12 across four tournaments is what a page about
+a person owes the reader. The kicker above the name became the career span (`1958–1970`),
+and when the range on screen would have hidden some of it, one line says so rather than
+letting two different numbers stand unexplained. A test pins the totals, by identity:
+
+```python
+assert carreira("Pelé") == (12, 4)
+```
+
+Four more tests, 116 in total.
 
 ### Stage 5 — Publish ✅
 
@@ -835,7 +848,7 @@ The site is static, so there is no server to break and hosting costs nothing:
 
 Deployment is [`.github/workflows/pages.yml`](.github/workflows/pages.yml) — a push to `main`
 runs `pytest`, and **only if the suite passes** does it upload `web/` as the Pages artifact.
-That ordering is the point: the 115 tests exist to stop a wrong number reaching a reader, so
+That ordering is the point: the 116 tests exist to stop a wrong number reaching a reader, so
 they gate the deploy rather than merely reporting after it.
 
 The workflow publishes `web/` **as it stands in the repository** — it does not re-run the
@@ -851,7 +864,7 @@ for precisely that hook.
 pytest
 ```
 
-115 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+116 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
 two sentinel nulls, the 3,028 goals reconciling per match against the scorelines, the venue
@@ -860,7 +873,7 @@ agreeing with the winner of its final, and a hand-checked sample of coordinates 
 schema cannot tell Wembley in London from Wembley in the Atlantic). If someone edits the
 succession map without realising the consequence, a test fails with the reason attached.
 
-One of the 115 reads `data/raw/`, which is not in the repository — the champions come from
+One of the 116 reads `data/raw/`, which is not in the repository — the champions come from
 the source's own standings table rather than from `stage == "final"`, so that check has
 nowhere else to look. It skips in a clone that has not run `python -m etl.extract`, and the
 deploy workflow runs the extraction so that it never skips there.
