@@ -1,0 +1,309 @@
+tournament_id,match_id,match_date,goal_order,team_name,opponent_name,home_away,player_name,player_page,minute_regulation,minute_stoppage,penalty,own_goal,source_page,source_revision
+WC-2026,M-2026-001,2026-06-11,1,Mexico,South Africa,home,Quiñones,Julián Quiñones,9,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-001,2026-06-11,2,Mexico,South Africa,home,Jiménez,Raúl Jiménez,67,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-002,2026-06-11,1,South Korea,Czech Republic,home,Hwang In-beom,Hwang In-beom,67,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-002,2026-06-11,2,South Korea,Czech Republic,home,Oh Hyeon-gyu,Oh Hyeon-gyu,80,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-002,2026-06-11,3,Czech Republic,South Korea,away,Krejčí,"Ladislav Krejčí (footballer, born 1999)",59,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-003,2026-06-12,1,Canada,Bosnia and Herzegovina,home,Larin,Cyle Larin,78,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-003,2026-06-12,2,Bosnia and Herzegovina,Canada,away,Lukić,Jovo Lukić,21,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-004,2026-06-12,1,United States,Paraguay,home,Bobadilla,Damián Bobadilla,7,,0,1,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-004,2026-06-12,2,United States,Paraguay,home,Balogun,Folarin Balogun,31,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-004,2026-06-12,3,United States,Paraguay,home,Balogun,Folarin Balogun,45,5.0,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-004,2026-06-12,4,United States,Paraguay,home,Reyna,Giovanni Reyna,90,8.0,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-004,2026-06-12,5,Paraguay,United States,away,Maurício,"Maurício (footballer, born 2001)",73,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-005,2026-06-13,1,Qatar,Switzerland,home,Muheim,Miro Muheim,90,4.0,0,1,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-005,2026-06-13,2,Switzerland,Qatar,away,Embolo,Breel Embolo,17,,1,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-006,2026-06-13,1,Brazil,Morocco,home,Vinícius,Vinícius Júnior,32,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-006,2026-06-13,2,Morocco,Brazil,away,Saibari,Ismael Saibari,21,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-007,2026-06-13,1,Australia,Turkey,home,Irankunda,Nestory Irankunda,27,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-007,2026-06-13,2,Australia,Turkey,home,Metcalfe,Connor Metcalfe,75,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-008,2026-06-13,1,Scotland,Haiti,away,McGinn,John McGinn,28,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-009,2026-06-14,1,Germany,Curaçao,home,Nmecha,Felix Nmecha,6,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-009,2026-06-14,2,Germany,Curaçao,home,Schlotterbeck,Nico Schlotterbeck,38,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-009,2026-06-14,3,Germany,Curaçao,home,Havertz,Kai Havertz,45,5.0,1,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-009,2026-06-14,4,Germany,Curaçao,home,Havertz,Kai Havertz,88,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-009,2026-06-14,5,Germany,Curaçao,home,Musiala,Jamal Musiala,47,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-009,2026-06-14,6,Germany,Curaçao,home,Brown,Nathaniel Brown (footballer),68,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-009,2026-06-14,7,Germany,Curaçao,home,Undav,Deniz Undav,78,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-009,2026-06-14,8,Curaçao,Germany,away,Comenencia,Livano Comenencia,21,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-010,2026-06-14,1,Netherlands,Japan,home,Van Dijk,Virgil van Dijk,51,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-010,2026-06-14,2,Netherlands,Japan,home,Summerville,Crysencio Summerville,64,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-010,2026-06-14,3,Japan,Netherlands,away,Nakamura,Keito Nakamura,57,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-010,2026-06-14,4,Japan,Netherlands,away,Kamada,Daichi Kamada,88,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-011,2026-06-14,1,Ivory Coast,Ecuador,home,Diallo,Amad Diallo,90,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-012,2026-06-14,1,Sweden,Tunisia,home,Ayari,Yasin Ayari,7,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-012,2026-06-14,2,Sweden,Tunisia,home,Ayari,Yasin Ayari,90,6.0,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-012,2026-06-14,3,Sweden,Tunisia,home,Isak,Alexander Isak,30,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-012,2026-06-14,4,Sweden,Tunisia,home,Gyökeres,Viktor Gyökeres,59,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-012,2026-06-14,5,Sweden,Tunisia,home,Svanberg,Mattias Svanberg,84,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-012,2026-06-14,6,Tunisia,Sweden,away,Rekik,Omar Rekik,43,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-013,2026-06-15,1,Belgium,Egypt,home,Hany,Mohamed Hany,66,,0,1,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-013,2026-06-15,2,Egypt,Belgium,away,Ashour,Emam Ashour,19,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-015,2026-06-15,1,Iran,New Zealand,home,Rezaeian,Ramin Rezaeian,32,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-015,2026-06-15,2,Iran,New Zealand,home,Mohebi,Mohammad Mohebi,64,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-015,2026-06-15,3,New Zealand,Iran,away,Just,Elijah Just,7,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-015,2026-06-15,4,New Zealand,Iran,away,Just,Elijah Just,54,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-016,2026-06-15,1,Saudi Arabia,Uruguay,home,Al-Amri,Abdulelah Al-Amri,41,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-016,2026-06-15,2,Uruguay,Saudi Arabia,away,M. Araújo,Maximiliano Araújo,80,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-017,2026-06-16,1,France,Senegal,home,Mbappé,Kylian Mbappé,66,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-017,2026-06-16,2,France,Senegal,home,Mbappé,Kylian Mbappé,90,6.0,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-017,2026-06-16,3,France,Senegal,home,Barcola,Bradley Barcola,82,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-017,2026-06-16,4,Senegal,France,away,Mbaye,Ibrahim Mbaye,90,5.0,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-018,2026-06-16,1,Iraq,Norway,home,Hussein,Aymen Hussein,39,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-018,2026-06-16,2,Norway,Iraq,away,Haaland,Erling Haaland,29,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-018,2026-06-16,3,Norway,Iraq,away,Haaland,Erling Haaland,43,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-018,2026-06-16,4,Norway,Iraq,away,Østigård,Leo Østigård,76,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-018,2026-06-16,5,Norway,Iraq,away,Hussein,Aymen Hussein,90,6.0,0,1,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-019,2026-06-16,1,Argentina,Algeria,home,Messi,Lionel Messi,17,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-019,2026-06-16,2,Argentina,Algeria,home,Messi,Lionel Messi,60,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-019,2026-06-16,3,Argentina,Algeria,home,Messi,Lionel Messi,76,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-020,2026-06-16,1,Austria,Jordan,home,Schmid,Romano Schmid,20,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-020,2026-06-16,2,Austria,Jordan,home,Al-Arab,Yazan Al-Arab,76,,0,1,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-020,2026-06-16,3,Austria,Jordan,home,Arnautović,Marko Arnautović,90,12.0,1,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-020,2026-06-16,4,Jordan,Austria,away,Olwan,Ali Olwan,50,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-021,2026-06-17,1,Portugal,DR Congo,home,J. Neves,João Neves,6,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-021,2026-06-17,2,DR Congo,Portugal,away,Wissa,Yoane Wissa,45,5.0,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-022,2026-06-17,1,England,Croatia,home,Kane,Harry Kane,12,,1,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-022,2026-06-17,2,England,Croatia,home,Kane,Harry Kane,42,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-022,2026-06-17,3,England,Croatia,home,Bellingham,Jude Bellingham,47,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-022,2026-06-17,4,England,Croatia,home,Rashford,Marcus Rashford,85,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-022,2026-06-17,5,Croatia,England,away,Baturina,Martin Baturina,36,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-022,2026-06-17,6,Croatia,England,away,Musa,Petar Musa,45,5.0,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-023,2026-06-17,1,Ghana,Panama,home,Yirenkyi,Caleb Yirenkyi,90,5.0,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-024,2026-06-17,1,Uzbekistan,Colombia,home,Fayzullaev,Abbosbek Fayzullaev,60,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-024,2026-06-17,2,Colombia,Uzbekistan,away,Muñoz,Daniel Muñoz (footballer),40,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-024,2026-06-17,3,Colombia,Uzbekistan,away,Díaz,"Luis Díaz (footballer, born 1997)",65,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-024,2026-06-17,4,Colombia,Uzbekistan,away,Campaz,Jaminton Campaz,90,9.0,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-025,2026-06-18,1,Czech Republic,South Africa,home,Sadílek,Michal Sadílek,6,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-025,2026-06-18,2,South Africa,Czech Republic,away,Mokoena,"Teboho Mokoena (soccer, born 1997)",83,,1,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-026,2026-06-18,1,Switzerland,Bosnia and Herzegovina,home,Manzambi,Johan Manzambi,74,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-026,2026-06-18,2,Switzerland,Bosnia and Herzegovina,home,Manzambi,Johan Manzambi,90,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-026,2026-06-18,3,Switzerland,Bosnia and Herzegovina,home,Vargas,Rubén Vargas,84,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-026,2026-06-18,4,Switzerland,Bosnia and Herzegovina,home,Xhaka,Granit Xhaka,90,7.0,1,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-026,2026-06-18,5,Bosnia and Herzegovina,Switzerland,away,Mahmić,Ermin Mahmić,90,3.0,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-027,2026-06-18,1,Canada,Qatar,home,Larin,Cyle Larin,16,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-027,2026-06-18,2,Canada,Qatar,home,J. David,Jonathan David,29,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-027,2026-06-18,3,Canada,Qatar,home,J. David,Jonathan David,45,3.0,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-027,2026-06-18,4,Canada,Qatar,home,J. David,Jonathan David,90,2.0,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-027,2026-06-18,5,Canada,Qatar,home,Saliba,Nathan Saliba,64,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-027,2026-06-18,6,Canada,Qatar,home,Manai,Mohamed Manai,75,,0,1,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-028,2026-06-18,1,Mexico,South Korea,home,Romo,Luis Romo,50,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-029,2026-06-19,1,United States,Australia,home,Burgess,Cameron Burgess,11,,0,1,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-029,2026-06-19,2,United States,Australia,home,Freeman,Alex Freeman,43,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-030,2026-06-19,1,Morocco,Scotland,away,Saibari,Ismael Saibari,2,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-031,2026-06-19,1,Paraguay,Turkey,away,Galarza,Matías Galarza (Paraguayan footballer),2,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-032,2026-06-19,1,Brazil,Haiti,home,Cunha,Matheus Cunha,23,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-032,2026-06-19,2,Brazil,Haiti,home,Cunha,Matheus Cunha,36,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-032,2026-06-19,3,Brazil,Haiti,home,Vinícius,Vinícius Júnior,45,3.0,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-033,2026-06-20,1,Japan,Tunisia,away,Kamada,Daichi Kamada,4,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-033,2026-06-20,2,Japan,Tunisia,away,Ueda,Ayase Ueda,31,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-033,2026-06-20,3,Japan,Tunisia,away,Ueda,Ayase Ueda,83,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-033,2026-06-20,4,Japan,Tunisia,away,J. Itō,Junya Itō,69,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-034,2026-06-20,1,Netherlands,Sweden,home,Brobbey,Brian Brobbey,5,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-034,2026-06-20,2,Netherlands,Sweden,home,Brobbey,Brian Brobbey,17,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-034,2026-06-20,3,Netherlands,Sweden,home,Gakpo,Cody Gakpo,47,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-034,2026-06-20,4,Netherlands,Sweden,home,Gakpo,Cody Gakpo,54,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-034,2026-06-20,5,Netherlands,Sweden,home,Summerville,Crysencio Summerville,89,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-034,2026-06-20,6,Sweden,Netherlands,away,Elanga,Anthony Elanga,59,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-035,2026-06-20,1,Germany,Ivory Coast,home,Undav,Deniz Undav,68,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-035,2026-06-20,2,Germany,Ivory Coast,home,Undav,Deniz Undav,90,4.0,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-035,2026-06-20,3,Ivory Coast,Germany,away,Kessié,Franck Kessié,30,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-038,2026-06-21,1,Spain,Saudi Arabia,home,Yamal,Lamine Yamal,10,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-038,2026-06-21,2,Spain,Saudi Arabia,home,Oyarzabal,Mikel Oyarzabal,21,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-038,2026-06-21,3,Spain,Saudi Arabia,home,Oyarzabal,Mikel Oyarzabal,24,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-038,2026-06-21,4,Spain,Saudi Arabia,home,Al-Tambakti,Hassan Al-Tambakti,49,,0,1,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-039,2026-06-21,1,New Zealand,Egypt,home,Surman,Finn Surman,15,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-039,2026-06-21,2,Egypt,New Zealand,away,Ziko,Mostafa Ziko,58,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-039,2026-06-21,3,Egypt,New Zealand,away,Salah,Mohamed Salah,67,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-039,2026-06-21,4,Egypt,New Zealand,away,Trézéguet,Trézéguet (Egyptian footballer),82,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-040,2026-06-21,1,Uruguay,Cape Verde,home,M. Araújo,Maximiliano Araújo,44,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-040,2026-06-21,2,Uruguay,Cape Verde,home,Canobbio,Agustín Canobbio,45,6.0,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-040,2026-06-21,3,Cape Verde,Uruguay,away,K. Pina,Kevin Pina (footballer),21,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-040,2026-06-21,4,Cape Verde,Uruguay,away,Varela,Hélio Varela,61,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-041,2026-06-22,1,Argentina,Austria,home,Messi,Lionel Messi,38,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-041,2026-06-22,2,Argentina,Austria,home,Messi,Lionel Messi,90,5.0,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-042,2026-06-22,1,France,Iraq,home,Mbappé,Kylian Mbappé,14,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-042,2026-06-22,2,France,Iraq,home,Mbappé,Kylian Mbappé,54,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-042,2026-06-22,3,France,Iraq,home,Dembélé,Ousmane Dembélé,66,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-043,2026-06-22,1,Norway,Senegal,home,Pedersen,Marcus Holmgren Pedersen,43,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-043,2026-06-22,2,Norway,Senegal,home,Haaland,Erling Haaland,48,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-043,2026-06-22,3,Norway,Senegal,home,Haaland,Erling Haaland,58,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-043,2026-06-22,4,Senegal,Norway,away,I. Sarr,Ismaïla Sarr,53,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-043,2026-06-22,5,Senegal,Norway,away,I. Sarr,Ismaïla Sarr,90,3.0,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-044,2026-06-22,1,Jordan,Algeria,home,Al-Rashdan,Nizar Al-Rashdan,36,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-044,2026-06-22,2,Algeria,Jordan,away,Benbouali,Nadhir Benbouali,69,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-044,2026-06-22,3,Algeria,Jordan,away,Gouiri,Amine Gouiri,82,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-045,2026-06-23,1,Portugal,Uzbekistan,home,Ronaldo,Cristiano Ronaldo,6,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-045,2026-06-23,2,Portugal,Uzbekistan,home,Ronaldo,Cristiano Ronaldo,39,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-045,2026-06-23,3,Portugal,Uzbekistan,home,Mendes,"Nuno Mendes (footballer, born 2002)",17,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-045,2026-06-23,4,Portugal,Uzbekistan,home,Nematov,Abduvohid Nematov,60,,0,1,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-045,2026-06-23,5,Portugal,Uzbekistan,home,Leão,Rafael Leão,87,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-047,2026-06-23,1,Croatia,Panama,away,Budimir,Ante Budimir,54,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-048,2026-06-23,1,Colombia,DR Congo,home,Muñoz,Daniel Muñoz (footballer),76,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-049,2026-06-24,1,Bosnia and Herzegovina,Qatar,home,Alajbegović,Kerim Alajbegović,29,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-049,2026-06-24,2,Bosnia and Herzegovina,Qatar,home,Abunada,Mahmud Abunada,34,,0,1,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-049,2026-06-24,3,Bosnia and Herzegovina,Qatar,home,Mahmić,Ermin Mahmić,80,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-049,2026-06-24,4,Qatar,Bosnia and Herzegovina,away,Al-Haydos,Hassan Al-Haydos,42,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-050,2026-06-24,1,Switzerland,Canada,home,Vargas,Rubén Vargas,46,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-050,2026-06-24,2,Switzerland,Canada,home,Manzambi,Johan Manzambi,57,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-050,2026-06-24,3,Canada,Switzerland,away,P. David,Promise David,76,,0,0,2026_FIFA_World_Cup_Group_B,1368282937
+WC-2026,M-2026-051,2026-06-24,1,Morocco,Haiti,home,Hakimi,Achraf Hakimi,39,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-051,2026-06-24,2,Morocco,Haiti,home,Saibari,Ismael Saibari,45,1.0,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-051,2026-06-24,3,Morocco,Haiti,home,Rahimi,Soufiane Rahimi,78,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-051,2026-06-24,4,Morocco,Haiti,home,Yassine,Gessime Yassine,89,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-051,2026-06-24,5,Haiti,Morocco,away,Bounou,Yassine Bounou,10,,0,1,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-051,2026-06-24,6,Haiti,Morocco,away,Isidor,Wilson Isidor,43,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-052,2026-06-24,1,Brazil,Scotland,away,Vinícius,Vinícius Júnior,7,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-052,2026-06-24,2,Brazil,Scotland,away,Vinícius,Vinícius Júnior,45,3.0,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-052,2026-06-24,3,Brazil,Scotland,away,Cunha,Matheus Cunha,60,,0,0,2026_FIFA_World_Cup_Group_C,1368283749
+WC-2026,M-2026-053,2026-06-24,1,Mexico,Czech Republic,away,M. Chávez,Mateo Chávez,55,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-053,2026-06-24,2,Mexico,Czech Republic,away,Quiñones,Julián Quiñones,61,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-053,2026-06-24,3,Mexico,Czech Republic,away,Fidalgo,Álvaro Fidalgo,90,4.0,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-054,2026-06-24,1,South Africa,South Korea,home,Maseko,Thapelo Maseko,63,,0,0,2026_FIFA_World_Cup_Group_A,1368129117
+WC-2026,M-2026-055,2026-06-25,1,Ivory Coast,Curaçao,away,Pépé,Nicolas Pépé,7,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-055,2026-06-25,2,Ivory Coast,Curaçao,away,Pépé,Nicolas Pépé,64,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-056,2026-06-25,1,Ecuador,Germany,home,Angulo,Nilson Angulo,9,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-056,2026-06-25,2,Ecuador,Germany,home,Plata,Gonzalo Plata,77,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-056,2026-06-25,3,Germany,Ecuador,away,Sané,Leroy Sané,2,,0,0,2026_FIFA_World_Cup_Group_E,1368284951
+WC-2026,M-2026-057,2026-06-25,1,Japan,Sweden,home,Maeda,Daizen Maeda,56,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-057,2026-06-25,2,Sweden,Japan,away,Elanga,Anthony Elanga,62,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-058,2026-06-25,1,Tunisia,Netherlands,home,Mastouri,Hazem Mastouri,54,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-058,2026-06-25,2,Netherlands,Tunisia,away,Skhiri,Ellyes Skhiri,3,,0,1,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-058,2026-06-25,3,Netherlands,Tunisia,away,Brobbey,Brian Brobbey,7,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-058,2026-06-25,4,Netherlands,Tunisia,away,Van Hecke,Jan Paul van Hecke,62,,0,0,2026_FIFA_World_Cup_Group_F,1368285128
+WC-2026,M-2026-060,2026-06-25,1,Turkey,United States,home,Güler,Arda Güler,10,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-060,2026-06-25,2,Turkey,United States,home,Yılmaz,Barış Alper Yılmaz,31,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-060,2026-06-25,3,Turkey,United States,home,Ayhan,Kaan Ayhan,90,8.0,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-060,2026-06-25,4,United States,Turkey,away,Trusty,Auston Trusty,3,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-060,2026-06-25,5,United States,Turkey,away,Berhalter,Sebastian Berhalter,49,,0,0,2026_FIFA_World_Cup_Group_D,1368284732
+WC-2026,M-2026-061,2026-06-26,1,Norway,France,home,Aasgaard,Thelo Aasgaard,21,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-061,2026-06-26,2,France,Norway,away,Dembélé,Ousmane Dembélé,7,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-061,2026-06-26,3,France,Norway,away,Dembélé,Ousmane Dembélé,20,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-061,2026-06-26,4,France,Norway,away,Dembélé,Ousmane Dembélé,32,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-061,2026-06-26,5,France,Norway,away,Doué,Désiré Doué,90,4.0,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-062,2026-06-26,1,Senegal,Iraq,home,Diarra,Habib Diarra,4,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-062,2026-06-26,2,Senegal,Iraq,home,I. Sarr,Ismaïla Sarr,56,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-062,2026-06-26,3,Senegal,Iraq,home,P. Gueye,Pape Gueye,59,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-062,2026-06-26,4,Senegal,Iraq,home,P. Gueye,Pape Gueye,71,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-062,2026-06-26,5,Senegal,Iraq,home,I. Ndiaye,Iliman Ndiaye,82,,0,0,2026_FIFA_World_Cup_Group_I,1368283456
+WC-2026,M-2026-063,2026-06-26,1,Spain,Uruguay,away,Baena,Álex Baena,42,,0,0,2026_FIFA_World_Cup_Group_H,1368285642
+WC-2026,M-2026-065,2026-06-26,1,Egypt,Iran,home,Saber,Mahmoud Saber,5,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-065,2026-06-26,2,Iran,Egypt,away,Rezaeian,Ramin Rezaeian,14,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-066,2026-06-26,1,New Zealand,Belgium,home,Just,Elijah Just,84,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-066,2026-06-26,2,Belgium,New Zealand,away,Trossard,Leandro Trossard,28,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-066,2026-06-26,3,Belgium,New Zealand,away,Trossard,Leandro Trossard,50,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-066,2026-06-26,4,Belgium,New Zealand,away,De Bruyne,Kevin De Bruyne,66,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-066,2026-06-26,5,Belgium,New Zealand,away,Lukaku,Romelu Lukaku,86,,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-066,2026-06-26,6,Belgium,New Zealand,away,Saelemaekers,Alexis Saelemaekers,90,4.0,0,0,2026_FIFA_World_Cup_Group_G,1368285341
+WC-2026,M-2026-067,2026-06-27,1,Croatia,Ghana,home,P. Sučić,Petar Sučić,31,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-067,2026-06-27,2,Croatia,Ghana,home,Vlašić,Nikola Vlašić,83,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-067,2026-06-27,3,Ghana,Croatia,away,Luckassen,Derrick Luckassen,73,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-068,2026-06-27,1,England,Panama,away,Bellingham,Jude Bellingham,62,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-068,2026-06-27,2,England,Panama,away,Kane,Harry Kane,67,,0,0,2026_FIFA_World_Cup_Group_L,1368283601
+WC-2026,M-2026-070,2026-06-27,1,DR Congo,Uzbekistan,home,Wissa,Yoane Wissa,68,,1,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-070,2026-06-27,2,DR Congo,Uzbekistan,home,Wissa,Yoane Wissa,90,1.0,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-070,2026-06-27,3,DR Congo,Uzbekistan,home,Mayele,Fiston Mayele,78,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-070,2026-06-27,4,Uzbekistan,DR Congo,away,Shomurodov,Eldor Shomurodov,10,,0,0,2026_FIFA_World_Cup_Group_K,1368286465
+WC-2026,M-2026-071,2026-06-27,1,Algeria,Austria,home,Belghali,Rafik Belghali,45,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-071,2026-06-27,2,Algeria,Austria,home,Mahrez,Riyad Mahrez,60,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-071,2026-06-27,3,Algeria,Austria,home,Mahrez,Riyad Mahrez,90,3.0,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-071,2026-06-27,4,Austria,Algeria,away,Arnautović,Marko Arnautović,28,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-071,2026-06-27,5,Austria,Algeria,away,Sabitzer,Marcel Sabitzer,55,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-071,2026-06-27,6,Austria,Algeria,away,Kalajdžić,Saša Kalajdžić,90,6.0,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-072,2026-06-27,1,Jordan,Argentina,home,Al-Taamari,Musa Al-Taamari,55,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-072,2026-06-27,2,Argentina,Jordan,away,Lo Celso,Giovani Lo Celso,19,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-072,2026-06-27,3,Argentina,Jordan,away,La. Martínez,Lautaro Martínez,31,,1,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-072,2026-06-27,4,Argentina,Jordan,away,Messi,Lionel Messi,80,,0,0,2026_FIFA_World_Cup_Group_J,1368286276
+WC-2026,M-2026-073,2026-06-28,1,Canada,South Africa,away,Eustáquio,Stephen Eustáquio,90,2.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-074,2026-06-29,1,Brazil,Japan,home,Casemiro,Casemiro,56,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-074,2026-06-29,2,Brazil,Japan,home,Martinelli,Gabriel Martinelli,90,5.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-074,2026-06-29,3,Japan,Brazil,away,Sano,Kaishū Sano,29,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-075,2026-06-29,1,Germany,Paraguay,home,Havertz,Kai Havertz,54,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-075,2026-06-29,2,Paraguay,Germany,away,Enciso,"Julio Enciso (footballer, born 2004)",42,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-076,2026-06-29,1,Netherlands,Morocco,home,Gakpo,Cody Gakpo,72,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-076,2026-06-29,2,Morocco,Netherlands,away,Diop,Issa Diop (footballer),90,1.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-077,2026-06-30,1,Ivory Coast,Norway,home,Diallo,Amad Diallo,74,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-077,2026-06-30,2,Norway,Ivory Coast,away,Nusa,Antonio Nusa,39,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-077,2026-06-30,3,Norway,Ivory Coast,away,Haaland,Erling Haaland,86,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-078,2026-06-30,1,France,Sweden,home,Mbappé,Kylian Mbappé,45,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-078,2026-06-30,2,France,Sweden,home,Mbappé,Kylian Mbappé,74,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-078,2026-06-30,3,France,Sweden,home,Barcola,Bradley Barcola,53,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-079,2026-06-30,1,Mexico,Ecuador,home,Quiñones,Julián Quiñones,22,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-079,2026-06-30,2,Mexico,Ecuador,home,Jiménez,Raúl Jiménez,31,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-080,2026-07-01,1,England,DR Congo,home,Kane,Harry Kane,75,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-080,2026-07-01,2,England,DR Congo,home,Kane,Harry Kane,86,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-080,2026-07-01,3,DR Congo,England,away,Cipenga,Brian Cipenga,7,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-081,2026-07-01,1,Belgium,Senegal,home,Lukaku,Romelu Lukaku,86,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-081,2026-07-01,2,Belgium,Senegal,home,Tielemans,Youri Tielemans,89,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-081,2026-07-01,3,Belgium,Senegal,home,Tielemans,Youri Tielemans,120,5.0,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-081,2026-07-01,4,Senegal,Belgium,away,Diarra,Habib Diarra,25,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-081,2026-07-01,5,Senegal,Belgium,away,I. Sarr,Ismaïla Sarr,51,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-082,2026-07-01,1,United States,Bosnia and Herzegovina,home,Balogun,Folarin Balogun,45,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-082,2026-07-01,2,United States,Bosnia and Herzegovina,home,Tillman,Malik Tillman,82,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-083,2026-07-02,1,Spain,Austria,home,Oyarzabal,Mikel Oyarzabal,36,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-083,2026-07-02,2,Spain,Austria,home,Oyarzabal,Mikel Oyarzabal,89,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-083,2026-07-02,3,Spain,Austria,home,Porro,Pedro Porro,66,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-084,2026-07-02,1,Portugal,Croatia,home,Ronaldo,Cristiano Ronaldo,68,,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-084,2026-07-02,2,Portugal,Croatia,home,Ramos,Gonçalo Ramos,90,4.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-084,2026-07-02,3,Croatia,Portugal,away,Perišić,Ivan Perišić,53,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-085,2026-07-02,1,Switzerland,Algeria,home,Embolo,Breel Embolo,10,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-085,2026-07-02,2,Switzerland,Algeria,home,Ndoye,Dan Ndoye,46,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-086,2026-07-03,1,Australia,Egypt,home,Hany,Mohamed Hany,55,,0,1,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-086,2026-07-03,2,Egypt,Australia,away,Ashour,Emam Ashour,13,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-087,2026-07-03,1,Argentina,Cape Verde,home,Messi,Lionel Messi,29,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-087,2026-07-03,2,Argentina,Cape Verde,home,Li. Martínez,Lisandro Martínez,92,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-087,2026-07-03,3,Argentina,Cape Verde,home,Diney,"Diney (footballer, born 1995)",111,,0,1,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-087,2026-07-03,4,Cape Verde,Argentina,away,D. Duarte,Deroy Duarte,59,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-087,2026-07-03,5,Cape Verde,Argentina,away,Lopes Cabral,Sidny Lopes Cabral,103,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-088,2026-07-03,1,Colombia,Ghana,home,J. Arias,Jhon Arias (footballer),14,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-089,2026-07-04,1,Morocco,Canada,away,Ounahi,Azzedine Ounahi,50,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-089,2026-07-04,2,Morocco,Canada,away,Ounahi,Azzedine Ounahi,82,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-089,2026-07-04,3,Morocco,Canada,away,Rahimi,Soufiane Rahimi,90,8.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-090,2026-07-04,1,France,Paraguay,away,Mbappé,Kylian Mbappé,70,,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-091,2026-07-05,1,Brazil,Norway,home,Neymar,Neymar,90,10.0,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-091,2026-07-05,2,Norway,Brazil,away,Haaland,Erling Haaland,79,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-091,2026-07-05,3,Norway,Brazil,away,Haaland,Erling Haaland,90,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-092,2026-07-05,1,Mexico,England,home,Quiñones,Julián Quiñones,42,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-092,2026-07-05,2,Mexico,England,home,Jiménez,Raúl Jiménez,69,,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-092,2026-07-05,3,England,Mexico,away,Bellingham,Jude Bellingham,36,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-092,2026-07-05,4,England,Mexico,away,Bellingham,Jude Bellingham,38,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-092,2026-07-05,5,England,Mexico,away,Kane,Harry Kane,60,,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-093,2026-07-06,1,Spain,Portugal,away,Merino,Mikel Merino,90,1.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-094,2026-07-06,1,United States,Belgium,home,Tillman,Malik Tillman,31,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-094,2026-07-06,2,Belgium,United States,away,De Ketelaere,Charles De Ketelaere,9,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-094,2026-07-06,3,Belgium,United States,away,De Ketelaere,Charles De Ketelaere,33,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-094,2026-07-06,4,Belgium,United States,away,Vanaken,Hans Vanaken,57,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-094,2026-07-06,5,Belgium,United States,away,Lukaku,Romelu Lukaku,90,3.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-095,2026-07-07,1,Argentina,Egypt,home,Romero,Cristian Romero,79,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-095,2026-07-07,2,Argentina,Egypt,home,Messi,Lionel Messi,83,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-095,2026-07-07,3,Argentina,Egypt,home,Fernández,Enzo Fernández,90,2.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-095,2026-07-07,4,Egypt,Argentina,away,Ibrahim,Yasser Ibrahim,15,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-095,2026-07-07,5,Egypt,Argentina,away,Ziko,Mostafa Ziko,67,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-097,2026-07-09,1,France,Morocco,home,Mbappé,Kylian Mbappé,60,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-097,2026-07-09,2,France,Morocco,home,Dembélé,Ousmane Dembélé,66,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-098,2026-07-10,1,Spain,Belgium,home,Fabián,Fabián Ruiz,30,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-098,2026-07-10,2,Spain,Belgium,home,Merino,Mikel Merino,88,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-098,2026-07-10,3,Belgium,Spain,away,De Ketelaere,Charles De Ketelaere,41,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-099,2026-07-11,1,Norway,England,home,Schjelderup,Andreas Schjelderup,36,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-099,2026-07-11,2,England,Norway,away,Bellingham,Jude Bellingham,45,2.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-099,2026-07-11,3,England,Norway,away,Bellingham,Jude Bellingham,93,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-100,2026-07-11,1,Argentina,Switzerland,home,Mac Allister,Alexis Mac Allister,10,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-100,2026-07-11,2,Argentina,Switzerland,home,Alvarez,Julián Alvarez,112,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-100,2026-07-11,3,Argentina,Switzerland,home,La. Martínez,Lautaro Martínez,120,1.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-100,2026-07-11,4,Switzerland,Argentina,away,Ndoye,Dan Ndoye,67,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-101,2026-07-14,1,Spain,France,away,Oyarzabal,Mikel Oyarzabal,22,,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-101,2026-07-14,2,Spain,France,away,Porro,Pedro Porro,58,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-102,2026-07-15,1,England,Argentina,home,Gordon,Anthony Gordon (footballer),55,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-102,2026-07-15,2,Argentina,England,away,Fernández,Enzo Fernández,85,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-102,2026-07-15,3,Argentina,England,away,La. Martínez,Lautaro Martínez,90,2.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,1,France,England,home,Mbappé,Kylian Mbappé,48,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,2,France,England,home,Mbappé,Kylian Mbappé,66,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,3,France,England,home,Barcola,Bradley Barcola,54,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,4,France,England,home,Dembélé,Ousmane Dembélé,90,6.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,5,England,France,away,Rice,Declan Rice,3,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,6,England,France,away,Konsa,Ezri Konsa,18,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,7,England,France,away,Saka,Bukayo Saka,37,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,8,England,France,away,Saka,Bukayo Saka,45,1.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,9,England,France,away,Saka,Bukayo Saka,87,,1,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-103,2026-07-18,10,England,France,away,Bellingham,Jude Bellingham,90,8.0,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792
+WC-2026,M-2026-104,2026-07-19,1,Spain,Argentina,home,Torres,Ferran Torres,106,,0,0,2026_FIFA_World_Cup_knockout_stage,1368128792

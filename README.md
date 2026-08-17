@@ -840,6 +840,90 @@ assert carreira("Pelé") == (12, 4)
 
 Four more tests, 116 in total.
 
+### Stage 4j — The scorer gets his whole name ✅
+
+France's panel listed the same man twice:
+
+| | before | after |
+|---|---|---|
+| 1º | Just Fontaine · 13 | **Kylian Mbappé · 22** |
+| 2º | Kylian Mbappé · 12 | Just Fontaine · 13 |
+| 3º | **Mbappé · 10** | Ousmane Dembélé · 6 |
+
+**Stage 4g fixed identity in one direction only.** It stopped the tally from adding
+two different people together — the Brazilian Ronaldo and a Portuguese one — and the
+rule it used, *same name and same team*, was as strong as the data then allowed. But
+the other failure was already on screen and nothing caught it: the same person split
+across two rows, because the two sources call him different things. Fjelstul writes
+`Kylian Mbappé`; the 2026 scrape had `Mbappé`. Same man, same country, no bridge — and
+the number that matters, 22, appeared nowhere on the page.
+
+**The full name was in the HTML the whole time.** The match box abbreviates, the link
+does not:
+
+```html
+<a href="/wiki/Kylian_Mbappé"   title="Kylian Mbappé">Mbappé</a>
+<a href="/wiki/Julián_Quiñones" title="Julián Quiñones">Quiñones</a>
+```
+
+The parser was reading the cell's text and discarding the anchors around it. It now
+keeps the article title in a `player_page` column ([`player_pages`](etl/parse_2026.py)),
+and **all 308 goals of 2026 carry one** — 190 distinct scorers, every one linked, no
+display name pointing at two articles.
+
+That column is worth more than a longer name. **The article is the identity the source
+itself asserts.** Whether the "Ronaldo" of 2026 is the Brazilian or the Portuguese is
+not a question our string matching should be answering; the link answers it, and it is
+the closest thing to a `player_id` that Wikipedia offers. So
+[`bridge_player_ids`](etl/model.py) now decides on the article, under three rules:
+
+| Rule | Case | Ruling |
+|---|---|---|
+| Same article name, same team | `Kylian Mbappé` · France · 2018–2022 + 2026 | same person — **bridge** |
+| …ignoring diacritics | `Julián Álvarez` (Fjelstul) vs `Julián Alvarez` (article title) | same person — **bridge** |
+| Disambiguated title | `Teboho Mokoena (soccer, born 1997)` | **refuse** |
+| Homonym inside Fjelstul | `Oscar`, `Júnior`, `Juanito`, … | **refuse** |
+
+**The disambiguator is the source warning us, and it earns its rule on the only case
+that needs it.** Teboho Mokoena scored for South Africa in 2002, and Teboho Mokoena
+scored for South Africa in 2026. Same name, same country, two people — and *same name
+and same team*, the stage 4g rule, would have merged them into one. What stops it is
+that Wikipedia cannot title both articles the same way: the parenthesis in `(soccer,
+born 1997)` exists precisely because the bare name belongs to more than one person.
+Fifteen of 2026's scorers have a title like that; this is the only one that touches the
+historic data, and it is the Ronaldo error running backwards.
+
+The accent rule is one case too, and it costs a goal to skip: `Julián Álvarez` scored
+four in 2022 and one in 2026, and a literal comparison made that two players of four and
+of one. Where the bridge does connect, the label that survives is the one the player
+already had — one identity, one name, which is the invariant `build_goal_layer` refuses
+to ship without.
+
+**27 scorers of 2026 turned out to be someone who had already played**, and the identity
+count fell from 1,624 to 1,599 — twenty-five of those were literally the same person
+counted twice. The all-time table changes at the top:
+
+| | | |
+|---|---|---|
+| 1º | Kylian Mbappé · France | 12 + **10** = **22** |
+| 2º | Lionel Messi · Argentina | 13 + **8** = **21** |
+| 3º | Miroslav Klose · Germany | 16 |
+
+Klose's 16 stood as the record for the length of this project and is still the most by
+anyone who stopped before 2026 — the test now pins both numbers, because a suite that
+only knew the new one could not tell a correct merge from a careless one:
+
+```python
+def test_o_artilheiro_de_todos_os_tempos(goals):
+    assert (linha.player, int(top.iloc[0])) == ("Kylian Mbappé", 22)
+    ...
+    assert int(recorde_antigo.iloc[0]) == 16   # Klose, até 2022
+```
+
+**Nothing in the front-end changed.** It has keyed scorers by `player_id` since stage 4g,
+so a corrected identity in the ETL arrived on the page as a corrected list — which is
+what that stage bought and this one collected. Six more tests, 122 in total.
+
 ### Stage 5 — Publish ✅
 
 The site is static, so there is no server to break and hosting costs nothing:
@@ -848,7 +932,7 @@ The site is static, so there is no server to break and hosting costs nothing:
 
 Deployment is [`.github/workflows/pages.yml`](.github/workflows/pages.yml) — a push to `main`
 runs `pytest`, and **only if the suite passes** does it upload `web/` as the Pages artifact.
-That ordering is the point: the 116 tests exist to stop a wrong number reaching a reader, so
+That ordering is the point: the 122 tests exist to stop a wrong number reaching a reader, so
 they gate the deploy rather than merely reporting after it.
 
 The workflow publishes `web/` **as it stands in the repository** — it does not re-run the
@@ -864,16 +948,17 @@ for precisely that hook.
 pytest
 ```
 
-116 tests, all offline. They pin the decisions and the traps — the succession ruling, the
+122 tests, all offline. They pin the decisions and the traps — the succession ruling, the
 men's/women's split, stage normalisation, the 1950 case, the fact that fuzzy matching
 scores Zaire against DR Congo below 50, the four British teams staying four polygons, the
-two sentinel nulls, the 3,028 goals reconciling per match against the scorelines, the venue
-lists staying in the same order, shootouts never becoming draws, every edition's champion
-agreeing with the winner of its final, and a hand-checked sample of coordinates (a valid
-schema cannot tell Wembley in London from Wembley in the Atlantic). If someone edits the
-succession map without realising the consequence, a test fails with the reason attached.
+two sentinel nulls, the 3,028 goals reconciling per match against the scorelines, both
+halves of scorer identity (Mbappé's 22 adding up, the two Teboho Mokoenas staying apart),
+the venue lists staying in the same order, shootouts never becoming draws, every edition's
+champion agreeing with the winner of its final, and a hand-checked sample of coordinates (a
+valid schema cannot tell Wembley in London from Wembley in the Atlantic). If someone edits
+the succession map without realising the consequence, a test fails with the reason attached.
 
-One of the 116 reads `data/raw/`, which is not in the repository — the champions come from
+One of the 122 reads `data/raw/`, which is not in the repository — the champions come from
 the source's own standings table rather than from `stage == "final"`, so that check has
 nowhere else to look. It skips in a clone that has not run `python -m etl.extract`, and the
 deploy workflow runs the extraction so that it never skips there.
@@ -1086,6 +1171,7 @@ the reasoning.
 | 4c · Top scorers, 1930–2026 | ✅ Done |
 | 4h · Copa a Copa — the edition as a destination | ✅ Done |
 | 4i · Masthead index — teams and fixtures get screens | ✅ Done |
+| 4j · The scorer gets his whole name — 2026 identities merged | ✅ Done |
 | 5 · Publish to GitHub Pages | ✅ Done |
 | v2 · Re-run the pipeline on a schedule | ⬜ Deferred |
 

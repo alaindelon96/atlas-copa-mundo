@@ -51,7 +51,9 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import re
 import sys
+import unicodedata
 
 import pandas as pd
 
@@ -210,50 +212,102 @@ def build_team_matches(matches: pd.DataFrame) -> pd.DataFrame:
     return long.sort_values(["match_date", "match_id", "home_away"]).reset_index(drop=True)
 
 
+# "Luis Díaz (footballer, born 1997)" -> o parêntese final que a Wikipédia usa
+# para separar homônimos. Sai do rótulo, mas **não** sai da identidade.
+RE_DISAMBIGUATION = re.compile(r"\s*\([^)]*\)$")
+
+
+def display_name(page: str, shown: str) -> str:
+    """O rótulo de um artilheiro de 2026: o nome do artigo, sem o desambiguador.
+
+    A caixa de partida da Wikipédia abrevia — "Mbappé", "Quiñones", "I. Sarr" —
+    e era esse nome curto que a página exibia, ao lado dos nomes inteiros que o
+    Fjelstul traz para 1930–2022. O artigo apontado pelo link tem o nome
+    completo, e é dele que o rótulo passa a sair.
+
+    O que se tira é só o desambiguador: "Luis Díaz (footballer, born 1997)" é
+    rotulado "Luis Díaz". Ele é ruído na tela — mas é sinal na identidade, e por
+    isso quem decide a ponte é `bridge_player_ids`, olhando o título inteiro.
+    """
+    if not page:
+        return shown
+    return RE_DISAMBIGUATION.sub("", page).strip() or shown
+
+
+def fold_name(name: str) -> str:
+    """Nome sem acento e sem caixa, só para comparar as duas fontes.
+
+    As duas grafam o mesmo jogador com diacríticos diferentes: a Wikipédia
+    titula o artigo do argentino como "Julián Alvarez" e o Fjelstul o grava
+    "Julián Álvarez". São a mesma pessoa e os mesmos 5 gols (4 em 2022, 1 em
+    2026), que a comparação literal separava em dois artilheiros de 4 e de 1.
+
+    Isto normaliza a **comparação**, nunca o que é exibido: o rótulo continua
+    saindo da fonte, com acento e tudo.
+    """
+    decomposed = unicodedata.normalize("NFKD", str(name))
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).casefold()
+
+
 def bridge_player_ids(historic: pd.DataFrame, modern: pd.DataFrame) -> pd.Series:
     """O id de jogador de 2026: emprestado do Fjelstul quando dá, novo quando não.
 
-    **Sem isto, "artilheiro de todos os tempos" é uma conta falsa.** O Fjelstul
-    tem `player_id` e a Wikipédia não, então a única identidade em comum entre
-    as fontes é o nome — e nome não identifica ninguém. Com o nome como chave, o
-    Ronaldo brasileiro (15 gols, 1998–2006) somava com um Ronaldo português de
-    2026 e virava um artilheiro de 18 gols que nunca existiu, à frente do Klose,
-    que é o recorde de verdade com 16.
+    **Sem isto, "artilheiro de todos os tempos" é uma conta falsa** — e ela erra
+    para os dois lados. O Fjelstul tem `player_id` e a Wikipédia não, então unir
+    as fontes é decidir, jogador a jogador, quem de 2026 já jogou antes:
 
-    A regra é **mesmo nome E mesma seleção**, e é a mais forte que o dado
-    sustenta. Ela acerta os três — e são só três — nomes que aparecem nas duas
-    fontes:
+    - **Somar demais.** Com o nome como chave, o Ronaldo brasileiro (15 gols,
+      1998–2006) somava com um Ronaldo português de 2026 e virava um artilheiro
+      de 18 que nunca existiu, à frente do Klose, que tem o recorde de verdade
+      com 16.
+    - **Somar de menos.** Enquanto o nome de 2026 era o nome curto da caixa de
+      partida, "Mbappé" não casava com "Kylian Mbappé" e a mesma pessoa aparecia
+      duas vezes na lista — 12 gols numa linha, 10 na outra, e o recorde de 22
+      não aparecia em lugar nenhum.
 
-        Casemiro   Brasil 2022  +  Brasil 2026   -> mesma pessoa, une
-        Neymar     Brasil 2014-2022 + Brasil 2026 -> mesma pessoa, une
-        Ronaldo    Brasil 1998-2006 | Portugal 2026 -> pessoas diferentes, separa
+    **Quem casa os dois lados é o artigo, não o nome.** O link da caixa de
+    partida (ver `etl.parse_2026.player_pages`) é a identidade que a própria
+    fonte declara, e é sobre ela que a ponte decide, com três regras:
 
-    Quem não casa ganha um id sintético `W-000`, que é o caso dos 2026 estreantes.
+    1. **Mesmo nome de artigo E mesma seleção** une. São 27 casos — Mbappé,
+       Messi, Cristiano Ronaldo, Kane, Neymar, Casemiro, Vinícius Júnior — e a
+       comparação ignora acento (ver `fold_name`), que é o que salva o Julián
+       Álvarez. A seleção continua na chave: ela é o que mantém o Ronaldo
+       brasileiro separado do português.
+    2. **Título desambiguado não faz ponte.** Quando a Wikipédia precisa escrever
+       "Teboho Mokoena (soccer, born 1997)", ela está dizendo que o nome sozinho
+       pertence a mais de uma pessoa — e o outro Teboho Mokoena, o que fez o gol
+       da África do Sul em 2002, é justamente quem está no Fjelstul. O
+       desambiguador é a fonte avisando que a ponte seria falsa; 15 artilheiros
+       de 2026 têm título assim, e este é o único que encostaria no histórico.
+    3. **Homônimo dentro do próprio Fjelstul é abstenção.** Cinco nomes de lá têm
+       dois `player_id` cada (Oscar e Júnior no Brasil, Juanito e Andoni
+       Goikoetxea na Espanha, József Tóth na Hungria) — jogadores diferentes,
+       décadas diferentes, mesmo nome e mesma seleção. Se um nome de 2026 casar
+       com um desses, não há como saber com qual, e a função **recusa a ponte**
+       em vez de escolher: um id novo separa um jogador que talvez fosse o mesmo,
+       o que subestima um total; um id errado credita gols a quem não os fez.
 
-    **Homônimo dentro do próprio Fjelstul não é ponte, é abstenção.** Cinco
-    nomes de lá têm dois `player_id` cada (Oscar e Júnior no Brasil, Juanito e
-    Andoni Goikoetxea na Espanha, József Tóth na Hungria) — jogadores diferentes,
-    décadas diferentes, mesmo nome e mesma seleção. Se um nome de 2026 casar com
-    um desses, não há como saber com qual dos dois, e a função **recusa a ponte**
-    em vez de escolher: um id novo separa um jogador que talvez fosse o mesmo, o
-    que subestima um total; um id errado credita gols a quem não os fez.
+    Quem não casa ganha um id sintético `W-000`, um por artigo — que é o caso dos
+    163 estreantes de 2026.
     """
-    ambiguous = (
-        historic.groupby(["player", "player_team"]).player_id.nunique()
-        .pipe(lambda counts: set(counts[counts > 1].index))
-    )
-    known = (
-        historic[~historic.set_index(["player", "player_team"]).index.isin(ambiguous)]
-        .drop_duplicates(["player", "player_team"])
-        .set_index(["player", "player_team"]).player_id.to_dict()
-    )
+    seen: dict[tuple[str, str], set[str]] = {}
+    for player, team, player_id in zip(
+            historic.player, historic.player_team, historic.player_id):
+        seen.setdefault((fold_name(player), team), set()).add(player_id)
+    known = {key: next(iter(ids)) for key, ids in seen.items() if len(ids) == 1}
 
     minted: dict[tuple[str, str], str] = {}
 
     def identify(row: pd.Series) -> str:
-        key = (row.player, row.player_team)
-        if key in known:
-            return known[key]
+        page = str(row.player_page or "")
+        # Regra 2: o desambiguador é a fonte dizendo que o nome é de mais de um.
+        # Sem ele, o título já é o nome inteiro e vai direto para a comparação.
+        if page and not RE_DISAMBIGUATION.search(page):
+            match = known.get((fold_name(page), row.player_team))
+            if match is not None:
+                return match
+        key = (page or row.player, row.player_team)
         if key not in minted:
             minted[key] = f"W-{len(minted):03d}"
         return minted[key]
@@ -283,17 +337,20 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
       de quem de fato chutou, que nos gols contra é o adversário.
     - **Nome de jogador não é comparável entre as fontes.** O Fjelstul separa
       `given_name` e `family_name` e grava a string `"not applicable"` para quem
-      só tem um nome — o Ronaldo brasileiro entre eles. A Wikipédia traz o nome
-      curto que a caixa de partida exibe ("Mbappé"). O rótulo mostrado sai desses
-      dois lados num campo só, `player`, e continua não sendo identidade.
+      só tem um nome — o Ronaldo brasileiro entre eles. A Wikipédia exibe na
+      caixa de partida o nome curto ("Mbappé"), e o nome inteiro fica no artigo
+      para onde o link aponta ("Kylian Mbappé"). O rótulo sai desses dois lados
+      num campo só, `player` — para 2026, via `display_name` —, e continua não
+      sendo identidade.
 
       **Quem identifica é `player_id`**, e é por isso que ele existe: o Fjelstul
       tem o dele, a Wikipédia não tem nenhum, e `bridge_player_ids` decide caso a
-      caso qual jogador de 2026 é alguém que já jogou. Enquanto a soma era feita
-      por nome, o Ronaldo brasileiro (15 gols) somava com um Ronaldo português de
-      2026 (3) e a página anunciava um artilheiro de 18 — recorde inexistente, na
-      frente do Klose, que tem o de verdade com 16. Somar carreira entre fontes
-      agora é seguro; o que continua não sendo é somar por nome.
+      caso qual jogador de 2026 é alguém que já jogou. As duas contas erradas que
+      ele evita estão documentadas lá: o Ronaldo brasileiro somando com um
+      Ronaldo português (um recorde de 18 que nunca existiu) e o Mbappé partido
+      em dois (12 gols numa linha, 10 na outra, e o recorde de 22 em nenhuma).
+      Somar carreira entre fontes agora é seguro; o que continua não sendo é
+      somar por nome.
     """
     succession = pd.read_csv(REFERENCE / "team_succession.csv")
     labels = dict(zip(succession.historic_name, succession.display_name))
@@ -313,7 +370,9 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
 
     modern = pd.read_csv(INTERIM / "goals_2026.csv")
     modern = modern[modern.match_id.isin(set(matches.match_id))].copy()
-    modern["player"] = modern.player_name
+    modern["player_page"] = modern.player_page.fillna("")
+    modern["player"] = modern.apply(
+        lambda row: display_name(row.player_page, row.player_name), axis=1)
     modern["team"] = modern.team_name.map(lambda name: labels.get(name, name))
     # Num gol contra, quem chutou é do outro time — a fonte de 2026 não diz o
     # time do jogador, mas a partida diz quem é o adversário.
@@ -322,6 +381,15 @@ def build_goals(matches: pd.DataFrame) -> pd.DataFrame:
     modern["player_team"] = modern.player_team.map(lambda name: labels.get(name, name))
     modern["source"] = "wikipedia"
     modern["player_id"] = bridge_player_ids(historic, modern)
+
+    # **Uma identidade, um rótulo.** Onde a ponte reconheceu alguém que já jogou,
+    # o nome que fica é o que ele já tinha — as duas fontes discordam da grafia
+    # em um caso, "Julián Álvarez" no Fjelstul e "Julián Alvarez" no título do
+    # artigo, e sem isto a mesma pessoa entraria na lista com dois nomes. Não é
+    # cosmético: `etl.metrics.build_goal_layer` recusa um `player_id` com mais de
+    # um rótulo, porque é assim que ele detecta uma identidade mal resolvida.
+    historic_labels = dict(zip(historic.player_id, historic.player))
+    modern["player"] = modern.player_id.map(historic_labels).fillna(modern.player)
 
     columns = ["match_id", "team", "player_team", "player", "player_id",
                "minute_regulation", "minute_stoppage", "penalty", "own_goal", "source"]
